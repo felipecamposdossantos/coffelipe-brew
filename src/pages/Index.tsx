@@ -36,7 +36,7 @@ const Index = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Coffee className="h-8 w-8 text-cream-300" />
-              <h1 className="text-3xl font-bold">Coffee Master</h1>
+              <h1 className="text-3xl font-bold">Cafelipe Brew</h1>
             </div>
             <p className="text-cream-200 hidden md:block">
               Seu guia para o café perfeito
