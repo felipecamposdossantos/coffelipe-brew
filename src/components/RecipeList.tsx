@@ -1,5 +1,8 @@
-
+import { useState } from "react";
 import { RecipeCard } from "@/components/RecipeCard";
+import { AddRecipeForm } from "@/components/AddRecipeForm";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 import { Recipe } from "@/pages/Index";
 
 interface RecipeListProps {
@@ -121,6 +124,23 @@ const defaultRecipes: Recipe[] = [
 ];
 
 export const RecipeList = ({ onStartBrewing }: RecipeListProps) => {
+  const [recipes, setRecipes] = useState<Recipe[]>(defaultRecipes);
+  const [showAddForm, setShowAddForm] = useState(false);
+
+  const handleAddRecipe = (newRecipe: Recipe) => {
+    setRecipes([...recipes, newRecipe]);
+    setShowAddForm(false);
+  };
+
+  if (showAddForm) {
+    return (
+      <AddRecipeForm
+        onAddRecipe={handleAddRecipe}
+        onCancel={() => setShowAddForm(false)}
+      />
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -131,9 +151,19 @@ export const RecipeList = ({ onStartBrewing }: RecipeListProps) => {
           Escolha seu método preferido e siga as etapas cronometradas
         </p>
       </div>
+
+      <div className="flex justify-center">
+        <Button
+          onClick={() => setShowAddForm(true)}
+          className="bg-coffee-600 hover:bg-coffee-700 text-white"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Adicionar Minha Receita
+        </Button>
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {defaultRecipes.map((recipe) => (
+        {recipes.map((recipe) => (
           <RecipeCard 
             key={recipe.id} 
             recipe={recipe} 
