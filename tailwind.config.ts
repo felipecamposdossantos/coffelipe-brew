@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -24,6 +25,30 @@ export default {
 				ring: 'hsl(var(--ring))',
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
+				coffee: {
+					50: '#faf7f0',
+					100: '#f3ede0',
+					200: '#e6d7c1',
+					300: '#d4bc97',
+					400: '#c19b6b',
+					500: '#b17d4a',
+					600: '#9a663e',
+					700: '#7f5034',
+					800: '#68422f',
+					900: '#55372a',
+				},
+				cream: {
+					50: '#fefcf8',
+					100: '#fef9f0',
+					200: '#fcf1de',
+					300: '#f8e5c4',
+					400: '#f3d5a2',
+					500: '#ebc077',
+					600: '#dfa64c',
+					700: '#c88a35',
+					800: '#a66f2d',
+					900: '#875c28',
+				},
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
 					foreground: 'hsl(var(--primary-foreground))'
@@ -84,11 +109,20 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'pulse-slow': {
+					'0%, 100%': {
+						opacity: '1'
+					},
+					'50%': {
+						opacity: '0.7'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'pulse-slow': 'pulse-slow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
 			}
 		}
 	},
