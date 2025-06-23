@@ -120,6 +120,40 @@ const defaultRecipes: Recipe[] = [
         instruction: "Complete com 100ml e aguarde a drenagem completa"
       }
     ]
+  },
+  {
+    id: "melita",
+    name: "Melita",
+    description: "Método tradicional alemão com filtro cônico para café equilibrado",
+    coffeeRatio: 22,
+    waterRatio: 350,
+    steps: [
+      {
+        name: "Preparação do filtro",
+        duration: 30,
+        instruction: "Coloque o filtro no porta-filtro e pré-aqueça com água quente"
+      },
+      {
+        name: "Pré-infusão",
+        duration: 30,
+        instruction: "Adicione 50ml de água no café moído médio e aguarde 30 segundos"
+      },
+      {
+        name: "Primeiro despejo",
+        duration: 60,
+        instruction: "Despeje 150ml de água em movimentos circulares lentos"
+      },
+      {
+        name: "Segundo despejo",
+        duration: 60,
+        instruction: "Adicione mais 100ml mantendo o fluxo constante"
+      },
+      {
+        name: "Despejo final",
+        duration: 45,
+        instruction: "Complete com os 50ml restantes e aguarde drenar completamente"
+      }
+    ]
   }
 ];
 
