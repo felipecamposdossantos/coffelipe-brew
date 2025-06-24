@@ -14,8 +14,17 @@ export const LoginForm = () => {
   const [loading, setLoading] = useState(false)
   const { signIn, signUp } = useAuth()
 
+  // Verificar se o Supabase está configurado
+  const isSupabaseConfigured = import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!isSupabaseConfigured) {
+      toast.error('Configure as variáveis de ambiente do Supabase para usar o login')
+      return
+    }
+
     setLoading(true)
 
     try {
@@ -39,6 +48,25 @@ export const LoginForm = () => {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (!isSupabaseConfigured) {
+    return (
+      <Card className="w-full max-w-md mx-auto">
+        <CardHeader>
+          <CardTitle>Configuração Necessária</CardTitle>
+          <CardDescription>
+            Para usar o sistema de login, configure as variáveis de ambiente do Supabase:
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2 text-sm">
+            <p><code>VITE_SUPABASE_URL</code></p>
+            <p><code>VITE_SUPABASE_ANON_KEY</code></p>
+          </div>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (

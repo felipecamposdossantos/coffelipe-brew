@@ -26,9 +26,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // Verificar se o Supabase está configurado
+    if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+      console.log('Supabase não configurado, modo offline')
+      setLoading(false)
+      return
+    }
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
+      setLoading(false)
+    }).catch((error) => {
+      console.error('Erro ao obter sessão:', error)
       setLoading(false)
     })
 
@@ -44,6 +54,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [])
 
   const signIn = async (email: string, password: string) => {
+    if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+      return { error: { message: 'Supabase não configurado. Configure as variáveis de ambiente.' } }
+    }
+
     const result = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -52,6 +66,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   const signUp = async (email: string, password: string) => {
+    if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+      return { error: { message: 'Supabase não configurado. Configure as variáveis de ambiente.' } }
+    }
+
     const result = await supabase.auth.signUp({
       email,
       password,
@@ -60,6 +78,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   const signOut = async () => {
+    if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+      console.warn('Supabase não configurado')
+      return
+    }
+
     await supabase.auth.signOut()
   }
 
