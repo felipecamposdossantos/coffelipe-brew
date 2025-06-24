@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2, Save } from "lucide-react";
 import { Recipe } from "@/pages/Index";
+import { useAuth } from "@/contexts/AuthContext";
+import { useUserRecipes } from "@/hooks/useUserRecipes";
 
 interface AddRecipeFormProps {
   onAddRecipe: (recipe: Recipe) => void;
@@ -28,6 +30,9 @@ export const AddRecipeForm = ({ onAddRecipe, onCancel }: AddRecipeFormProps) => 
     { name: "", duration: 30, instruction: "" }
   ]);
 
+  const { user } = useAuth();
+  const { saveRecipe } = useUserRecipes();
+
   const addStep = () => {
     setSteps([...steps, { name: "", duration: 30, instruction: "" }]);
   };
@@ -45,7 +50,7 @@ export const AddRecipeForm = ({ onAddRecipe, onCancel }: AddRecipeFormProps) => 
     setSteps(updatedSteps);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!name.trim() || !description.trim() || steps.some(step => !step.name.trim() || !step.instruction.trim())) {
@@ -62,13 +67,27 @@ export const AddRecipeForm = ({ onAddRecipe, onCancel }: AddRecipeFormProps) => 
       steps
     };
 
-    onAddRecipe(newRecipe);
+    // Se o usuário estiver logado, salvar no banco
+    if (user) {
+      const saved = await saveRecipe(newRecipe);
+      if (saved) {
+        onAddRecipe(newRecipe);
+      }
+    } else {
+      // Se não estiver logado, apenas adicionar localmente
+      onAddRecipe(newRecipe);
+    }
   };
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle className="text-coffee-800">Adicionar Nova Receita</CardTitle>
+        {!user && (
+          <p className="text-sm text-amber-600">
+            ⚠️ Faça login para salvar suas receitas permanentemente
+          </p>
+        )}
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -97,7 +116,6 @@ export const AddRecipeForm = ({ onAddRecipe, onCancel }: AddRecipeFormProps) => 
             </div>
           </div>
 
-          {/* Proporções */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="coffee">Café (gramas) *</Label>
@@ -123,7 +141,6 @@ export const AddRecipeForm = ({ onAddRecipe, onCancel }: AddRecipeFormProps) => 
             </div>
           </div>
 
-          {/* Etapas */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label>Etapas de Preparo *</Label>
@@ -195,7 +212,6 @@ export const AddRecipeForm = ({ onAddRecipe, onCancel }: AddRecipeFormProps) => 
             ))}
           </div>
 
-          {/* Botões */}
           <div className="flex gap-3 pt-4">
             <Button
               type="submit"

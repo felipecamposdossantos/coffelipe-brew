@@ -5,8 +5,11 @@ import { RecipeList } from "@/components/RecipeList";
 import { BrewingProcess } from "@/components/BrewingProcess";
 import { LoginForm } from "@/components/LoginForm";
 import { UserProfile } from "@/components/UserProfile";
+import { BrewHistory } from "@/components/BrewHistory";
+import { Footer } from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
-import { Coffee, Clock, BookOpen, User } from "lucide-react";
+import { useUserRecipes } from "@/hooks/useUserRecipes";
+import { Coffee, Clock, BookOpen, User, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export interface Recipe {
@@ -23,13 +26,22 @@ export interface Recipe {
 }
 
 const Index = () => {
-  const [activeView, setActiveView] = useState<'recipes' | 'timer' | 'brewing' | 'profile'>('recipes');
+  const [activeView, setActiveView] = useState<'recipes' | 'timer' | 'brewing' | 'profile' | 'history'>('recipes');
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const { user, loading } = useAuth();
+  const { addToBrewHistory } = useUserRecipes();
 
   const handleStartBrewing = (recipe: Recipe) => {
     setSelectedRecipe(recipe);
     setActiveView('brewing');
+  };
+
+  const handleBrewingComplete = (recipe: Recipe) => {
+    // Adicionar ao histórico se o usuário estiver logado
+    if (user) {
+      addToBrewHistory(recipe);
+    }
+    setActiveView('recipes');
   };
 
   if (loading) {
@@ -41,14 +53,14 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-coffee-50 to-cream-100">
+    <div className="min-h-screen bg-gradient-to-br from-coffee-50 to-cream-100 flex flex-col">
       {/* Header */}
       <header className="bg-coffee-800 text-white shadow-lg">
         <div className="max-w-6xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Coffee className="h-8 w-8 text-cream-300" />
-              <h1 className="text-3xl font-bold">Cafelipe Brew</h1>
+              <h1 className="text-3xl font-bold">CofFelipe Brew</h1>
             </div>
             <div className="flex items-center gap-4">
               <p className="text-cream-200 hidden md:block">
@@ -92,6 +104,20 @@ const Index = () => {
               <Clock className="w-4 h-4 mr-2" />
               Timer
             </Button>
+            {user && (
+              <Button
+                variant={activeView === 'history' ? 'default' : 'ghost'}
+                className={`rounded-none border-0 ${
+                  activeView === 'history' 
+                    ? 'bg-coffee-600 text-white' 
+                    : 'text-cream-200 hover:bg-coffee-600 hover:text-white'
+                }`}
+                onClick={() => setActiveView('history')}
+              >
+                <History className="w-4 h-4 mr-2" />
+                Histórico
+              </Button>
+            )}
             <Button
               variant={activeView === 'profile' ? 'default' : 'ghost'}
               className={`rounded-none border-0 ${
@@ -109,7 +135,7 @@ const Index = () => {
       </nav>
 
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 py-8">
+      <main className="max-w-6xl mx-auto px-4 py-8 flex-grow">
         {activeView === 'recipes' && (
           <RecipeList onStartBrewing={handleStartBrewing} />
         )}
@@ -117,6 +143,12 @@ const Index = () => {
         {activeView === 'timer' && (
           <div className="flex justify-center">
             <Timer />
+          </div>
+        )}
+        
+        {activeView === 'history' && user && (
+          <div className="flex justify-center">
+            <BrewHistory />
           </div>
         )}
         
@@ -129,10 +161,12 @@ const Index = () => {
         {activeView === 'brewing' && selectedRecipe && (
           <BrewingProcess 
             recipe={selectedRecipe} 
-            onComplete={() => setActiveView('recipes')}
+            onComplete={() => handleBrewingComplete(selectedRecipe)}
           />
         )}
       </main>
+
+      <Footer />
     </div>
   );
 };
