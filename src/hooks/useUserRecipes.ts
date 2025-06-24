@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { Recipe } from '@/pages/Index';
 import { toast } from 'sonner';
 
@@ -18,9 +18,6 @@ export const useUserRecipes = () => {
   const [userRecipes, setUserRecipes] = useState<Recipe[]>([]);
   const [brewHistory, setBrewHistory] = useState<BrewHistory[]>([]);
   const [loading, setLoading] = useState(false);
-
-  // Verificar se o Supabase está configurado
-  const isSupabaseConfigured = import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY;
 
   const loadUserRecipes = async () => {
     if (!user || !isSupabaseConfigured) return;

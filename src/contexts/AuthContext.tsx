@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase'
+import { supabase, isSupabaseConfigured } from '@/lib/supabase'
 
 interface AuthContextType {
   user: User | null
@@ -26,25 +26,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Verificar se o Supabase está configurado
-    if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+    if (!isSupabaseConfigured) {
       console.log('Supabase não configurado, modo offline')
       setLoading(false)
       return
     }
 
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error('Erro ao obter sessão:', error)
+      }
       setUser(session?.user ?? null)
-      setLoading(false)
-    }).catch((error) => {
-      console.error('Erro ao obter sessão:', error)
       setLoading(false)
     })
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state changed:', event)
         setUser(session?.user ?? null)
         setLoading(false)
       }
@@ -54,36 +54,48 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [])
 
   const signIn = async (email: string, password: string) => {
-    if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
-      return { error: { message: 'Supabase não configurado. Configure as variáveis de ambiente.' } }
+    if (!isSupabaseConfigured) {
+      return { error: { message: 'Supabase não configurado. Configure as variáveis de ambiente VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.' } }
     }
 
-    const result = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-    return { error: result.error }
+    try {
+      const result = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      return { error: result.error }
+    } catch (error) {
+      return { error: { message: 'Erro de conexão' } }
+    }
   }
 
   const signUp = async (email: string, password: string) => {
-    if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
-      return { error: { message: 'Supabase não configurado. Configure as variáveis de ambiente.' } }
+    if (!isSupabaseConfigured) {
+      return { error: { message: 'Supabase não configurado. Configure as variáveis de ambiente VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.' } }
     }
 
-    const result = await supabase.auth.signUp({
-      email,
-      password,
-    })
-    return { error: result.error }
+    try {
+      const result = await supabase.auth.signUp({
+        email,
+        password,
+      })
+      return { error: result.error }
+    } catch (error) {
+      return { error: { message: 'Erro de conexão' } }
+    }
   }
 
   const signOut = async () => {
-    if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+    if (!isSupabaseConfigured) {
       console.warn('Supabase não configurado')
       return
     }
 
-    await supabase.auth.signOut()
+    try {
+      await supabase.auth.signOut()
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error)
+    }
   }
 
   const value = {

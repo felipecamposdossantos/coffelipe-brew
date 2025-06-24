@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'sonner'
+import { isSupabaseConfigured } from '@/lib/supabase'
 
 export const LoginForm = () => {
   const [email, setEmail] = useState('')
@@ -14,14 +15,21 @@ export const LoginForm = () => {
   const [loading, setLoading] = useState(false)
   const { signIn, signUp } = useAuth()
 
-  // Verificar se o Supabase está configurado
-  const isSupabaseConfigured = import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (!isSupabaseConfigured) {
       toast.error('Configure as variáveis de ambiente do Supabase para usar o login')
+      return
+    }
+
+    if (!email || !password) {
+      toast.error('Preencha todos os campos')
+      return
+    }
+
+    if (password.length < 6) {
+      toast.error('A senha deve ter pelo menos 6 caracteres')
       return
     }
 
@@ -34,6 +42,8 @@ export const LoginForm = () => {
           toast.error('Erro ao fazer login: ' + error.message)
         } else {
           toast.success('Login realizado com sucesso!')
+          setEmail('')
+          setPassword('')
         }
       } else {
         const { error } = await signUp(email, password)
@@ -41,6 +51,8 @@ export const LoginForm = () => {
           toast.error('Erro ao criar conta: ' + error.message)
         } else {
           toast.success('Conta criada! Verifique seu email para confirmar.')
+          setEmail('')
+          setPassword('')
         }
       }
     } catch (error) {
@@ -60,9 +72,20 @@ export const LoginForm = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2 text-sm">
-            <p><code>VITE_SUPABASE_URL</code></p>
-            <p><code>VITE_SUPABASE_ANON_KEY</code></p>
+          <div className="space-y-4">
+            <div className="space-y-2 text-sm">
+              <p className="font-mono bg-gray-100 p-2 rounded">VITE_SUPABASE_URL</p>
+              <p className="font-mono bg-gray-100 p-2 rounded">VITE_SUPABASE_ANON_KEY</p>
+            </div>
+            <div className="text-sm text-gray-600">
+              <p>Para obter essas informações:</p>
+              <ol className="list-decimal list-inside mt-2 space-y-1">
+                <li>Crie uma conta no Supabase</li>
+                <li>Crie um novo projeto</li>
+                <li>Vá em Settings → API</li>
+                <li>Copie a URL e a chave anônima</li>
+              </ol>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -89,6 +112,7 @@ export const LoginForm = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              placeholder="seu@email.com"
               required
             />
           </div>
@@ -99,6 +123,7 @@ export const LoginForm = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              placeholder="Mínimo 6 caracteres"
               required
               minLength={6}
             />
@@ -115,7 +140,7 @@ export const LoginForm = () => {
           <button
             type="button"
             onClick={() => setIsLogin(!isLogin)}
-            className="text-coffee-600 hover:text-coffee-700 text-sm"
+            className="text-coffee-600 hover:text-coffee-700 text-sm underline"
           >
             {isLogin 
               ? 'Não tem conta? Criar uma agora' 
