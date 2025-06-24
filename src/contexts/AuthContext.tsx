@@ -1,10 +1,11 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
-import { User } from '@supabase/supabase-js'
-import { supabase, isSupabaseConfigured } from '@/lib/supabase'
+import { User, Session } from '@supabase/supabase-js'
+import { supabase } from '@/lib/supabase'
 
 interface AuthContextType {
   user: User | null
+  session: Session | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<{ error: any }>
   signUp: (email: string, password: string) => Promise<{ error: any }>
@@ -23,75 +24,72 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null)
+  const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!isSupabaseConfigured) {
-      console.log('Supabase não configurado, modo offline')
-      setLoading(false)
-      return
-    }
-
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
-      if (error) {
-        console.error('Erro ao obter sessão:', error)
-      }
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
-
-    // Listen for auth changes
+    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state changed:', event)
+      (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email)
+        setSession(session)
         setUser(session?.user ?? null)
         setLoading(false)
       }
     )
 
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error('Erro ao obter sessão:', error)
+      }
+      console.log('Initial session:', session?.user?.email)
+      setSession(session)
+      setUser(session?.user ?? null)
+      setLoading(false)
+    })
+
     return () => subscription.unsubscribe()
   }, [])
 
   const signIn = async (email: string, password: string) => {
-    if (!isSupabaseConfigured) {
-      return { error: { message: 'Supabase não configurado. Configure as variáveis de ambiente VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.' } }
-    }
-
     try {
+      console.log('Tentando fazer login com:', email)
       const result = await supabase.auth.signInWithPassword({
         email,
         password,
       })
+      console.log('Resultado do login:', result)
       return { error: result.error }
     } catch (error) {
+      console.error('Erro no login:', error)
       return { error: { message: 'Erro de conexão' } }
     }
   }
 
   const signUp = async (email: string, password: string) => {
-    if (!isSupabaseConfigured) {
-      return { error: { message: 'Supabase não configurado. Configure as variáveis de ambiente VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.' } }
-    }
-
     try {
+      console.log('Tentando criar conta com:', email)
+      const redirectUrl = `${window.location.origin}/`
+      
       const result = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: redirectUrl
+        }
       })
+      console.log('Resultado do cadastro:', result)
       return { error: result.error }
     } catch (error) {
+      console.error('Erro no cadastro:', error)
       return { error: { message: 'Erro de conexão' } }
     }
   }
 
   const signOut = async () => {
-    if (!isSupabaseConfigured) {
-      console.warn('Supabase não configurado')
-      return
-    }
-
     try {
+      console.log('Fazendo logout')
       await supabase.auth.signOut()
     } catch (error) {
       console.error('Erro ao fazer logout:', error)
@@ -100,6 +98,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const value = {
     user,
+    session,
     loading,
     signIn,
     signUp,

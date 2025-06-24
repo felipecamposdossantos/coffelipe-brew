@@ -1,16 +1,16 @@
 
 import { createClient } from '@supabase/supabase-js'
 
-// Usar valores padrão válidos se as variáveis de ambiente não estiverem configuradas
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co'
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-key'
+// Usar os valores do projeto Supabase configurado
+const supabaseUrl = 'https://lawdsesikzlttnvrhkqn.supabase.co'
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxhd2RzZXNpa3psdHRudnJoa3FuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA3MDkyNjIsImV4cCI6MjA2NjI4NTI2Mn0.vggXeANPTHXEFFWRwLvmS37bOcQWbK5XXIrxHoxhPzo'
 
-// Verificar se as variáveis de ambiente estão configuradas
-const isSupabaseConfigured = import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    storage: localStorage,
+    persistSession: true,
+    autoRefreshToken: true,
+  }
+})
 
-if (!isSupabaseConfigured) {
-  console.warn('⚠️ Variáveis de ambiente do Supabase não configuradas. Configure VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.')
-}
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
-export { isSupabaseConfigured }
+export const isSupabaseConfigured = true
