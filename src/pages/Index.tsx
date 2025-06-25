@@ -2,14 +2,15 @@
 import { useState } from "react";
 import { Timer } from "@/components/Timer";
 import { RecipeList } from "@/components/RecipeList";
-import { BrewingProcess } from "@/components/BrewingProcess";
+import { UserRecipes } from "@/components/UserRecipes";
+import { AutoBrewingProcess } from "@/components/AutoBrewingProcess";
 import { LoginForm } from "@/components/LoginForm";
 import { UserProfile } from "@/components/UserProfile";
 import { BrewHistory } from "@/components/BrewHistory";
 import { Footer } from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRecipes } from "@/hooks/useUserRecipes";
-import { Coffee, Clock, BookOpen, User, History } from "lucide-react";
+import { Coffee, Clock, BookOpen, User, History, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export interface Recipe {
@@ -18,6 +19,10 @@ export interface Recipe {
   description: string;
   coffeeRatio: number; // gramas de café
   waterRatio: number; // ml de água
+  waterTemperature?: number; // temperatura da água em °C
+  grinderBrand?: string; // marca do moedor
+  grinderClicks?: number; // clicks do moedor
+  paperBrand?: string; // marca do papel
   steps: {
     name: string;
     duration: number; // em segundos
@@ -26,7 +31,7 @@ export interface Recipe {
 }
 
 const Index = () => {
-  const [activeView, setActiveView] = useState<'recipes' | 'timer' | 'brewing' | 'profile' | 'history'>('recipes');
+  const [activeView, setActiveView] = useState<'recipes' | 'my-recipes' | 'timer' | 'brewing' | 'profile' | 'history'>('recipes');
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const { user, loading } = useAuth();
   const { addToBrewHistory } = useUserRecipes();
@@ -92,6 +97,20 @@ const Index = () => {
               <BookOpen className="w-4 h-4 mr-2" />
               Receitas
             </Button>
+            {user && (
+              <Button
+                variant={activeView === 'my-recipes' ? 'default' : 'ghost'}
+                className={`rounded-none border-0 ${
+                  activeView === 'my-recipes' 
+                    ? 'bg-coffee-600 text-white' 
+                    : 'text-cream-200 hover:bg-coffee-600 hover:text-white'
+                }`}
+                onClick={() => setActiveView('my-recipes')}
+              >
+                <Heart className="w-4 h-4 mr-2" />
+                Minhas Receitas
+              </Button>
+            )}
             <Button
               variant={activeView === 'timer' ? 'default' : 'ghost'}
               className={`rounded-none border-0 ${
@@ -140,6 +159,10 @@ const Index = () => {
           <RecipeList onStartBrewing={handleStartBrewing} />
         )}
         
+        {activeView === 'my-recipes' && user && (
+          <UserRecipes onStartBrewing={handleStartBrewing} />
+        )}
+        
         {activeView === 'timer' && (
           <div className="flex justify-center">
             <Timer />
@@ -159,7 +182,7 @@ const Index = () => {
         )}
         
         {activeView === 'brewing' && selectedRecipe && (
-          <BrewingProcess 
+          <AutoBrewingProcess 
             recipe={selectedRecipe} 
             onComplete={() => handleBrewingComplete(selectedRecipe)}
           />

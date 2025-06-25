@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Coffee, Droplets, Clock, Play } from "lucide-react";
+import { Coffee, Droplets, Clock, Play, Thermometer, Settings, FileText } from "lucide-react";
 import { Recipe } from "@/pages/Index";
 
 interface RecipeCardProps {
@@ -39,6 +39,30 @@ export const RecipeCard = ({ recipe, onStartBrewing }: RecipeCardProps) => {
             <Droplets className="w-4 h-4 text-blue-500" />
             <span className="text-sm font-medium">{recipe.waterRatio}ml água</span>
           </div>
+        </div>
+
+        {/* Additional Info */}
+        <div className="space-y-2">
+          {recipe.waterTemperature && (
+            <div className="flex items-center gap-2 text-sm text-coffee-600">
+              <Thermometer className="w-4 h-4" />
+              <span>{recipe.waterTemperature}°C</span>
+            </div>
+          )}
+          
+          {recipe.grinderBrand && recipe.grinderClicks && (
+            <div className="flex items-center gap-2 text-sm text-coffee-600">
+              <Settings className="w-4 h-4" />
+              <span>{recipe.grinderBrand}: {recipe.grinderClicks} clicks</span>
+            </div>
+          )}
+          
+          {recipe.paperBrand && (
+            <div className="flex items-center gap-2 text-sm text-coffee-600">
+              <FileText className="w-4 h-4" />
+              <span>Papel: {recipe.paperBrand}</span>
+            </div>
+          )}
         </div>
 
         {/* Steps Preview */}

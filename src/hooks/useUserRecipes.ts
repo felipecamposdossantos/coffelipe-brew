@@ -42,6 +42,10 @@ export const useUserRecipes = () => {
           description: item.description,
           coffeeRatio: item.coffee_ratio,
           waterRatio: item.water_ratio,
+          waterTemperature: item.water_temperature || undefined,
+          grinderBrand: item.grinder_brand || undefined,
+          grinderClicks: item.grinder_clicks || undefined,
+          paperBrand: item.paper_brand || undefined,
           steps: item.steps
         }));
         setUserRecipes(recipes);
@@ -92,6 +96,10 @@ export const useUserRecipes = () => {
           description: recipe.description,
           coffee_ratio: recipe.coffeeRatio,
           water_ratio: recipe.waterRatio,
+          water_temperature: recipe.waterTemperature,
+          grinder_brand: recipe.grinderBrand,
+          grinder_clicks: recipe.grinderClicks,
+          paper_brand: recipe.paperBrand,
           steps: recipe.steps,
           user_id: user.id
         });

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2, Save } from "lucide-react";
 import { Recipe } from "@/pages/Index";
@@ -21,11 +22,28 @@ interface RecipeStep {
   instruction: string;
 }
 
+const grinderOptions = [
+  { brand: "Comandante", defaultClicks: 18 },
+  { brand: "1Zpresso JX-Pro", defaultClicks: 15 },
+  { brand: "Baratza Encore", defaultClicks: 30 },
+  { brand: "Hario Mini Mill Slim", defaultClicks: 12 },
+  { brand: "Timemore C2", defaultClicks: 20 },
+  { brand: "Timemore C3", defaultClicks: 18 },
+  { brand: "Porlex Mini", defaultClicks: 10 },
+  { brand: "Mazzer Mini", defaultClicks: 8 },
+  { brand: "Outro", defaultClicks: 15 }
+];
+
 export const AddRecipeForm = ({ onAddRecipe, onCancel }: AddRecipeFormProps) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [coffeeRatio, setCoffeeRatio] = useState<number>(20);
   const [waterRatio, setWaterRatio] = useState<number>(300);
+  const [waterTemperature, setWaterTemperature] = useState<number>(94);
+  const [grinderBrand, setGrinderBrand] = useState<string>("");
+  const [customGrinderBrand, setCustomGrinderBrand] = useState<string>("");
+  const [grinderClicks, setGrinderClicks] = useState<number>(15);
+  const [paperBrand, setPaperBrand] = useState<string>("");
   const [steps, setSteps] = useState<RecipeStep[]>([
     { name: "", duration: 30, instruction: "" }
   ]);
@@ -50,6 +68,17 @@ export const AddRecipeForm = ({ onAddRecipe, onCancel }: AddRecipeFormProps) => 
     setSteps(updatedSteps);
   };
 
+  const handleGrinderChange = (value: string) => {
+    setGrinderBrand(value);
+    if (value !== "Outro") {
+      const grinder = grinderOptions.find(g => g.brand === value);
+      if (grinder) {
+        setGrinderClicks(grinder.defaultClicks);
+      }
+      setCustomGrinderBrand("");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -58,12 +87,18 @@ export const AddRecipeForm = ({ onAddRecipe, onCancel }: AddRecipeFormProps) => 
       return;
     }
 
+    const finalGrinderBrand = grinderBrand === "Outro" ? customGrinderBrand : grinderBrand;
+
     const newRecipe: Recipe = {
       id: `custom-${Date.now()}`,
       name,
       description,
       coffeeRatio,
       waterRatio,
+      waterTemperature,
+      grinderBrand: finalGrinderBrand || undefined,
+      grinderClicks: finalGrinderBrand ? grinderClicks : undefined,
+      paperBrand: paperBrand || undefined,
       steps
     };
 
@@ -116,7 +151,8 @@ export const AddRecipeForm = ({ onAddRecipe, onCancel }: AddRecipeFormProps) => 
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          {/* Proporções e Temperatura */}
+          <div className="grid grid-cols-3 gap-4">
             <div>
               <Label htmlFor="coffee">Café (gramas) *</Label>
               <Input
@@ -139,8 +175,76 @@ export const AddRecipeForm = ({ onAddRecipe, onCancel }: AddRecipeFormProps) => 
                 required
               />
             </div>
+            <div>
+              <Label htmlFor="temperature">Temperatura (°C)</Label>
+              <Input
+                id="temperature"
+                type="number"
+                value={waterTemperature}
+                onChange={(e) => setWaterTemperature(Number(e.target.value))}
+                min="80"
+                max="100"
+                placeholder="94"
+              />
+            </div>
           </div>
 
+          {/* Moedor */}
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="grinder">Moedor</Label>
+              <Select value={grinderBrand} onValueChange={handleGrinderChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o moedor" />
+                </SelectTrigger>
+                <SelectContent>
+                  {grinderOptions.map((grinder) => (
+                    <SelectItem key={grinder.brand} value={grinder.brand}>
+                      {grinder.brand}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {grinderBrand === "Outro" && (
+              <div>
+                <Label htmlFor="customGrinder">Nome do Moedor</Label>
+                <Input
+                  id="customGrinder"
+                  value={customGrinderBrand}
+                  onChange={(e) => setCustomGrinderBrand(e.target.value)}
+                  placeholder="Digite o nome do seu moedor"
+                />
+              </div>
+            )}
+
+            {grinderBrand && (
+              <div>
+                <Label htmlFor="clicks">Clicks do Moedor</Label>
+                <Input
+                  id="clicks"
+                  type="number"
+                  value={grinderClicks}
+                  onChange={(e) => setGrinderClicks(Number(e.target.value))}
+                  min="1"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Papel */}
+          <div>
+            <Label htmlFor="paper">Marca do Papel</Label>
+            <Input
+              id="paper"
+              value={paperBrand}
+              onChange={(e) => setPaperBrand(e.target.value)}
+              placeholder="Ex: Hario V60, Chemex Original, etc."
+            />
+          </div>
+
+          {/* Etapas */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label>Etapas de Preparo *</Label>

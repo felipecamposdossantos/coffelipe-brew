@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { RecipeCard } from "@/components/RecipeCard";
 import { AddRecipeForm } from "@/components/AddRecipeForm";
@@ -16,6 +17,10 @@ const defaultRecipes: Recipe[] = [
     description: "Método tradicional para um café limpo e aromático",
     coffeeRatio: 20,
     waterRatio: 300,
+    waterTemperature: 94,
+    grinderBrand: "Comandante",
+    grinderClicks: 18,
+    paperBrand: "Hario V60",
     steps: [
       {
         name: "Pré-infusão",
@@ -45,6 +50,9 @@ const defaultRecipes: Recipe[] = [
     description: "Café encorpado com 4 minutos de infusão",
     coffeeRatio: 30,
     waterRatio: 500,
+    waterTemperature: 96,
+    grinderBrand: "Baratza Encore",
+    grinderClicks: 30,
     steps: [
       {
         name: "Infusão",
@@ -69,6 +77,10 @@ const defaultRecipes: Recipe[] = [
     description: "Método rápido para um café concentrado e suave",
     coffeeRatio: 15,
     waterRatio: 200,
+    waterTemperature: 85,
+    grinderBrand: "1Zpresso JX-Pro",
+    grinderClicks: 15,
+    paperBrand: "AeroPress Original",
     steps: [
       {
         name: "Pré-infusão",
@@ -98,6 +110,10 @@ const defaultRecipes: Recipe[] = [
     description: "Café limpo e bem filtrado com notas delicadas",
     coffeeRatio: 25,
     waterRatio: 400,
+    waterTemperature: 93,
+    grinderBrand: "Hario Mini Mill Slim",
+    grinderClicks: 12,
+    paperBrand: "Chemex Original",
     steps: [
       {
         name: "Bloom",
@@ -127,6 +143,10 @@ const defaultRecipes: Recipe[] = [
     description: "Método tradicional alemão com filtro cônico para café equilibrado",
     coffeeRatio: 22,
     waterRatio: 350,
+    waterTemperature: 92,
+    grinderBrand: "Timemore C2",
+    grinderClicks: 20,
+    paperBrand: "Melitta Original",
     steps: [
       {
         name: "Preparação do filtro",
