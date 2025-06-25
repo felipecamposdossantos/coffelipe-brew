@@ -46,6 +46,7 @@ export const useUserRecipes = () => {
           grinderBrand: item.grinder_brand || undefined,
           grinderClicks: item.grinder_clicks || undefined,
           paperBrand: item.paper_brand || undefined,
+          coffeeBeanId: item.coffee_bean_id || undefined,
           steps: item.steps
         }));
         setUserRecipes(recipes);
@@ -100,6 +101,7 @@ export const useUserRecipes = () => {
           grinder_brand: recipe.grinderBrand,
           grinder_clicks: recipe.grinderClicks,
           paper_brand: recipe.paperBrand,
+          coffee_bean_id: recipe.coffeeBeanId,
           steps: recipe.steps,
           user_id: user.id
         });

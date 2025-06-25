@@ -1,194 +1,166 @@
 
 import { useState } from "react";
-import { Timer } from "@/components/Timer";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RecipeList } from "@/components/RecipeList";
 import { UserRecipes } from "@/components/UserRecipes";
+import { CoffeeBeansManager } from "@/components/CoffeeBeansManager";
+import { BrewingProcess } from "@/components/BrewingProcess";
 import { AutoBrewingProcess } from "@/components/AutoBrewingProcess";
+import { ManualBrewingProcess } from "@/components/ManualBrewingProcess";
 import { LoginForm } from "@/components/LoginForm";
 import { UserProfile } from "@/components/UserProfile";
 import { BrewHistory } from "@/components/BrewHistory";
 import { Footer } from "@/components/Footer";
-import { useAuth } from "@/contexts/AuthContext";
-import { useUserRecipes } from "@/hooks/useUserRecipes";
-import { Coffee, Clock, BookOpen, User, History, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import { Coffee, Settings } from "lucide-react";
 
 export interface Recipe {
   id: string;
   name: string;
   description: string;
-  coffeeRatio: number; // gramas de café
-  waterRatio: number; // ml de água
-  waterTemperature?: number; // temperatura da água em °C
-  grinderBrand?: string; // marca do moedor
-  grinderClicks?: number; // clicks do moedor
-  paperBrand?: string; // marca do papel
-  steps: {
+  coffeeRatio: number;
+  waterRatio: number;
+  waterTemperature?: number;
+  grinderBrand?: string;
+  grinderClicks?: number;
+  paperBrand?: string;
+  coffeeBeanId?: string;
+  steps: Array<{
     name: string;
-    duration: number; // em segundos
+    duration: number;
     instruction: string;
-  }[];
+  }>;
 }
 
 const Index = () => {
-  const [activeView, setActiveView] = useState<'recipes' | 'my-recipes' | 'timer' | 'brewing' | 'profile' | 'history'>('recipes');
-  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const { user, loading } = useAuth();
-  const { addToBrewHistory } = useUserRecipes();
+  const [currentRecipe, setCurrentRecipe] = useState<Recipe | null>(null);
+  const [brewingMode, setBrewingMode] = useState<'auto' | 'manual'>('auto');
+  const [activeTab, setActiveTab] = useState("recipes");
 
-  const handleStartBrewing = (recipe: Recipe) => {
-    setSelectedRecipe(recipe);
-    setActiveView('brewing');
+  const handleStartBrewing = (recipe: Recipe, mode: 'auto' | 'manual' = 'auto') => {
+    setCurrentRecipe(recipe);
+    setBrewingMode(mode);
   };
 
-  const handleBrewingComplete = (recipe: Recipe) => {
-    // Adicionar ao histórico se o usuário estiver logado
-    if (user) {
-      addToBrewHistory(recipe);
-    }
-    setActiveView('recipes');
+  const handleCompleteBrewing = () => {
+    setCurrentRecipe(null);
+    setActiveTab("recipes");
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-coffee-50 to-cream-100 flex items-center justify-center">
-        <div className="text-coffee-600">Carregando...</div>
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center">
+        <div className="text-center">
+          <Coffee className="w-12 h-12 mx-auto text-coffee-600 animate-pulse mb-4" />
+          <p className="text-coffee-600">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (currentRecipe) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 p-4">
+        <div className="container mx-auto py-8">
+          <div className="mb-6 flex justify-between items-center">
+            <div>
+              <h1 className="text-4xl font-bold text-coffee-800 mb-2">
+                Preparando: {currentRecipe.name}
+              </h1>
+              <div className="flex gap-2">
+                <Button
+                  variant={brewingMode === 'auto' ? 'default' : 'outline'}
+                  onClick={() => setBrewingMode('auto')}
+                  className={brewingMode === 'auto' ? 'bg-coffee-600 hover:bg-coffee-700' : ''}
+                >
+                  Automático
+                </Button>
+                <Button
+                  variant={brewingMode === 'manual' ? 'default' : 'outline'}
+                  onClick={() => setBrewingMode('manual')}
+                  className={brewingMode === 'manual' ? 'bg-coffee-600 hover:bg-coffee-700' : ''}
+                >
+                  Manual
+                </Button>
+              </div>
+            </div>
+            <Button 
+              onClick={handleCompleteBrewing}
+              variant="outline"
+            >
+              Voltar
+            </Button>
+          </div>
+          
+          {brewingMode === 'auto' ? (
+            <AutoBrewingProcess 
+              recipe={currentRecipe} 
+              onComplete={handleCompleteBrewing} 
+            />
+          ) : (
+            <ManualBrewingProcess 
+              recipe={currentRecipe} 
+              onComplete={handleCompleteBrewing} 
+            />
+          )}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-coffee-50 to-cream-100 flex flex-col">
-      {/* Header */}
-      <header className="bg-coffee-800 text-white shadow-lg">
-        <div className="max-w-6xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Coffee className="h-8 w-8 text-cream-300" />
-              <h1 className="text-3xl font-bold">CofFelipe Brew</h1>
-            </div>
-            <div className="flex items-center gap-4">
-              <p className="text-cream-200 hidden md:block">
-                Seu guia para o café perfeito
-              </p>
-              {user && (
-                <div className="text-cream-200 text-sm">
-                  Olá, {user.email?.split('@')[0]}!
-                </div>
-              )}
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100">
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Coffee className="w-8 h-8 text-coffee-600" />
+            <h1 className="text-4xl font-bold text-coffee-800">CoffeeTimer</h1>
           </div>
+          <p className="text-coffee-600 text-lg">
+            Seu companheiro para o café perfeito
+          </p>
         </div>
-      </header>
 
-      {/* Navigation */}
-      <nav className="bg-coffee-700 shadow-md">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex gap-1">
-            <Button
-              variant={activeView === 'recipes' ? 'default' : 'ghost'}
-              className={`rounded-none border-0 ${
-                activeView === 'recipes' 
-                  ? 'bg-coffee-600 text-white' 
-                  : 'text-cream-200 hover:bg-coffee-600 hover:text-white'
-              }`}
-              onClick={() => setActiveView('recipes')}
-            >
-              <BookOpen className="w-4 h-4 mr-2" />
-              Receitas
-            </Button>
-            {user && (
-              <Button
-                variant={activeView === 'my-recipes' ? 'default' : 'ghost'}
-                className={`rounded-none border-0 ${
-                  activeView === 'my-recipes' 
-                    ? 'bg-coffee-600 text-white' 
-                    : 'text-cream-200 hover:bg-coffee-600 hover:text-white'
-                }`}
-                onClick={() => setActiveView('my-recipes')}
-              >
-                <Heart className="w-4 h-4 mr-2" />
-                Minhas Receitas
-              </Button>
-            )}
-            <Button
-              variant={activeView === 'timer' ? 'default' : 'ghost'}
-              className={`rounded-none border-0 ${
-                activeView === 'timer' 
-                  ? 'bg-coffee-600 text-white' 
-                  : 'text-cream-200 hover:bg-coffee-600 hover:text-white'
-              }`}
-              onClick={() => setActiveView('timer')}
-            >
-              <Clock className="w-4 h-4 mr-2" />
-              Timer
-            </Button>
-            {user && (
-              <Button
-                variant={activeView === 'history' ? 'default' : 'ghost'}
-                className={`rounded-none border-0 ${
-                  activeView === 'history' 
-                    ? 'bg-coffee-600 text-white' 
-                    : 'text-cream-200 hover:bg-coffee-600 hover:text-white'
-                }`}
-                onClick={() => setActiveView('history')}
-              >
-                <History className="w-4 h-4 mr-2" />
-                Histórico
-              </Button>
-            )}
-            <Button
-              variant={activeView === 'profile' ? 'default' : 'ghost'}
-              className={`rounded-none border-0 ${
-                activeView === 'profile' 
-                  ? 'bg-coffee-600 text-white' 
-                  : 'text-cream-200 hover:bg-coffee-600 hover:text-white'
-              }`}
-              onClick={() => setActiveView('profile')}
-            >
-              <User className="w-4 h-4 mr-2" />
-              {user ? 'Perfil' : 'Login'}
-            </Button>
-          </div>
-        </div>
-      </nav>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-6 mb-8">
+            <TabsTrigger value="recipes">Receitas</TabsTrigger>
+            {user && <TabsTrigger value="my-recipes">Minhas Receitas</TabsTrigger>}
+            {user && <TabsTrigger value="coffee-beans">Grãos</TabsTrigger>}
+            {user && <TabsTrigger value="history">Histórico</TabsTrigger>}
+            <TabsTrigger value="auth">
+              {user ? <Settings className="w-4 h-4" /> : "Login"}
+            </TabsTrigger>
+          </TabsList>
 
-      {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 py-8 flex-grow">
-        {activeView === 'recipes' && (
-          <RecipeList onStartBrewing={handleStartBrewing} />
-        )}
-        
-        {activeView === 'my-recipes' && user && (
-          <UserRecipes onStartBrewing={handleStartBrewing} />
-        )}
-        
-        {activeView === 'timer' && (
-          <div className="flex justify-center">
-            <Timer />
-          </div>
-        )}
-        
-        {activeView === 'history' && user && (
-          <div className="flex justify-center">
-            <BrewHistory />
-          </div>
-        )}
-        
-        {activeView === 'profile' && (
-          <div className="flex justify-center">
+          <TabsContent value="recipes">
+            <RecipeList onStartBrewing={handleStartBrewing} />
+          </TabsContent>
+
+          {user && (
+            <TabsContent value="my-recipes">
+              <UserRecipes onStartBrewing={handleStartBrewing} />
+            </TabsContent>
+          )}
+
+          {user && (
+            <TabsContent value="coffee-beans">
+              <CoffeeBeansManager />
+            </TabsContent>
+          )}
+
+          {user && (
+            <TabsContent value="history">
+              <BrewHistory />
+            </TabsContent>
+          )}
+
+          <TabsContent value="auth">
             {user ? <UserProfile /> : <LoginForm />}
-          </div>
-        )}
-        
-        {activeView === 'brewing' && selectedRecipe && (
-          <AutoBrewingProcess 
-            recipe={selectedRecipe} 
-            onComplete={() => handleBrewingComplete(selectedRecipe)}
-          />
-        )}
-      </main>
-
+          </TabsContent>
+        </Tabs>
+      </div>
       <Footer />
     </div>
   );

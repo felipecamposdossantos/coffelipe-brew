@@ -33,8 +33,63 @@ export type Database = {
         }
         Relationships: []
       }
+      coffee_beans: {
+        Row: {
+          brand: string
+          created_at: string
+          id: string
+          name: string
+          notes: string | null
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          brand: string
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string | null
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          brand?: string
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_recipes: {
         Row: {
+          coffee_bean_id: string | null
           coffee_ratio: number
           created_at: string
           description: string
@@ -50,6 +105,7 @@ export type Database = {
           water_temperature: number | null
         }
         Insert: {
+          coffee_bean_id?: string | null
           coffee_ratio: number
           created_at?: string
           description: string
@@ -65,6 +121,7 @@ export type Database = {
           water_temperature?: number | null
         }
         Update: {
+          coffee_bean_id?: string | null
           coffee_ratio?: number
           created_at?: string
           description?: string
@@ -79,7 +136,15 @@ export type Database = {
           water_ratio?: number
           water_temperature?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_recipes_coffee_bean_id_fkey"
+            columns: ["coffee_bean_id"]
+            isOneToOne: false
+            referencedRelation: "coffee_beans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

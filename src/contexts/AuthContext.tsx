@@ -8,7 +8,7 @@ interface AuthContextType {
   session: Session | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<{ error: any }>
-  signUp: (email: string, password: string) => Promise<{ error: any }>
+  signUp: (email: string, password: string, fullName?: string) => Promise<{ error: any }>
   signOut: () => Promise<void>
 }
 
@@ -67,7 +67,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string, fullName?: string) => {
     try {
       console.log('Tentando criar conta com:', email)
       const redirectUrl = `${window.location.origin}/`
@@ -76,7 +76,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         email,
         password,
         options: {
-          emailRedirectTo: redirectUrl
+          emailRedirectTo: redirectUrl,
+          data: {
+            full_name: fullName || ''
+          }
         }
       })
       console.log('Resultado do cadastro:', result)

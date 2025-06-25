@@ -10,6 +10,7 @@ import { toast } from 'sonner'
 export const LoginForm = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [fullName, setFullName] = useState('')
   const [isLogin, setIsLogin] = useState(true)
   const [loading, setLoading] = useState(false)
   const { signIn, signUp } = useAuth()
@@ -19,6 +20,11 @@ export const LoginForm = () => {
     
     if (!email || !password) {
       toast.error('Preencha todos os campos')
+      return
+    }
+
+    if (!isLogin && !fullName.trim()) {
+      toast.error('Nome completo é obrigatório para cadastro')
       return
     }
 
@@ -41,10 +47,11 @@ export const LoginForm = () => {
           toast.success('Login realizado com sucesso!')
           setEmail('')
           setPassword('')
+          setFullName('')
         }
       } else {
         console.log('Iniciando processo de cadastro')
-        const { error } = await signUp(email, password)
+        const { error } = await signUp(email, password, fullName)
         if (error) {
           console.error('Erro no cadastro:', error)
           toast.error('Erro ao criar conta: ' + error.message)
@@ -53,6 +60,7 @@ export const LoginForm = () => {
           toast.success('Conta criada! Verifique seu email para confirmar.')
           setEmail('')
           setPassword('')
+          setFullName('')
         }
       }
     } catch (error) {
@@ -76,6 +84,19 @@ export const LoginForm = () => {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {!isLogin && (
+            <div className="space-y-2">
+              <Label htmlFor="fullName">Nome Completo</Label>
+              <Input
+                id="fullName"
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Seu nome completo"
+                required={!isLogin}
+              />
+            </div>
+          )}
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input

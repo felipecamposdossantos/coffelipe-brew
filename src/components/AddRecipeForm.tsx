@@ -10,6 +10,7 @@ import { Plus, Trash2, Save } from "lucide-react";
 import { Recipe } from "@/pages/Index";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRecipes } from "@/hooks/useUserRecipes";
+import { useCoffeeBeans } from "@/hooks/useCoffeeBeans";
 
 interface AddRecipeFormProps {
   onAddRecipe: (recipe: Recipe) => void;
@@ -31,6 +32,8 @@ const grinderOptions = [
   { brand: "Timemore C3", defaultClicks: 18 },
   { brand: "Porlex Mini", defaultClicks: 10 },
   { brand: "Mazzer Mini", defaultClicks: 8 },
+  { brand: "Fellow Ode", defaultClicks: 5 },
+  { brand: "Wilfa Uniform", defaultClicks: 12 },
   { brand: "Outro", defaultClicks: 15 }
 ];
 
@@ -44,12 +47,14 @@ export const AddRecipeForm = ({ onAddRecipe, onCancel }: AddRecipeFormProps) => 
   const [customGrinderBrand, setCustomGrinderBrand] = useState<string>("");
   const [grinderClicks, setGrinderClicks] = useState<number>(15);
   const [paperBrand, setPaperBrand] = useState<string>("");
+  const [coffeeBeanId, setCoffeeBeanId] = useState<string>("");
   const [steps, setSteps] = useState<RecipeStep[]>([
     { name: "", duration: 30, instruction: "" }
   ]);
 
   const { user } = useAuth();
   const { saveRecipe } = useUserRecipes();
+  const { coffeeBeans } = useCoffeeBeans();
 
   const addStep = () => {
     setSteps([...steps, { name: "", duration: 30, instruction: "" }]);
@@ -99,6 +104,7 @@ export const AddRecipeForm = ({ onAddRecipe, onCancel }: AddRecipeFormProps) => 
       grinderBrand: finalGrinderBrand || undefined,
       grinderClicks: finalGrinderBrand ? grinderClicks : undefined,
       paperBrand: paperBrand || undefined,
+      coffeeBeanId: coffeeBeanId || undefined,
       steps
     };
 
@@ -150,6 +156,26 @@ export const AddRecipeForm = ({ onAddRecipe, onCancel }: AddRecipeFormProps) => 
               />
             </div>
           </div>
+
+          {/* Grão de Café */}
+          {coffeeBeans.length > 0 && (
+            <div>
+              <Label htmlFor="coffeeBean">Grão de Café</Label>
+              <Select value={coffeeBeanId} onValueChange={setCoffeeBeanId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o grão de café" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Nenhum grão selecionado</SelectItem>
+                  {coffeeBeans.map((bean) => (
+                    <SelectItem key={bean.id} value={bean.id}>
+                      {bean.name} - {bean.brand} ({bean.type})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {/* Proporções e Temperatura */}
           <div className="grid grid-cols-3 gap-4">
