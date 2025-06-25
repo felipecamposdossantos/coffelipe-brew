@@ -1,6 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUserRecipes } from '@/hooks/useUserRecipes';
+import { BrewHistoryDetails } from '@/components/BrewHistoryDetails';
 import { Clock, Coffee } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -66,6 +67,7 @@ export const BrewHistory = () => {
                   </p>
                 </div>
               </div>
+              <BrewHistoryDetails brew={brew} />
             </div>
           ))}
         </div>

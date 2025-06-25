@@ -1,9 +1,12 @@
 
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useUserRecipes } from '@/hooks/useUserRecipes';
+import { EditRecipeForm } from '@/components/EditRecipeForm';
 import { Badge } from '@/components/ui/badge';
-import { Coffee, Droplets, Clock, Play, Thermometer, Settings, FileText } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Coffee, Droplets, Clock, Play, Thermometer, Settings, FileText, Edit, Trash2 } from 'lucide-react';
 import { Recipe } from '@/pages/Index';
 
 interface UserRecipesProps {
@@ -11,12 +14,28 @@ interface UserRecipesProps {
 }
 
 export const UserRecipes = ({ onStartBrewing }: UserRecipesProps) => {
-  const { userRecipes, loading } = useUserRecipes();
+  const { userRecipes, loading, deleteRecipe } = useUserRecipes();
+  const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return mins > 0 ? `${mins}min ${secs}s` : `${secs}s`;
+  };
+
+  const handleEditRecipe = (recipe: Recipe) => {
+    setEditingRecipe(recipe);
+    setShowEditDialog(true);
+  };
+
+  const handleDeleteRecipe = async (recipeId: string) => {
+    await deleteRecipe(recipeId);
+  };
+
+  const handleRecipeUpdated = () => {
+    setEditingRecipe(null);
+    setShowEditDialog(false);
   };
 
   if (loading) {
@@ -61,7 +80,44 @@ export const UserRecipes = ({ onStartBrewing }: UserRecipesProps) => {
               <CardHeader>
                 <CardTitle className="flex items-center justify-between text-coffee-800">
                   <span>{recipe.name}</span>
-                  <Coffee className="w-5 h-5 text-coffee-600" />
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEditRecipe(recipe)}
+                      className="text-coffee-600 hover:text-coffee-700"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Excluir Receita</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Tem certeza que deseja excluir a receita "{recipe.name}"? Esta ação não pode ser desfeita.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDeleteRecipe(recipe.id)}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            Excluir
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </CardTitle>
                 <p className="text-coffee-600 text-sm">{recipe.description}</p>
               </CardHeader>
@@ -137,6 +193,16 @@ export const UserRecipes = ({ onStartBrewing }: UserRecipesProps) => {
           );
         })}
       </div>
+
+      {/* Edit Recipe Dialog */}
+      {editingRecipe && (
+        <EditRecipeForm
+          recipe={editingRecipe}
+          open={showEditDialog}
+          onOpenChange={setShowEditDialog}
+          onRecipeUpdated={handleRecipeUpdated}
+        />
+      )}
     </div>
   );
 };

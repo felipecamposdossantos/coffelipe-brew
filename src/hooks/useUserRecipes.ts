@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
@@ -122,6 +121,76 @@ export const useUserRecipes = () => {
     }
   };
 
+  const updateRecipe = async (recipe: Recipe) => {
+    if (!user || !isSupabaseConfigured) {
+      toast.error('Faça login para editar receitas');
+      return false;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('user_recipes')
+        .update({
+          name: recipe.name,
+          description: recipe.description,
+          coffee_ratio: recipe.coffeeRatio,
+          water_ratio: recipe.waterRatio,
+          water_temperature: recipe.waterTemperature,
+          grinder_brand: recipe.grinderBrand,
+          grinder_clicks: recipe.grinderClicks,
+          paper_brand: recipe.paperBrand,
+          coffee_bean_id: recipe.coffeeBeanId,
+          steps: recipe.steps,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', recipe.id)
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Erro ao atualizar receita:', error);
+        toast.error('Erro ao atualizar receita');
+        return false;
+      }
+
+      toast.success('Receita atualizada com sucesso!');
+      loadUserRecipes();
+      return true;
+    } catch (error) {
+      console.error('Erro ao atualizar receita:', error);
+      toast.error('Erro ao atualizar receita');
+      return false;
+    }
+  };
+
+  const deleteRecipe = async (recipeId: string) => {
+    if (!user || !isSupabaseConfigured) {
+      toast.error('Faça login para excluir receitas');
+      return false;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('user_recipes')
+        .delete()
+        .eq('id', recipeId)
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Erro ao excluir receita:', error);
+        toast.error('Erro ao excluir receita');
+        return false;
+      }
+
+      toast.success('Receita excluída com sucesso!');
+      loadUserRecipes();
+      return true;
+    } catch (error) {
+      console.error('Erro ao excluir receita:', error);
+      toast.error('Erro ao excluir receita');
+      return false;
+    }
+  };
+
   const addToBrewHistory = async (recipe: Recipe) => {
     if (!user || !isSupabaseConfigured) return;
 
@@ -161,6 +230,8 @@ export const useUserRecipes = () => {
     brewHistory,
     loading,
     saveRecipe,
+    updateRecipe,
+    deleteRecipe,
     addToBrewHistory,
     loadUserRecipes,
     loadBrewHistory

@@ -116,7 +116,7 @@ const Index = () => {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
             <Coffee className="w-8 h-8 text-coffee-600" />
-            <h1 className="text-4xl font-bold text-coffee-800">CoffeeTimer</h1>
+            <h1 className="text-4xl font-bold text-coffee-800">CofFelipe Brew</h1>
           </div>
           <p className="text-coffee-600 text-lg">
             Seu companheiro para o café perfeito

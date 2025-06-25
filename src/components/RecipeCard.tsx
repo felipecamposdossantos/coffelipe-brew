@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Coffee, Droplets, Clock, Play, Thermometer, Settings, FileText } from "lucide-react";
 import { Recipe } from "@/pages/Index";
+import { useCoffeeBeans } from "@/hooks/useCoffeeBeans";
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -28,6 +29,9 @@ const grinderOptions = [
 export const RecipeCard = ({ recipe, onStartBrewing }: RecipeCardProps) => {
   const [selectedGrinder, setSelectedGrinder] = useState(recipe.grinderBrand || "");
   const [selectedClicks, setSelectedClicks] = useState(recipe.grinderClicks || 15);
+  const [selectedCoffeeBeanId, setSelectedCoffeeBeanId] = useState(recipe.coffeeBeanId || "");
+
+  const { coffeeBeans } = useCoffeeBeans();
 
   const totalTime = recipe.steps.reduce((acc, step) => acc + step.duration, 0);
   
@@ -49,7 +53,8 @@ export const RecipeCard = ({ recipe, onStartBrewing }: RecipeCardProps) => {
     const updatedRecipe = {
       ...recipe,
       grinderBrand: selectedGrinder || recipe.grinderBrand,
-      grinderClicks: selectedClicks || recipe.grinderClicks
+      grinderClicks: selectedClicks || recipe.grinderClicks,
+      coffeeBeanId: selectedCoffeeBeanId || recipe.coffeeBeanId
     };
     onStartBrewing(updatedRecipe, mode);
   };
@@ -76,6 +81,26 @@ export const RecipeCard = ({ recipe, onStartBrewing }: RecipeCardProps) => {
             <span className="text-sm font-medium">{recipe.waterRatio}ml água</span>
           </div>
         </div>
+
+        {/* Coffee Bean Selection */}
+        {coffeeBeans.length > 0 && (
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-coffee-700">Grão de Café</label>
+            <Select value={selectedCoffeeBeanId} onValueChange={setSelectedCoffeeBeanId}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Selecione seu grão de café" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Nenhum grão selecionado</SelectItem>
+                {coffeeBeans.map((bean) => (
+                  <SelectItem key={bean.id} value={bean.id}>
+                    {bean.name} - {bean.brand} ({bean.type})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         {/* Grinder Selection */}
         <div className="space-y-2">
