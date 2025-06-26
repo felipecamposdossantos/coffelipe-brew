@@ -6,11 +6,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, Save } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, Save } from "lucide-react";
 import { Recipe } from "@/pages/Index";
-import { useAuth } from "@/contexts/AuthContext";
 import { useUserRecipes } from "@/hooks/useUserRecipes";
 import { useCoffeeBeans } from "@/hooks/useCoffeeBeans";
+import { toast } from "sonner";
 
 interface AddRecipeFormProps {
   onAddRecipe: (recipe: Recipe) => void;
@@ -21,6 +21,7 @@ interface RecipeStep {
   name: string;
   duration: number;
   instruction: string;
+  waterAmount?: number;
 }
 
 const grinderOptions = [
@@ -40,24 +41,23 @@ const grinderOptions = [
 export const AddRecipeForm = ({ onAddRecipe, onCancel }: AddRecipeFormProps) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [coffeeRatio, setCoffeeRatio] = useState<number>(20);
-  const [waterRatio, setWaterRatio] = useState<number>(300);
-  const [waterTemperature, setWaterTemperature] = useState<number>(94);
-  const [grinderBrand, setGrinderBrand] = useState<string>("none");
-  const [customGrinderBrand, setCustomGrinderBrand] = useState<string>("");
-  const [grinderClicks, setGrinderClicks] = useState<number>(15);
-  const [paperBrand, setPaperBrand] = useState<string>("");
-  const [coffeeBeanId, setCoffeeBeanId] = useState<string>("none");
+  const [coffeeRatio, setCoffeeRatio] = useState(20);
+  const [waterRatio, setWaterRatio] = useState(300);
+  const [waterTemperature, setWaterTemperature] = useState(94);
+  const [grinderBrand, setGrinderBrand] = useState("none");
+  const [customGrinderBrand, setCustomGrinderBrand] = useState("");
+  const [grinderClicks, setGrinderClicks] = useState(15);
+  const [paperBrand, setPaperBrand] = useState("");
+  const [coffeeBeanId, setCoffeeBeanId] = useState("none");
   const [steps, setSteps] = useState<RecipeStep[]>([
-    { name: "", duration: 30, instruction: "" }
+    { name: "Pré-infusão", duration: 30, instruction: "Molhe o café com água quente", waterAmount: 40 }
   ]);
 
-  const { user } = useAuth();
   const { saveRecipe } = useUserRecipes();
   const { coffeeBeans } = useCoffeeBeans();
 
   const addStep = () => {
-    setSteps([...steps, { name: "", duration: 30, instruction: "" }]);
+    setSteps([...steps, { name: "", duration: 30, instruction: "", waterAmount: 0 }]);
   };
 
   const removeStep = (index: number) => {
@@ -88,14 +88,14 @@ export const AddRecipeForm = ({ onAddRecipe, onCancel }: AddRecipeFormProps) => 
     e.preventDefault();
     
     if (!name.trim() || !description.trim() || steps.some(step => !step.name.trim() || !step.instruction.trim())) {
-      alert("Por favor, preencha todos os campos obrigatórios.");
+      toast.error("Por favor, preencha todos os campos obrigatórios.");
       return;
     }
 
     const finalGrinderBrand = grinderBrand === "Outro" ? customGrinderBrand : (grinderBrand === "none" ? undefined : grinderBrand);
 
     const newRecipe: Recipe = {
-      id: `custom-${Date.now()}`,
+      id: `recipe-${Date.now()}`,
       name,
       description,
       coffeeRatio,
@@ -108,39 +108,41 @@ export const AddRecipeForm = ({ onAddRecipe, onCancel }: AddRecipeFormProps) => 
       steps
     };
 
-    // Se o usuário estiver logado, salvar no banco
-    if (user) {
-      const saved = await saveRecipe(newRecipe);
-      if (saved) {
-        onAddRecipe(newRecipe);
-      }
-    } else {
-      // Se não estiver logado, apenas adicionar localmente
+    const success = await saveRecipe(newRecipe);
+    if (success) {
       onAddRecipe(newRecipe);
     }
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle className="text-coffee-800">Adicionar Nova Receita</CardTitle>
-        {!user && (
-          <p className="text-sm text-amber-600">
-            ⚠️ Faça login para salvar suas receitas permanentemente
-          </p>
-        )}
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Informações Básicas */}
-          <div className="space-y-4">
+    <div className="max-w-4xl mx-auto space-y-6 px-4 sm:px-0">
+      <div className="flex items-center gap-4 mb-6">
+        <Button
+          onClick={onCancel}
+          variant="outline"
+          size="sm"
+          className="text-coffee-600 border-coffee-300 hover:bg-coffee-50"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Voltar
+        </Button>
+        <h1 className="text-2xl sm:text-3xl font-bold text-coffee-800">Nova Receita</h1>
+      </div>
+      
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Informações Básicas */}
+        <Card className="border-coffee-200">
+          <CardHeader>
+            <CardTitle className="text-coffee-800">Informações Básicas</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div>
               <Label htmlFor="name">Nome da Receita *</Label>
               <Input
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Ex: Meu V60 Especial"
+                placeholder="Ex: V60 Especial"
                 required
               />
             </div>
@@ -151,72 +153,91 @@ export const AddRecipeForm = ({ onAddRecipe, onCancel }: AddRecipeFormProps) => 
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Descreva seu método de preparo..."
+                placeholder="Descreva sua receita..."
                 required
               />
             </div>
-          </div>
+          </CardContent>
+        </Card>
 
-          {/* Grão de Café */}
-          {coffeeBeans.length > 0 && (
-            <div>
-              <Label htmlFor="coffeeBean">Grão de Café</Label>
-              <Select value={coffeeBeanId} onValueChange={setCoffeeBeanId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o grão de café" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Nenhum grão selecionado</SelectItem>
-                  {coffeeBeans.map((bean) => (
-                    <SelectItem key={bean.id} value={bean.id}>
-                      {bean.name} - {bean.brand} ({bean.type})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+        {/* Grão de Café */}
+        {coffeeBeans.length > 0 && (
+          <Card className="border-coffee-200">
+            <CardHeader>
+              <CardTitle className="text-coffee-800">Grão de Café</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div>
+                <Label htmlFor="coffeeBean">Grão de Café</Label>
+                <Select value={coffeeBeanId} onValueChange={setCoffeeBeanId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o grão de café" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Nenhum grão selecionado</SelectItem>
+                    {coffeeBeans.map((bean) => (
+                      <SelectItem key={bean.id} value={bean.id}>
+                        {bean.name} - {bean.brand} ({bean.type})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-          {/* Proporções e Temperatura */}
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="coffee">Café (gramas) *</Label>
-              <Input
-                id="coffee"
-                type="number"
-                value={coffeeRatio}
-                onChange={(e) => setCoffeeRatio(Number(e.target.value))}
-                min="1"
-                required
-              />
+        {/* Proporções e Temperatura */}
+        <Card className="border-coffee-200">
+          <CardHeader>
+            <CardTitle className="text-coffee-800">Proporções e Temperatura</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="coffee">Café (gramas) *</Label>
+                <Input
+                  id="coffee"
+                  type="number"
+                  value={coffeeRatio}
+                  onChange={(e) => setCoffeeRatio(Number(e.target.value))}
+                  min="1"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="water">Água (ml) *</Label>
+                <Input
+                  id="water"
+                  type="number"
+                  value={waterRatio}
+                  onChange={(e) => setWaterRatio(Number(e.target.value))}
+                  min="1"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="temperature">Temperatura (°C)</Label>
+                <Input
+                  id="temperature"
+                  type="number"
+                  value={waterTemperature}
+                  onChange={(e) => setWaterTemperature(Number(e.target.value))}
+                  min="80"
+                  max="100"
+                />
+              </div>
             </div>
-            <div>
-              <Label htmlFor="water">Água (ml) *</Label>
-              <Input
-                id="water"
-                type="number"
-                value={waterRatio}
-                onChange={(e) => setWaterRatio(Number(e.target.value))}
-                min="1"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="temperature">Temperatura (°C)</Label>
-              <Input
-                id="temperature"
-                type="number"
-                value={waterTemperature}
-                onChange={(e) => setWaterTemperature(Number(e.target.value))}
-                min="80"
-                max="100"
-                placeholder="94"
-              />
-            </div>
-          </div>
+          </CardContent>
+        </Card>
 
-          {/* Moedor */}
-          <div className="space-y-4">
+        {/* Equipamentos */}
+        <Card className="border-coffee-200">
+          <CardHeader>
+            <CardTitle className="text-coffee-800">Equipamentos</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Moedor */}
             <div>
               <Label htmlFor="grinder">Moedor</Label>
               <Select value={grinderBrand} onValueChange={handleGrinderChange}>
@@ -258,23 +279,25 @@ export const AddRecipeForm = ({ onAddRecipe, onCancel }: AddRecipeFormProps) => 
                 />
               </div>
             )}
-          </div>
 
-          {/* Papel */}
-          <div>
-            <Label htmlFor="paper">Marca do Papel</Label>
-            <Input
-              id="paper"
-              value={paperBrand}
-              onChange={(e) => setPaperBrand(e.target.value)}
-              placeholder="Ex: Hario V60, Chemex Original, etc."
-            />
-          </div>
+            {/* Papel */}
+            <div>
+              <Label htmlFor="paper">Marca do Papel</Label>
+              <Input
+                id="paper"
+                value={paperBrand}
+                onChange={(e) => setPaperBrand(e.target.value)}
+                placeholder="Ex: Hario V60, Chemex Original, etc."
+              />
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Etapas */}
-          <div className="space-y-4">
+        {/* Etapas */}
+        <Card className="border-coffee-200">
+          <CardHeader>
             <div className="flex items-center justify-between">
-              <Label>Etapas de Preparo *</Label>
+              <CardTitle className="text-coffee-800">Etapas de Preparo *</CardTitle>
               <Button
                 type="button"
                 onClick={addStep}
@@ -285,83 +308,100 @@ export const AddRecipeForm = ({ onAddRecipe, onCancel }: AddRecipeFormProps) => 
                 Adicionar Etapa
               </Button>
             </div>
-            
-            {steps.map((step, index) => (
-              <Card key={index} className="border-coffee-200">
-                <CardContent className="pt-4">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-1 space-y-3">
-                      <div>
-                        <Label htmlFor={`step-name-${index}`}>Nome da Etapa</Label>
-                        <Input
-                          id={`step-name-${index}`}
-                          value={step.name}
-                          onChange={(e) => updateStep(index, 'name', e.target.value)}
-                          placeholder="Ex: Pré-infusão"
-                          required
-                        />
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor={`step-duration-${index}`}>Duração (segundos)</Label>
-                        <Input
-                          id={`step-duration-${index}`}
-                          type="number"
-                          value={step.duration}
-                          onChange={(e) => updateStep(index, 'duration', Number(e.target.value))}
-                          min="1"
-                          required
-                        />
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor={`step-instruction-${index}`}>Instruções</Label>
-                        <Textarea
-                          id={`step-instruction-${index}`}
-                          value={step.instruction}
-                          onChange={(e) => updateStep(index, 'instruction', e.target.value)}
-                          placeholder="Descreva o que fazer nesta etapa..."
-                          required
-                        />
-                      </div>
-                    </div>
-                    
-                    {steps.length > 1 && (
-                      <Button
-                        type="button"
-                        onClick={() => removeStep(index)}
-                        size="sm"
-                        variant="outline"
-                        className="mt-6 text-red-600 border-red-300 hover:bg-red-50"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {steps.map((step, index) => (
+                <Card key={index} className="border border-coffee-100">
+                  <CardContent className="pt-4">
+                    <div className="flex items-start gap-4">
+                      <div className="flex-1 space-y-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <Label htmlFor={`step-name-${index}`}>Nome da Etapa</Label>
+                            <Input
+                              id={`step-name-${index}`}
+                              value={step.name}
+                              onChange={(e) => updateStep(index, 'name', e.target.value)}
+                              placeholder="Ex: Pré-infusão"
+                              required
+                            />
+                          </div>
+                          
+                          <div>
+                            <Label htmlFor={`step-duration-${index}`}>Duração (segundos)</Label>
+                            <Input
+                              id={`step-duration-${index}`}
+                              type="number"
+                              value={step.duration}
+                              onChange={(e) => updateStep(index, 'duration', Number(e.target.value))}
+                              min="1"
+                              required
+                            />
+                          </div>
+                        </div>
 
-          <div className="flex gap-3 pt-4">
-            <Button
-              type="submit"
-              className="flex-1 bg-coffee-600 hover:bg-coffee-700"
-            >
-              <Save className="w-4 h-4 mr-2" />
-              Salvar Receita
-            </Button>
-            <Button
-              type="button"
-              onClick={onCancel}
-              variant="outline"
-              className="flex-1"
-            >
-              Cancelar
-            </Button>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+                        <div>
+                          <Label htmlFor={`step-water-${index}`}>Quantidade de Água (ml)</Label>
+                          <Input
+                            id={`step-water-${index}`}
+                            type="number"
+                            value={step.waterAmount || 0}
+                            onChange={(e) => updateStep(index, 'waterAmount', Number(e.target.value))}
+                            min="0"
+                            placeholder="Digite a quantidade em ml"
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor={`step-instruction-${index}`}>Instruções</Label>
+                          <Textarea
+                            id={`step-instruction-${index}`}
+                            value={step.instruction}
+                            onChange={(e) => updateStep(index, 'instruction', e.target.value)}
+                            placeholder="Descreva o que fazer nesta etapa..."
+                            required
+                          />
+                        </div>
+                      </div>
+                      
+                      {steps.length > 1 && (
+                        <Button
+                          type="button"
+                          onClick={() => removeStep(index)}
+                          size="sm"
+                          variant="outline"
+                          className="mt-6 text-red-600 border-red-300 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="flex gap-3 pt-4">
+          <Button
+            type="submit"
+            className="flex-1 bg-coffee-600 hover:bg-coffee-700"
+          >
+            <Save className="w-4 h-4 mr-2" />
+            Salvar Receita
+          </Button>
+          <Button
+            type="button"
+            onClick={onCancel}
+            variant="outline"
+            className="flex-1"
+          >
+            Cancelar
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 };

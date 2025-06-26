@@ -24,6 +24,7 @@ interface RecipeStep {
   name: string;
   duration: number;
   instruction: string;
+  waterAmount?: number;
 }
 
 const grinderOptions = [
@@ -57,7 +58,7 @@ export const EditRecipeForm = ({ recipe, open, onOpenChange, onRecipeUpdated }: 
   const { coffeeBeans } = useCoffeeBeans();
 
   const addStep = () => {
-    setSteps([...steps, { name: "", duration: 30, instruction: "" }]);
+    setSteps([...steps, { name: "", duration: 30, instruction: "", waterAmount: 0 }]);
   };
 
   const removeStep = (index: number) => {
@@ -279,26 +280,40 @@ export const EditRecipeForm = ({ recipe, open, onOpenChange, onRecipeUpdated }: 
                 <CardContent className="pt-4">
                   <div className="flex items-start gap-4">
                     <div className="flex-1 space-y-3">
-                      <div>
-                        <Label htmlFor={`step-name-${index}`}>Nome da Etapa</Label>
-                        <Input
-                          id={`step-name-${index}`}
-                          value={step.name}
-                          onChange={(e) => updateStep(index, 'name', e.target.value)}
-                          placeholder="Ex: Pré-infusão"
-                          required
-                        />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <Label htmlFor={`step-name-${index}`}>Nome da Etapa</Label>
+                          <Input
+                            id={`step-name-${index}`}
+                            value={step.name}
+                            onChange={(e) => updateStep(index, 'name', e.target.value)}
+                            placeholder="Ex: Pré-infusão"
+                            required
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor={`step-duration-${index}`}>Duração (segundos)</Label>
+                          <Input
+                            id={`step-duration-${index}`}
+                            type="number"
+                            value={step.duration}
+                            onChange={(e) => updateStep(index, 'duration', Number(e.target.value))}
+                            min="1"
+                            required
+                          />
+                        </div>
                       </div>
-                      
+
                       <div>
-                        <Label htmlFor={`step-duration-${index}`}>Duração (segundos)</Label>
+                        <Label htmlFor={`step-water-${index}`}>Quantidade de Água (ml)</Label>
                         <Input
-                          id={`step-duration-${index}`}
+                          id={`step-water-${index}`}
                           type="number"
-                          value={step.duration}
-                          onChange={(e) => updateStep(index, 'duration', Number(e.target.value))}
-                          min="1"
-                          required
+                          value={step.waterAmount || 0}
+                          onChange={(e) => updateStep(index, 'waterAmount', Number(e.target.value))}
+                          min="0"
+                          placeholder="Digite a quantidade em ml"
                         />
                       </div>
                       

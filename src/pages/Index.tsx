@@ -135,11 +135,7 @@ const Index = () => {
             className="flex items-center justify-center gap-3 mb-4 cursor-pointer hover:opacity-80 transition-opacity"
             onClick={handleLogoClick}
           >
-            <img 
-              src="/lovable-uploads/49af2e43-3983-4eab-85c9-d3cd8c4e7deb.png" 
-              alt="CofFelipe Brew Logo" 
-              className="w-12 h-12 object-contain"
-            />
+            <Coffee className="w-10 h-10 sm:w-12 sm:h-12 text-coffee-600" />
             <h1 className="text-3xl sm:text-4xl font-bold text-coffee-800">CofFelipe Brew</h1>
           </div>
           <p className="text-coffee-600 text-base sm:text-lg">
