@@ -38,11 +38,17 @@ export const UserRecipes = ({ onStartBrewing }: UserRecipesProps) => {
     setShowEditDialog(false);
   };
 
+  const getCumulativeWaterAmount = (recipe: Recipe, stepIndex: number) => {
+    return recipe.steps.slice(0, stepIndex + 1).reduce((total, step) => {
+      return total + (step.waterAmount || 0);
+    }, 0);
+  };
+
   if (loading) {
     return (
       <div className="space-y-6">
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-coffee-800 mb-2">Minhas Receitas</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-coffee-800 mb-2">Minhas Receitas</h2>
           <p className="text-coffee-600">Carregando suas receitas...</p>
         </div>
       </div>
@@ -52,9 +58,9 @@ export const UserRecipes = ({ onStartBrewing }: UserRecipesProps) => {
   if (userRecipes.length === 0) {
     return (
       <div className="space-y-6">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-coffee-800 mb-2">Minhas Receitas</h2>
-          <p className="text-coffee-600">
+        <div className="text-center px-4">
+          <h2 className="text-2xl sm:text-3xl font-bold text-coffee-800 mb-2">Minhas Receitas</h2>
+          <p className="text-coffee-600 text-sm sm:text-base">
             Você ainda não salvou nenhuma receita. Vá para a aba "Receitas" e clique em "Adicionar Minha Receita" para começar!
           </p>
         </div>
@@ -63,43 +69,43 @@ export const UserRecipes = ({ onStartBrewing }: UserRecipesProps) => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 sm:px-0">
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-coffee-800 mb-2">Minhas Receitas</h2>
-        <p className="text-coffee-600">
+        <h2 className="text-2xl sm:text-3xl font-bold text-coffee-800 mb-2">Minhas Receitas</h2>
+        <p className="text-coffee-600 text-sm sm:text-base">
           {userRecipes.length} receita{userRecipes.length !== 1 ? 's' : ''} salva{userRecipes.length !== 1 ? 's' : ''}
         </p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {userRecipes.map((recipe) => {
           const totalTime = recipe.steps.reduce((acc, step) => acc + step.duration, 0);
           
           return (
             <Card key={recipe.id} className="bg-white shadow-lg hover:shadow-xl transition-shadow duration-300 border-coffee-200">
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between text-coffee-800">
-                  <span>{recipe.name}</span>
-                  <div className="flex gap-2">
+              <CardHeader className="pb-2 sm:pb-4">
+                <CardTitle className="flex items-start justify-between text-coffee-800 gap-2">
+                  <span className="text-sm sm:text-base leading-tight">{recipe.name}</span>
+                  <div className="flex gap-1 flex-shrink-0">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleEditRecipe(recipe)}
-                      className="text-coffee-600 hover:text-coffee-700"
+                      className="text-coffee-600 hover:text-coffee-700 h-8 w-8 p-0"
                     >
-                      <Edit className="w-4 h-4" />
+                      <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button
                           variant="outline"
                           size="sm"
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                         </Button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent>
+                      <AlertDialogContent className="mx-4 sm:mx-0">
                         <AlertDialogHeader>
                           <AlertDialogTitle>Excluir Receita</AlertDialogTitle>
                           <AlertDialogDescription>
@@ -119,42 +125,42 @@ export const UserRecipes = ({ onStartBrewing }: UserRecipesProps) => {
                     </AlertDialog>
                   </div>
                 </CardTitle>
-                <p className="text-coffee-600 text-sm">{recipe.description}</p>
+                <p className="text-coffee-600 text-xs sm:text-sm leading-relaxed">{recipe.description}</p>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-3 sm:space-y-4">
                 {/* Ratio Info */}
-                <div className="flex items-center justify-between bg-coffee-50 p-3 rounded-lg">
+                <div className="flex items-center justify-between bg-coffee-50 p-2 sm:p-3 rounded-lg">
                   <div className="flex items-center gap-2">
-                    <Coffee className="w-4 h-4 text-coffee-600" />
-                    <span className="text-sm font-medium">{recipe.coffeeRatio}g café</span>
+                    <Coffee className="w-3 h-3 sm:w-4 sm:h-4 text-coffee-600" />
+                    <span className="text-xs sm:text-sm font-medium">{recipe.coffeeRatio}g café</span>
                   </div>
                   <div className="text-coffee-400">:</div>
                   <div className="flex items-center gap-2">
-                    <Droplets className="w-4 h-4 text-blue-500" />
-                    <span className="text-sm font-medium">{recipe.waterRatio}ml água</span>
+                    <Droplets className="w-3 h-3 sm:w-4 sm:h-4 text-blue-500" />
+                    <span className="text-xs sm:text-sm font-medium">{recipe.waterRatio}ml água</span>
                   </div>
                 </div>
 
                 {/* Additional Info */}
-                <div className="space-y-2">
+                <div className="space-y-1 sm:space-y-2">
                   {recipe.waterTemperature && (
-                    <div className="flex items-center gap-2 text-sm text-coffee-600">
-                      <Thermometer className="w-4 h-4" />
+                    <div className="flex items-center gap-2 text-xs sm:text-sm text-coffee-600">
+                      <Thermometer className="w-3 h-3 sm:w-4 sm:h-4" />
                       <span>{recipe.waterTemperature}°C</span>
                     </div>
                   )}
                   
                   {recipe.grinderBrand && recipe.grinderClicks && (
-                    <div className="flex items-center gap-2 text-sm text-coffee-600">
-                      <Settings className="w-4 h-4" />
-                      <span>{recipe.grinderBrand}: {recipe.grinderClicks} clicks</span>
+                    <div className="flex items-center gap-2 text-xs sm:text-sm text-coffee-600">
+                      <Settings className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <span className="truncate">{recipe.grinderBrand}: {recipe.grinderClicks} clicks</span>
                     </div>
                   )}
                   
                   {recipe.paperBrand && (
-                    <div className="flex items-center gap-2 text-sm text-coffee-600">
-                      <FileText className="w-4 h-4" />
-                      <span>Papel: {recipe.paperBrand}</span>
+                    <div className="flex items-center gap-2 text-xs sm:text-sm text-coffee-600">
+                      <FileText className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <span className="truncate">Papel: {recipe.paperBrand}</span>
                     </div>
                   )}
                 </div>
@@ -162,11 +168,32 @@ export const UserRecipes = ({ onStartBrewing }: UserRecipesProps) => {
                 {/* Steps Preview */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-coffee-600" />
-                    <span className="text-sm font-medium text-coffee-700">
+                    <Clock className="w-3 h-3 sm:w-4 sm:h-4 text-coffee-600" />
+                    <span className="text-xs sm:text-sm font-medium text-coffee-700">
                       {recipe.steps.length} etapas • {formatTime(totalTime)}
                     </span>
                   </div>
+                  
+                  {/* Water amounts per step */}
+                  {recipe.steps.some(step => step.waterAmount) && (
+                    <div className="space-y-1">
+                      <span className="text-xs text-coffee-600 font-medium">Quantidades de água:</span>
+                      <div className="flex flex-wrap gap-1">
+                        {recipe.steps.map((step, index) => (
+                          step.waterAmount ? (
+                            <Badge 
+                              key={index} 
+                              variant="outline" 
+                              className="text-xs border-blue-300 text-blue-600"
+                            >
+                              {step.waterAmount}ml ({getCumulativeWaterAmount(recipe, index)}ml)
+                            </Badge>
+                          ) : null
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
                   <div className="flex flex-wrap gap-1">
                     {recipe.steps.map((step, index) => (
                       <Badge 
@@ -184,8 +211,9 @@ export const UserRecipes = ({ onStartBrewing }: UserRecipesProps) => {
                 <Button 
                   onClick={() => onStartBrewing(recipe)}
                   className="w-full bg-coffee-600 hover:bg-coffee-700 text-white"
+                  size="sm"
                 >
-                  <Play className="w-4 h-4 mr-2" />
+                  <Play className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                   Iniciar Preparo
                 </Button>
               </CardContent>

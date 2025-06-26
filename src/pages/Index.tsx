@@ -30,6 +30,7 @@ export interface Recipe {
     name: string;
     duration: number;
     instruction: string;
+    waterAmount?: number;
   }>;
 }
 
@@ -53,6 +54,11 @@ const Index = () => {
     setActiveTab("recipes");
   };
 
+  const handleLogoClick = () => {
+    setCurrentRecipe(null);
+    setActiveTab("recipes");
+  };
+
   if (loading) {
     console.log('Index: Showing loading screen');
     return (
@@ -70,9 +76,9 @@ const Index = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 p-4">
         <div className="container mx-auto py-8">
-          <div className="mb-6 flex justify-between items-center">
+          <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h1 className="text-4xl font-bold text-coffee-800 mb-2">
+              <h1 className="text-2xl sm:text-4xl font-bold text-coffee-800 mb-2">
                 Preparando: {currentRecipe.name}
               </h1>
               <div className="flex gap-2">
@@ -80,6 +86,7 @@ const Index = () => {
                   variant={brewingMode === 'auto' ? 'default' : 'outline'}
                   onClick={() => setBrewingMode('auto')}
                   className={brewingMode === 'auto' ? 'bg-coffee-600 hover:bg-coffee-700' : ''}
+                  size="sm"
                 >
                   Automático
                 </Button>
@@ -87,6 +94,7 @@ const Index = () => {
                   variant={brewingMode === 'manual' ? 'default' : 'outline'}
                   onClick={() => setBrewingMode('manual')}
                   className={brewingMode === 'manual' ? 'bg-coffee-600 hover:bg-coffee-700' : ''}
+                  size="sm"
                 >
                   Manual
                 </Button>
@@ -95,6 +103,7 @@ const Index = () => {
             <Button 
               onClick={handleCompleteBrewing}
               variant="outline"
+              size="sm"
             >
               Voltar
             </Button>
@@ -122,22 +131,43 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100">
       <div className="container mx-auto px-4 py-8">
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Coffee className="w-8 h-8 text-coffee-600" />
-            <h1 className="text-4xl font-bold text-coffee-800">CofFelipe Brew</h1>
+          <div 
+            className="flex items-center justify-center gap-3 mb-4 cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={handleLogoClick}
+          >
+            <img 
+              src="/lovable-uploads/49af2e43-3983-4eab-85c9-d3cd8c4e7deb.png" 
+              alt="CofFelipe Brew Logo" 
+              className="w-12 h-12 object-contain"
+            />
+            <h1 className="text-3xl sm:text-4xl font-bold text-coffee-800">CofFelipe Brew</h1>
           </div>
-          <p className="text-coffee-600 text-lg">
-            Seu companheiro para o café perfeito
+          <p className="text-coffee-600 text-base sm:text-lg">
+            Seu site de gerenciamento de receitas
           </p>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-8">
-            <TabsTrigger value="recipes">Receitas</TabsTrigger>
-            {user && <TabsTrigger value="my-recipes">Minhas Receitas</TabsTrigger>}
-            {user && <TabsTrigger value="coffee-beans">Grãos</TabsTrigger>}
-            {user && <TabsTrigger value="history">Histórico</TabsTrigger>}
-            <TabsTrigger value="auth">
+          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5 mb-8 h-auto">
+            <TabsTrigger value="recipes" className="text-xs sm:text-sm p-2 sm:p-3">
+              Receitas
+            </TabsTrigger>
+            {user && (
+              <TabsTrigger value="my-recipes" className="text-xs sm:text-sm p-2 sm:p-3">
+                Minhas Receitas
+              </TabsTrigger>
+            )}
+            {user && (
+              <TabsTrigger value="coffee-beans" className="text-xs sm:text-sm p-2 sm:p-3">
+                Grãos
+              </TabsTrigger>
+            )}
+            {user && (
+              <TabsTrigger value="history" className="text-xs sm:text-sm p-2 sm:p-3">
+                Histórico
+              </TabsTrigger>
+            )}
+            <TabsTrigger value="auth" className="text-xs sm:text-sm p-2 sm:p-3">
               {user ? <Settings className="w-4 h-4" /> : "Login"}
             </TabsTrigger>
           </TabsList>
