@@ -10,6 +10,9 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: any }>
   signUp: (email: string, password: string, fullName?: string) => Promise<{ error: any }>
   signOut: () => Promise<void>
+  updateProfile: (fullName: string) => Promise<{ error: any }>
+  updateEmail: (email: string) => Promise<{ error: any }>
+  updatePassword: (password: string) => Promise<{ error: any }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -28,28 +31,48 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    let mounted = true
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.email)
-        setSession(session)
-        setUser(session?.user ?? null)
-        setLoading(false)
+        if (mounted) {
+          setSession(session)
+          setUser(session?.user ?? null)
+          setLoading(false)
+        }
       }
     )
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
-      if (error) {
-        console.error('Erro ao obter sessão:', error)
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        if (error) {
+          console.error('Erro ao obter sessão:', error)
+        } else {
+          console.log('Initial session:', session?.user?.email)
+        }
+        if (mounted) {
+          setSession(session)
+          setUser(session?.user ?? null)
+          setLoading(false)
+        }
+      } catch (error) {
+        console.error('Erro ao verificar sessão:', error)
+        if (mounted) {
+          setLoading(false)
+        }
       }
-      console.log('Initial session:', session?.user?.email)
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
+    }
 
-    return () => subscription.unsubscribe()
+    getInitialSession()
+
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
   }, [])
 
   const signIn = async (email: string, password: string) => {
@@ -99,6 +122,50 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
+  const updateProfile = async (fullName: string) => {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        data: { full_name: fullName }
+      })
+      
+      if (!error && user) {
+        // Atualizar também na tabela profiles
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .upsert({ id: user.id, full_name: fullName })
+        
+        if (profileError) {
+          console.error('Erro ao atualizar perfil:', profileError)
+        }
+      }
+      
+      return { error }
+    } catch (error) {
+      console.error('Erro ao atualizar perfil:', error)
+      return { error: { message: 'Erro de conexão' } }
+    }
+  }
+
+  const updateEmail = async (email: string) => {
+    try {
+      const { error } = await supabase.auth.updateUser({ email })
+      return { error }
+    } catch (error) {
+      console.error('Erro ao atualizar email:', error)
+      return { error: { message: 'Erro de conexão' } }
+    }
+  }
+
+  const updatePassword = async (password: string) => {
+    try {
+      const { error } = await supabase.auth.updateUser({ password })
+      return { error }
+    } catch (error) {
+      console.error('Erro ao atualizar senha:', error)
+      return { error: { message: 'Erro de conexão' } }
+    }
+  }
+
   const value = {
     user,
     session,
@@ -106,6 +173,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     signIn,
     signUp,
     signOut,
+    updateProfile,
+    updateEmail,
+    updatePassword,
   }
 
   return (

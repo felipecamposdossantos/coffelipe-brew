@@ -3,6 +3,8 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Coffee, Droplets, Clock, Play, Thermometer, Settings, FileText } from "lucide-react";
 import { Recipe } from "@/pages/Index";
@@ -30,6 +32,10 @@ export const RecipeCard = ({ recipe, onStartBrewing }: RecipeCardProps) => {
   const [selectedGrinder, setSelectedGrinder] = useState(recipe.grinderBrand || "");
   const [selectedClicks, setSelectedClicks] = useState(recipe.grinderClicks || 15);
   const [selectedCoffeeBeanId, setSelectedCoffeeBeanId] = useState(recipe.coffeeBeanId || "");
+  const [selectedPaper, setSelectedPaper] = useState(recipe.paperBrand || "");
+  const [customGrinder, setCustomGrinder] = useState("");
+  const [customClicks, setCustomClicks] = useState(15);
+  const [useCustomGrinder, setUseCustomGrinder] = useState(false);
 
   const { coffeeBeans } = useCoffeeBeans();
 
@@ -42,19 +48,29 @@ export const RecipeCard = ({ recipe, onStartBrewing }: RecipeCardProps) => {
   };
 
   const handleGrinderChange = (value: string) => {
-    setSelectedGrinder(value);
-    const grinder = grinderOptions.find(g => g.brand === value);
-    if (grinder) {
-      setSelectedClicks(grinder.defaultClicks);
+    if (value === "custom") {
+      setUseCustomGrinder(true);
+      setSelectedGrinder("");
+    } else {
+      setUseCustomGrinder(false);
+      setSelectedGrinder(value);
+      const grinder = grinderOptions.find(g => g.brand === value);
+      if (grinder) {
+        setSelectedClicks(grinder.defaultClicks);
+      }
     }
   };
 
   const handleStartBrewing = (mode: 'auto' | 'manual') => {
+    const finalGrinder = useCustomGrinder ? customGrinder : selectedGrinder;
+    const finalClicks = useCustomGrinder ? customClicks : selectedClicks;
+    
     const updatedRecipe = {
       ...recipe,
-      grinderBrand: selectedGrinder || recipe.grinderBrand,
-      grinderClicks: selectedClicks || recipe.grinderClicks,
-      coffeeBeanId: selectedCoffeeBeanId || recipe.coffeeBeanId
+      grinderBrand: finalGrinder || recipe.grinderBrand,
+      grinderClicks: finalClicks || recipe.grinderClicks,
+      coffeeBeanId: selectedCoffeeBeanId || recipe.coffeeBeanId,
+      paperBrand: selectedPaper || recipe.paperBrand
     };
     onStartBrewing(updatedRecipe, mode);
   };
@@ -85,13 +101,13 @@ export const RecipeCard = ({ recipe, onStartBrewing }: RecipeCardProps) => {
         {/* Coffee Bean Selection */}
         {coffeeBeans.length > 0 && (
           <div className="space-y-2">
-            <label className="text-sm font-medium text-coffee-700">Grão de Café</label>
+            <Label className="text-sm font-medium text-coffee-700">Grão de Café</Label>
             <Select value={selectedCoffeeBeanId} onValueChange={setSelectedCoffeeBeanId}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Selecione seu grão de café" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Nenhum grão selecionado</SelectItem>
+                <SelectItem value="">Usar grão padrão</SelectItem>
                 {coffeeBeans.map((bean) => (
                   <SelectItem key={bean.id} value={bean.id}>
                     {bean.name} - {bean.brand} ({bean.type})
@@ -102,10 +118,21 @@ export const RecipeCard = ({ recipe, onStartBrewing }: RecipeCardProps) => {
           </div>
         )}
 
+        {/* Paper Brand Selection */}
+        <div className="space-y-2">
+          <Label className="text-sm font-medium text-coffee-700">Papel do Filtro</Label>
+          <Input
+            value={selectedPaper}
+            onChange={(e) => setSelectedPaper(e.target.value)}
+            placeholder={recipe.paperBrand || "Digite a marca do papel"}
+            className="w-full"
+          />
+        </div>
+
         {/* Grinder Selection */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-coffee-700">Moedor</label>
-          <Select value={selectedGrinder} onValueChange={handleGrinderChange}>
+          <Label className="text-sm font-medium text-coffee-700">Moedor</Label>
+          <Select value={useCustomGrinder ? "custom" : selectedGrinder} onValueChange={handleGrinderChange}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Selecione seu moedor" />
             </SelectTrigger>
@@ -115,13 +142,36 @@ export const RecipeCard = ({ recipe, onStartBrewing }: RecipeCardProps) => {
                   {grinder.brand} ({grinder.defaultClicks} clicks)
                 </SelectItem>
               ))}
+              <SelectItem value="custom">Moedor personalizado</SelectItem>
             </SelectContent>
           </Select>
           
-          {selectedGrinder && (
+          {useCustomGrinder && (
+            <div className="space-y-2">
+              <Input
+                value={customGrinder}
+                onChange={(e) => setCustomGrinder(e.target.value)}
+                placeholder="Nome do seu moedor"
+                className="w-full"
+              />
+              <div className="flex items-center gap-2">
+                <Label className="text-sm">Clicks:</Label>
+                <Input
+                  type="number"
+                  value={customClicks}
+                  onChange={(e) => setCustomClicks(Number(e.target.value))}
+                  className="w-20"
+                  min="1"
+                  max="50"
+                />
+              </div>
+            </div>
+          )}
+          
+          {(selectedGrinder || useCustomGrinder) && (
             <div className="flex items-center gap-2 text-sm text-coffee-600">
               <Settings className="w-4 h-4" />
-              <span>Clicks: {selectedClicks}</span>
+              <span>Clicks: {useCustomGrinder ? customClicks : selectedClicks}</span>
             </div>
           )}
         </div>
@@ -135,10 +185,10 @@ export const RecipeCard = ({ recipe, onStartBrewing }: RecipeCardProps) => {
             </div>
           )}
           
-          {recipe.paperBrand && (
+          {(selectedPaper || recipe.paperBrand) && (
             <div className="flex items-center gap-2 text-sm text-coffee-600">
               <FileText className="w-4 h-4" />
-              <span>Papel: {recipe.paperBrand}</span>
+              <span>Papel: {selectedPaper || recipe.paperBrand}</span>
             </div>
           )}
         </div>

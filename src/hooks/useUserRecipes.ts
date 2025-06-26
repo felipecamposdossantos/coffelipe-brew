@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
@@ -10,6 +11,15 @@ export interface BrewHistory {
   recipe_name: string;
   brewed_at: string;
   user_id: string;
+  coffee_bean_name?: string;
+  coffee_bean_brand?: string;
+  coffee_bean_type?: string;
+  grinder_brand?: string;
+  grinder_clicks?: number;
+  paper_brand?: string;
+  water_temperature?: number;
+  coffee_ratio?: number;
+  water_ratio?: number;
 }
 
 export const useUserRecipes = () => {
@@ -63,7 +73,14 @@ export const useUserRecipes = () => {
     try {
       const { data, error } = await supabase
         .from('brew_history')
-        .select('*')
+        .select(`
+          *,
+          coffee_beans (
+            name,
+            brand,
+            type
+          )
+        `)
         .eq('user_id', user.id)
         .order('brewed_at', { ascending: false })
         .limit(10);
@@ -74,7 +91,13 @@ export const useUserRecipes = () => {
       }
 
       if (data) {
-        setBrewHistory(data);
+        const historyWithBeans = data.map(item => ({
+          ...item,
+          coffee_bean_name: item.coffee_beans?.name,
+          coffee_bean_brand: item.coffee_beans?.brand,
+          coffee_bean_type: item.coffee_beans?.type
+        }));
+        setBrewHistory(historyWithBeans);
       }
     } catch (error) {
       console.error('Erro ao carregar histórico:', error);
@@ -201,7 +224,14 @@ export const useUserRecipes = () => {
           recipe_id: recipe.id,
           recipe_name: recipe.name,
           user_id: user.id,
-          brewed_at: new Date().toISOString()
+          brewed_at: new Date().toISOString(),
+          coffee_bean_id: recipe.coffeeBeanId,
+          grinder_brand: recipe.grinderBrand,
+          grinder_clicks: recipe.grinderClicks,
+          paper_brand: recipe.paperBrand,
+          water_temperature: recipe.waterTemperature,
+          coffee_ratio: recipe.coffeeRatio,
+          water_ratio: recipe.waterRatio
         });
 
       if (error) {
