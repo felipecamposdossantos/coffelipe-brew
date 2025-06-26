@@ -39,17 +39,22 @@ const Index = () => {
   const [brewingMode, setBrewingMode] = useState<'auto' | 'manual'>('auto');
   const [activeTab, setActiveTab] = useState("recipes");
 
+  console.log('Index render - loading:', loading, 'user:', user?.email, 'activeTab:', activeTab);
+
   const handleStartBrewing = (recipe: Recipe, mode: 'auto' | 'manual' = 'auto') => {
+    console.log('Starting brewing with recipe:', recipe.name, 'mode:', mode);
     setCurrentRecipe(recipe);
     setBrewingMode(mode);
   };
 
   const handleCompleteBrewing = () => {
+    console.log('Completing brewing');
     setCurrentRecipe(null);
     setActiveTab("recipes");
   };
 
   if (loading) {
+    console.log('Index: Showing loading screen');
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center">
         <div className="text-center">
@@ -61,6 +66,7 @@ const Index = () => {
   }
 
   if (currentRecipe) {
+    console.log('Index: Showing brewing process for recipe:', currentRecipe.name);
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 p-4">
         <div className="container mx-auto py-8">
@@ -110,6 +116,8 @@ const Index = () => {
     );
   }
 
+  console.log('Index: Showing main tabs interface');
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100">
       <div className="container mx-auto px-4 py-8">
@@ -124,7 +132,7 @@ const Index = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-6 mb-8">
+          <TabsList className="grid w-full grid-cols-5 mb-8">
             <TabsTrigger value="recipes">Receitas</TabsTrigger>
             {user && <TabsTrigger value="my-recipes">Minhas Receitas</TabsTrigger>}
             {user && <TabsTrigger value="coffee-beans">Grãos</TabsTrigger>}

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
@@ -29,8 +28,12 @@ export const useUserRecipes = () => {
   const [loading, setLoading] = useState(false);
 
   const loadUserRecipes = async () => {
-    if (!user || !isSupabaseConfigured) return;
+    if (!user || !isSupabaseConfigured) {
+      console.log('loadUserRecipes: No user or Supabase not configured');
+      return;
+    }
 
+    console.log('loadUserRecipes: Starting to load recipes for user:', user.id);
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -43,6 +46,8 @@ export const useUserRecipes = () => {
         toast.error('Erro ao carregar suas receitas');
         return;
       }
+
+      console.log('loadUserRecipes: Raw data from DB:', data);
 
       if (data) {
         const recipes: Recipe[] = data.map(item => ({
@@ -58,18 +63,24 @@ export const useUserRecipes = () => {
           coffeeBeanId: item.coffee_bean_id || undefined,
           steps: item.steps
         }));
+        console.log('loadUserRecipes: Mapped recipes:', recipes);
         setUserRecipes(recipes);
       }
     } catch (error) {
       console.error('Erro ao carregar receitas:', error);
     } finally {
       setLoading(false);
+      console.log('loadUserRecipes: Finished loading');
     }
   };
 
   const loadBrewHistory = async () => {
-    if (!user || !isSupabaseConfigured) return;
+    if (!user || !isSupabaseConfigured) {
+      console.log('loadBrewHistory: No user or Supabase not configured');
+      return;
+    }
 
+    console.log('loadBrewHistory: Starting to load history for user:', user.id);
     try {
       const { data, error } = await supabase
         .from('brew_history')
@@ -90,6 +101,8 @@ export const useUserRecipes = () => {
         return;
       }
 
+      console.log('loadBrewHistory: Raw data from DB:', data);
+
       if (data) {
         const historyWithBeans = data.map(item => ({
           ...item,
@@ -97,6 +110,7 @@ export const useUserRecipes = () => {
           coffee_bean_brand: item.coffee_beans?.brand,
           coffee_bean_type: item.coffee_beans?.type
         }));
+        console.log('loadBrewHistory: Mapped history:', historyWithBeans);
         setBrewHistory(historyWithBeans);
       }
     } catch (error) {
@@ -246,10 +260,14 @@ export const useUserRecipes = () => {
   };
 
   useEffect(() => {
+    console.log('useUserRecipes useEffect triggered - user:', user?.id, 'isSupabaseConfigured:', isSupabaseConfigured);
+    
     if (user && isSupabaseConfigured) {
+      console.log('Loading user data...');
       loadUserRecipes();
       loadBrewHistory();
     } else {
+      console.log('Clearing user data...');
       setUserRecipes([]);
       setBrewHistory([]);
     }

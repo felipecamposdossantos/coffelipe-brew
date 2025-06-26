@@ -38,9 +38,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.email)
         if (mounted) {
-          setSession(session)
-          setUser(session?.user ?? null)
-          setLoading(false)
+          try {
+            setSession(session)
+            setUser(session?.user ?? null)
+            setLoading(false)
+            console.log('Auth state updated successfully')
+          } catch (error) {
+            console.error('Error updating auth state:', error)
+            setLoading(false)
+          }
         }
       }
     )
@@ -48,6 +54,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // THEN check for existing session
     const getInitialSession = async () => {
       try {
+        console.log('Getting initial session...')
         const { data: { session }, error } = await supabase.auth.getSession()
         if (error) {
           console.error('Erro ao obter sessão:', error)
@@ -58,6 +65,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setSession(session)
           setUser(session?.user ?? null)
           setLoading(false)
+          console.log('Initial session loaded successfully')
         }
       } catch (error) {
         console.error('Erro ao verificar sessão:', error)
@@ -177,6 +185,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     updateEmail,
     updatePassword,
   }
+
+  console.log('AuthContext render - loading:', loading, 'user:', user?.email)
 
   return (
     <AuthContext.Provider value={value}>
