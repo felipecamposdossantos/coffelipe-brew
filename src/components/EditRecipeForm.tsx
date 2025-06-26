@@ -46,11 +46,11 @@ export const EditRecipeForm = ({ recipe, open, onOpenChange, onRecipeUpdated }: 
   const [coffeeRatio, setCoffeeRatio] = useState(recipe.coffeeRatio);
   const [waterRatio, setWaterRatio] = useState(recipe.waterRatio);
   const [waterTemperature, setWaterTemperature] = useState(recipe.waterTemperature || 94);
-  const [grinderBrand, setGrinderBrand] = useState(recipe.grinderBrand || "");
+  const [grinderBrand, setGrinderBrand] = useState(recipe.grinderBrand || "none");
   const [customGrinderBrand, setCustomGrinderBrand] = useState("");
   const [grinderClicks, setGrinderClicks] = useState(recipe.grinderClicks || 15);
   const [paperBrand, setPaperBrand] = useState(recipe.paperBrand || "");
-  const [coffeeBeanId, setCoffeeBeanId] = useState(recipe.coffeeBeanId || "");
+  const [coffeeBeanId, setCoffeeBeanId] = useState(recipe.coffeeBeanId || "none");
   const [steps, setSteps] = useState<RecipeStep[]>(recipe.steps);
 
   const { updateRecipe } = useUserRecipes();
@@ -92,7 +92,7 @@ export const EditRecipeForm = ({ recipe, open, onOpenChange, onRecipeUpdated }: 
       return;
     }
 
-    const finalGrinderBrand = grinderBrand === "Outro" ? customGrinderBrand : grinderBrand;
+    const finalGrinderBrand = grinderBrand === "Outro" ? customGrinderBrand : (grinderBrand === "none" ? undefined : grinderBrand);
 
     const updatedRecipe: Recipe = {
       ...recipe,
@@ -104,7 +104,7 @@ export const EditRecipeForm = ({ recipe, open, onOpenChange, onRecipeUpdated }: 
       grinderBrand: finalGrinderBrand || undefined,
       grinderClicks: finalGrinderBrand ? grinderClicks : undefined,
       paperBrand: paperBrand || undefined,
-      coffeeBeanId: coffeeBeanId || undefined,
+      coffeeBeanId: coffeeBeanId === "none" ? undefined : coffeeBeanId || undefined,
       steps
     };
 
@@ -155,7 +155,7 @@ export const EditRecipeForm = ({ recipe, open, onOpenChange, onRecipeUpdated }: 
                   <SelectValue placeholder="Selecione o grão de café" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Nenhum grão selecionado</SelectItem>
+                  <SelectItem value="none">Nenhum grão selecionado</SelectItem>
                   {coffeeBeans.map((bean) => (
                     <SelectItem key={bean.id} value={bean.id}>
                       {bean.name} - {bean.brand} ({bean.type})
@@ -212,6 +212,7 @@ export const EditRecipeForm = ({ recipe, open, onOpenChange, onRecipeUpdated }: 
                   <SelectValue placeholder="Selecione o moedor" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="none">Nenhum moedor selecionado</SelectItem>
                   {grinderOptions.map((grinder) => (
                     <SelectItem key={grinder.brand} value={grinder.brand}>
                       {grinder.brand}
@@ -233,7 +234,7 @@ export const EditRecipeForm = ({ recipe, open, onOpenChange, onRecipeUpdated }: 
               </div>
             )}
 
-            {grinderBrand && (
+            {grinderBrand && grinderBrand !== "none" && (
               <div>
                 <Label htmlFor="clicks">Clicks do Moedor</Label>
                 <Input

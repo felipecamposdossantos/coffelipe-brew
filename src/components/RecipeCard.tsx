@@ -31,7 +31,7 @@ const grinderOptions = [
 export const RecipeCard = ({ recipe, onStartBrewing }: RecipeCardProps) => {
   const [selectedGrinder, setSelectedGrinder] = useState(recipe.grinderBrand || "");
   const [selectedClicks, setSelectedClicks] = useState(recipe.grinderClicks || 15);
-  const [selectedCoffeeBeanId, setSelectedCoffeeBeanId] = useState(recipe.coffeeBeanId || "");
+  const [selectedCoffeeBeanId, setSelectedCoffeeBeanId] = useState(recipe.coffeeBeanId || "none");
   const [selectedPaper, setSelectedPaper] = useState(recipe.paperBrand || "");
   const [customGrinder, setCustomGrinder] = useState("");
   const [customClicks, setCustomClicks] = useState(15);
@@ -69,7 +69,7 @@ export const RecipeCard = ({ recipe, onStartBrewing }: RecipeCardProps) => {
       ...recipe,
       grinderBrand: finalGrinder || recipe.grinderBrand,
       grinderClicks: finalClicks || recipe.grinderClicks,
-      coffeeBeanId: selectedCoffeeBeanId || recipe.coffeeBeanId,
+      coffeeBeanId: selectedCoffeeBeanId === "none" ? undefined : selectedCoffeeBeanId || recipe.coffeeBeanId,
       paperBrand: selectedPaper || recipe.paperBrand
     };
     onStartBrewing(updatedRecipe, mode);
@@ -107,7 +107,7 @@ export const RecipeCard = ({ recipe, onStartBrewing }: RecipeCardProps) => {
                 <SelectValue placeholder="Selecione seu grão de café" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Usar grão padrão</SelectItem>
+                <SelectItem value="none">Usar grão padrão</SelectItem>
                 {coffeeBeans.map((bean) => (
                   <SelectItem key={bean.id} value={bean.id}>
                     {bean.name} - {bean.brand} ({bean.type})
@@ -132,11 +132,12 @@ export const RecipeCard = ({ recipe, onStartBrewing }: RecipeCardProps) => {
         {/* Grinder Selection */}
         <div className="space-y-2">
           <Label className="text-sm font-medium text-coffee-700">Moedor</Label>
-          <Select value={useCustomGrinder ? "custom" : selectedGrinder} onValueChange={handleGrinderChange}>
+          <Select value={useCustomGrinder ? "custom" : selectedGrinder || "none"} onValueChange={handleGrinderChange}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Selecione seu moedor" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="none">Nenhum moedor selecionado</SelectItem>
               {grinderOptions.map((grinder) => (
                 <SelectItem key={grinder.brand} value={grinder.brand}>
                   {grinder.brand} ({grinder.defaultClicks} clicks)
