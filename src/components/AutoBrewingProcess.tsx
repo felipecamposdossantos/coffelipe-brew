@@ -18,7 +18,7 @@ import {
 import { Recipe } from "@/pages/Index";
 import { WaterPourAnimation } from "@/components/WaterPourAnimation";
 import { useUserRecipes } from "@/hooks/useUserRecipes";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface AutoBrewingProcessProps {
   recipe: Recipe;
@@ -34,24 +34,10 @@ export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessPro
   const [currentWaterAmount, setCurrentWaterAmount] = useState(0);
   const [isOvertime, setIsOvertime] = useState(false);
   const [overtimeSeconds, setOvertimeSeconds] = useState(0);
-  const [autoProgressEnabled, setAutoProgressEnabled] = useState(true);
   const [countdown, setCountdown] = useState(0);
+  const [hasStarted, setHasStarted] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const { addToBrewHistory } = useUserRecipes();
-  const { toast } = useToast();
-
-  // Auto-start first step
-  useEffect(() => {
-    if (currentStep === 0 && !isRunning && !isPaused) {
-      setTimeout(() => {
-        setIsRunning(true);
-        toast({
-          title: "Receita Iniciada!",
-          description: `Começando: ${recipe.steps[0]?.name}`,
-        });
-      }, 1000);
-    }
-  }, []);
 
   useEffect(() => {
     setTimeLeft(recipe.steps[currentStep]?.duration || 0);
@@ -80,19 +66,18 @@ export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessPro
               setCurrentWaterAmount(targetWaterAmount);
               
               // Show step completion notification
-              toast({
-                title: "Etapa Concluída!",
-                description: `${recipe.steps[currentStep]?.name} finalizada`,
-              });
+              toast.success(`Etapa Concluída: ${recipe.steps[currentStep]?.name}`);
 
               // Check if it's the last step
               if (currentStep === recipe.steps.length - 1) {
                 setIsRunning(false);
+                setIsOvertime(true);
+                setOvertimeSeconds(0);
                 return 0;
               }
 
-              // Auto-progress to next step if enabled
-              if (autoProgressEnabled) {
+              // Auto-progress to next step (only after first step)
+              if (hasStarted) {
                 setCountdown(3);
                 setIsRunning(false);
                 
@@ -108,10 +93,7 @@ export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessPro
                     setIsRunning(true);
                     setCountdown(0);
                     
-                    toast({
-                      title: "Próxima Etapa",
-                      description: `Iniciando: ${recipe.steps[currentStep + 1]?.name}`,
-                    });
+                    toast.info(`Próxima Etapa: ${recipe.steps[currentStep + 1]?.name}`);
                   }
                 }, 1000);
                 
@@ -141,7 +123,7 @@ export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessPro
         clearInterval(intervalRef.current);
       }
     };
-  }, [isRunning, isPaused, timeLeft, currentStep, targetWaterAmount, isOvertime, autoProgressEnabled]);
+  }, [isRunning, isPaused, timeLeft, currentStep, targetWaterAmount, isOvertime, hasStarted]);
 
   // Update water amount during pouring
   useEffect(() => {
@@ -158,12 +140,13 @@ export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessPro
     }
   }, [timeLeft, isRunning, isPaused, currentStep, recipe.steps, isOvertime]);
 
-  // Handle overtime
+  // Handle overtime for last step
   useEffect(() => {
-    if (timeLeft === 0 && isRunning && !completedSteps.includes(currentStep)) {
+    if (timeLeft === 0 && isRunning && currentStep === recipe.steps.length - 1) {
       setIsOvertime(true);
+      setIsRunning(false);
     }
-  }, [timeLeft, isRunning, currentStep, completedSteps]);
+  }, [timeLeft, isRunning, currentStep]);
 
   const formatTime = (time: number) => {
     const mins = Math.floor(time / 60);
@@ -172,25 +155,21 @@ export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessPro
   };
 
   const formatOvertimeDisplay = () => {
-    if (isOvertime) {
+    if (isOvertime && currentStep === recipe.steps.length - 1) {
       return `+${formatTime(overtimeSeconds)}`;
     }
     return formatTime(timeLeft);
   };
 
+  const handleStart = () => {
+    setIsRunning(true);
+    setHasStarted(true);
+    toast.success(`Receita Iniciada: ${recipe.steps[0]?.name}`);
+  };
+
   const handlePause = () => {
     setIsPaused(!isPaused);
-    if (!isPaused) {
-      toast({
-        title: "Pausado",
-        description: "Cronômetro pausado",
-      });
-    } else {
-      toast({
-        title: "Retomado",
-        description: "Cronômetro retomado",
-      });
-    }
+    toast.info(isPaused ? "Cronômetro retomado" : "Cronômetro pausado");
   };
 
   const handleNextStep = () => {
@@ -207,15 +186,15 @@ export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessPro
     }
   };
 
-  const handleFinishRecipe = () => {
+  const handleFinishRecipe = async () => {
     setCompletedSteps(prev => [...prev, currentStep]);
     setIsRunning(false);
-    addToBrewHistory(recipe);
+    setIsOvertime(false);
     
-    toast({
-      title: "Receita Finalizada! ☕",
-      description: `${recipe.name} foi salva no seu histórico`,
-    });
+    // Save to brew history
+    await addToBrewHistory(recipe);
+    
+    toast.success(`Receita Finalizada! ${recipe.name} foi salva no seu histórico ☕`);
     
     onComplete();
   };
@@ -230,7 +209,6 @@ export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessPro
     100;
   const overallProgress = ((currentStep + (completedSteps.includes(currentStep) ? 1 : progress / 100)) / recipe.steps.length) * 100;
   const isStepCompleted = completedSteps.includes(currentStep);
-  const isAllCompleted = completedSteps.length === recipe.steps.length;
   const isLastStep = currentStep === recipe.steps.length - 1;
 
   return (
@@ -302,7 +280,7 @@ export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessPro
       )}
 
       {/* Water Animation */}
-      {!isAllCompleted && currentStepData?.waterAmount && (
+      {currentStepData?.waterAmount && (
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm sm:text-base text-coffee-800 flex items-center gap-2">
@@ -329,126 +307,102 @@ export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessPro
       )}
 
       {/* Current Step */}
-      {!isAllCompleted && (
-        <Card className={`bg-white shadow-lg ${isOvertime ? 'border-orange-300' : ''}`}>
-          <CardHeader className="pb-2 sm:pb-4">
-            <CardTitle className="flex items-center justify-between text-sm sm:text-base">
-              <span className="text-coffee-800">{currentStepData?.name}</span>
-              <div className="flex items-center gap-2">
-                {isOvertime && (
-                  <AlertTriangle className="w-5 h-5 text-orange-500" />
-                )}
-                {isStepCompleted && (
-                  <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-500" />
-                )}
+      <Card className={`bg-white shadow-lg ${isOvertime ? 'border-orange-300' : ''}`}>
+        <CardHeader className="pb-2 sm:pb-4">
+          <CardTitle className="flex items-center justify-between text-sm sm:text-base">
+            <span className="text-coffee-800">{currentStepData?.name}</span>
+            <div className="flex items-center gap-2">
+              {isOvertime && isLastStep && (
+                <AlertTriangle className="w-5 h-5 text-orange-500" />
+              )}
+              {isStepCompleted && (
+                <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-500" />
+              )}
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 sm:space-y-6">
+          {/* Timer Display */}
+          <div className="text-center">
+            <div className={`text-3xl sm:text-5xl font-mono font-bold mb-4 ${
+              isOvertime ? 'text-orange-600' : 'text-coffee-700'
+            }`}>
+              {formatOvertimeDisplay()}
+            </div>
+            
+            {isOvertime && isLastStep && (
+              <div className="text-orange-600 text-sm mb-2 flex items-center justify-center gap-2">
+                <Clock className="w-4 h-4" />
+                Tempo excedido - Controle manual ativo
               </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 sm:space-y-6">
-            {/* Timer Display */}
-            <div className="text-center">
-              <div className={`text-3xl sm:text-5xl font-mono font-bold mb-4 ${
-                isOvertime ? 'text-orange-600' : 'text-coffee-700'
-              }`}>
-                {formatOvertimeDisplay()}
-              </div>
-              
-              {isOvertime && (
-                <div className="text-orange-600 text-sm mb-2 flex items-center justify-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  Tempo excedido
-                </div>
-              )}
-              
-              {!isOvertime && (
-                <Progress value={progress} className="h-2 sm:h-3 mb-4" />
-              )}
-            </div>
+            )}
+            
+            {!isOvertime && (
+              <Progress value={progress} className="h-2 sm:h-3 mb-4" />
+            )}
+          </div>
 
-            {/* Instruction */}
-            <div className="bg-cream-50 p-3 sm:p-4 rounded-lg border border-cream-200">
-              <p className="text-coffee-700 leading-relaxed text-sm sm:text-base">
-                {currentStepData?.instruction}
-              </p>
-            </div>
-
-            {/* Controls */}
-            <div className="flex justify-center gap-2 flex-wrap">
-              {/* Pause/Resume button */}
-              {isRunning && !isStepCompleted && (
-                <Button 
-                  onClick={handlePause}
-                  variant="outline"
-                  className="border-coffee-600 text-coffee-600 hover:bg-coffee-50"
-                  size="sm"
-                >
-                  <Pause className="w-4 h-4 mr-2" />
-                  {isPaused ? 'Retomar' : 'Pausar'}
-                </Button>
-              )}
-
-              {/* Skip step button */}
-              {!isStepCompleted && !isLastStep && (
-                <Button 
-                  onClick={handleNextStep}
-                  variant="outline"
-                  className="border-gray-600 text-gray-600 hover:bg-gray-50"
-                  size="sm"
-                >
-                  <SkipForward className="w-4 h-4 mr-2" />
-                  Pular Etapa
-                </Button>
-              )}
-
-              {/* Next step button (after completion or overtime) */}
-              {(isStepCompleted || isOvertime) && !isLastStep && (
-                <Button 
-                  onClick={handleNextStep}
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                  size="sm"
-                >
-                  <SkipForward className="w-4 h-4 mr-2" />
-                  Próxima Etapa
-                </Button>
-              )}
-
-              {/* Finish recipe button (last step) */}
-              {(isStepCompleted || isOvertime || timeLeft === 0) && isLastStep && (
-                <Button 
-                  onClick={handleFinishRecipe}
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                  size="sm"
-                >
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Finalizar Receita
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Completion Message */}
-      {isAllCompleted && (
-        <Card className="bg-green-50 border-green-200">
-          <CardContent className="pt-6 text-center space-y-4">
-            <CheckCircle className="w-12 h-12 sm:w-16 sm:h-16 text-green-500 mx-auto" />
-            <h3 className="text-xl sm:text-2xl font-bold text-green-800">
-              Café Pronto! ☕
-            </h3>
-            <p className="text-green-700 text-sm sm:text-base">
-              Seu {recipe.name} está pronto para ser degustado. 
-              Aproveite o aroma e o sabor do café perfeitamente preparado!
+          {/* Instruction */}
+          <div className="bg-cream-50 p-3 sm:p-4 rounded-lg border border-cream-200">
+            <p className="text-coffee-700 leading-relaxed text-sm sm:text-base">
+              {currentStepData?.instruction}
             </p>
-            <Button 
-              onClick={onComplete}
-              className="bg-coffee-600 hover:bg-coffee-700 text-white"
-            >
-              Fazer Outro Café
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+
+          {/* Controls */}
+          <div className="flex justify-center gap-2 flex-wrap">
+            {/* Start button (only for first step if not started) */}
+            {!hasStarted && currentStep === 0 && (
+              <Button 
+                onClick={handleStart}
+                className="bg-coffee-600 hover:bg-coffee-700 text-white"
+                size="sm"
+              >
+                <Play className="w-4 h-4 mr-2" />
+                Iniciar Primeira Etapa
+              </Button>
+            )}
+
+            {/* Pause/Resume button */}
+            {isRunning && !isOvertime && (
+              <Button 
+                onClick={handlePause}
+                variant="outline"
+                className="border-coffee-600 text-coffee-600 hover:bg-coffee-50"
+                size="sm"
+              >
+                <Pause className="w-4 h-4 mr-2" />
+                {isPaused ? 'Retomar' : 'Pausar'}
+              </Button>
+            )}
+
+            {/* Skip step button */}
+            {hasStarted && !isStepCompleted && !isLastStep && (
+              <Button 
+                onClick={handleNextStep}
+                variant="outline"
+                className="border-gray-600 text-gray-600 hover:bg-gray-50"
+                size="sm"
+              >
+                <SkipForward className="w-4 h-4 mr-2" />
+                Pular Etapa
+              </Button>
+            )}
+
+            {/* Finish recipe button (last step) */}
+            {isLastStep && (isStepCompleted || isOvertime || timeLeft === 0) && (
+              <Button 
+                onClick={handleFinishRecipe}
+                className="bg-green-600 hover:bg-green-700 text-white"
+                size="sm"
+              >
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Finalizar e Salvar
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Steps Overview */}
       <Card>
@@ -493,23 +447,6 @@ export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessPro
                 )}
               </div>
             ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Auto-progress toggle */}
-      <Card>
-        <CardContent className="pt-4">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-coffee-700">Progressão Automática</span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setAutoProgressEnabled(!autoProgressEnabled)}
-              className={autoProgressEnabled ? 'bg-green-50 border-green-300' : ''}
-            >
-              {autoProgressEnabled ? 'Ativada' : 'Desativada'}
-            </Button>
           </div>
         </CardContent>
       </Card>

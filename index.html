@@ -1,25 +1,82 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CofFelipe Brew</title>
-    <meta name="description" content="Lovable Generated Project" />
-    <meta name="author" content="Lovable" />
+    <title>CofFelipe Brew - Guia de Preparo de Café</title>
+    <meta name="description" content="Aplicativo completo para preparo de café com receitas personalizadas e cronômetro automático" />
+    <meta name="author" content="CofFelipe" />
+    <meta name="keywords" content="café, preparo, receitas, cronômetro, V60, chemex, french press" />
 
-    <meta property="og:title" content="CofFelipe Brew" />
-    <meta property="og:description" content="Lovable Generated Project" />
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#8B4513" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#4A2C17" />
+    <meta name="background-color" content="#F5F5DC" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="CofFelipe" />
+    <meta name="application-name" content="CofFelipe" />
+    <meta name="msapplication-TileColor" content="#8B4513" />
+    <meta name="msapplication-config" content="/browserconfig.xml" />
+
+    <!-- Favicon -->
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/lovable-uploads/49af2e43-3983-4eab-85c9-d3cd8c4e7deb.png" />
+    <link rel="mask-icon" href="/lovable-uploads/49af2e43-3983-4eab-85c9-d3cd8c4e7deb.png" color="#8B4513" />
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="CofFelipe Brew - Guia de Preparo de Café" />
+    <meta property="og:description" content="Aplicativo completo para preparo de café com receitas personalizadas e cronômetro automático" />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta property="og:image" content="/lovable-uploads/49af2e43-3983-4eab-85c9-d3cd8c4e7deb.png" />
+    <meta property="og:url" content="https://coffelipe-brew.lovable.app" />
 
+    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@lovable_dev" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta name="twitter:title" content="CofFelipe Brew" />
+    <meta name="twitter:description" content="Aplicativo completo para preparo de café" />
+    <meta name="twitter:image" content="/lovable-uploads/49af2e43-3983-4eab-85c9-d3cd8c4e7deb.png" />
+
+    <!-- Preload critical resources -->
+    <link rel="preload" href="/lovable-uploads/49af2e43-3983-4eab-85c9-d3cd8c4e7deb.png" as="image" />
   </head>
 
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- PWA Registration Script -->
+    <script>
+      // Register service worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('SW registered: ', registration);
+            })
+            .catch((registrationError) => {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+
+      // Handle theme changes
+      const updateThemeColor = () => {
+        const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+        if (themeColorMeta) {
+          themeColorMeta.setAttribute('content', isDark ? '#4A2C17' : '#8B4513');
+        }
+      };
+
+      // Listen for theme changes
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeColor);
+      updateThemeColor();
+    </script>
   </body>
 </html>

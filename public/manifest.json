@@ -1,0 +1,59 @@
+
+{
+  "name": "CofFelipe Brew - Guia de Preparo de Café",
+  "short_name": "CofFelipe",
+  "description": "Aplicativo completo para preparo de café com receitas personalizadas e cronômetro automático",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/lovable-uploads/49af2e43-3983-4eab-85c9-d3cd8c4e7deb.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/lovable-uploads/49af2e43-3983-4eab-85c9-d3cd8c4e7deb.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#8B4513",
+  "background_color": "#F5F5DC",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "pt-BR",
+  "categories": ["food", "lifestyle", "utilities"],
+  "shortcuts": [
+    {
+      "name": "Minhas Receitas",
+      "short_name": "Receitas",
+      "description": "Acesse suas receitas personalizadas",
+      "url": "/?tab=minhas-receitas",
+      "icons": [
+        {
+          "src": "/lovable-uploads/49af2e43-3983-4eab-85c9-d3cd8c4e7deb.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Timer",
+      "short_name": "Timer",
+      "description": "Cronômetro para preparo de café",
+      "url": "/?tab=timer",
+      "icons": [
+        {
+          "src": "/lovable-uploads/49af2e43-3983-4eab-85c9-d3cd8c4e7deb.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}
