@@ -198,22 +198,12 @@ const defaultRecipes: Recipe[] = [
 ];
 
 export const RecipeList = ({ onStartBrewing }: RecipeListProps) => {
-  const [recipes, setRecipes] = useState<Recipe[]>(defaultRecipes);
   const [showAddForm, setShowAddForm] = useState(false);
 
-  const handleAddRecipe = (newRecipe: Recipe) => {
-    setRecipes([...recipes, newRecipe]);
-    setShowAddForm(false);
+  const handleRecipeAdded = () => {
+    // This will trigger a re-render of the component that uses RecipeList
+    // The parent component should handle refreshing the recipe list
   };
-
-  if (showAddForm) {
-    return (
-      <AddRecipeForm
-        onAddRecipe={handleAddRecipe}
-        onCancel={() => setShowAddForm(false)}
-      />
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -238,7 +228,7 @@ export const RecipeList = ({ onStartBrewing }: RecipeListProps) => {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        {recipes.map((recipe) => (
+        {defaultRecipes.map((recipe) => (
           <RecipeCard 
             key={recipe.id} 
             recipe={recipe} 
@@ -257,6 +247,12 @@ export const RecipeList = ({ onStartBrewing }: RecipeListProps) => {
           do grão, experimente todos para descobrir seu favorito!
         </p>
       </div>
+
+      <AddRecipeForm
+        open={showAddForm}
+        onOpenChange={setShowAddForm}
+        onRecipeAdded={handleRecipeAdded}
+      />
     </div>
   );
 };
