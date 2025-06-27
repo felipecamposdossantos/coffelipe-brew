@@ -27,7 +27,7 @@ interface RecipeStep {
   waterAmount?: number;
 }
 
-const grinderOptions = [
+const baseGrinderOptions = [
   { brand: "Comandante", defaultClicks: 18 },
   { brand: "1Zpresso JX-Pro", defaultClicks: 15 },
   { brand: "Baratza Encore", defaultClicks: 30 },
@@ -38,6 +38,10 @@ const grinderOptions = [
   { brand: "Mazzer Mini", defaultClicks: 8 },
   { brand: "Fellow Ode", defaultClicks: 5 },
   { brand: "Wilfa Uniform", defaultClicks: 12 },
+  { brand: "Hario Skerton", defaultClicks: 25 },
+  { brand: "Rhinowares Hand Grinder", defaultClicks: 22 },
+  { brand: "OE Lido 3", defaultClicks: 14 },
+  { brand: "Orphan Espresso Pharos", defaultClicks: 10 },
   { brand: "Outro", defaultClicks: 15 }
 ];
 
@@ -54,8 +58,16 @@ export const EditRecipeForm = ({ recipe, open, onOpenChange, onRecipeUpdated }: 
   const [coffeeBeanId, setCoffeeBeanId] = useState(recipe.coffeeBeanId || "none");
   const [steps, setSteps] = useState<RecipeStep[]>(recipe.steps);
 
-  const { updateRecipe } = useUserRecipes();
+  const { updateRecipe, getCustomGrinders } = useUserRecipes();
   const { coffeeBeans } = useCoffeeBeans();
+
+  // Combine base grinders with custom saved grinders
+  const customGrinders = getCustomGrinders();
+  const allGrinderOptions = [
+    ...baseGrinderOptions.filter(g => g.brand !== "Outro"),
+    ...customGrinders.map(brand => ({ brand, defaultClicks: 15 })),
+    { brand: "Outro", defaultClicks: 15 }
+  ];
 
   const addStep = () => {
     setSteps([...steps, { name: "", duration: 30, instruction: "", waterAmount: 0 }]);
@@ -77,7 +89,7 @@ export const EditRecipeForm = ({ recipe, open, onOpenChange, onRecipeUpdated }: 
   const handleGrinderChange = (value: string) => {
     setGrinderBrand(value);
     if (value !== "Outro") {
-      const grinder = grinderOptions.find(g => g.brand === value);
+      const grinder = allGrinderOptions.find(g => g.brand === value);
       if (grinder) {
         setGrinderClicks(grinder.defaultClicks);
       }
@@ -114,6 +126,13 @@ export const EditRecipeForm = ({ recipe, open, onOpenChange, onRecipeUpdated }: 
       onRecipeUpdated();
       onOpenChange(false);
     }
+  };
+
+  // Calculate cumulative water amounts for preview
+  const getCumulativeWaterAmount = (stepIndex: number) => {
+    return steps.slice(0, stepIndex + 1).reduce((total, step) => {
+      return total + (step.waterAmount || 0);
+    }, 0);
   };
 
   return (
@@ -214,7 +233,7 @@ export const EditRecipeForm = ({ recipe, open, onOpenChange, onRecipeUpdated }: 
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Nenhum moedor selecionado</SelectItem>
-                  {grinderOptions.map((grinder) => (
+                  {allGrinderOptions.map((grinder) => (
                     <SelectItem key={grinder.brand} value={grinder.brand}>
                       {grinder.brand}
                     </SelectItem>
@@ -306,7 +325,7 @@ export const EditRecipeForm = ({ recipe, open, onOpenChange, onRecipeUpdated }: 
                       </div>
 
                       <div>
-                        <Label htmlFor={`step-water-${index}`}>Quantidade de Água (ml)</Label>
+                        <Label htmlFor={`step-water-${index}`}>💧 Quantidade de Água (ml) *</Label>
                         <Input
                           id={`step-water-${index}`}
                           type="number"
@@ -314,7 +333,13 @@ export const EditRecipeForm = ({ recipe, open, onOpenChange, onRecipeUpdated }: 
                           onChange={(e) => updateStep(index, 'waterAmount', Number(e.target.value))}
                           min="0"
                           placeholder="Digite a quantidade em ml"
+                          className="border-blue-300 focus:border-blue-500"
                         />
+                        {step.waterAmount && step.waterAmount > 0 && (
+                          <p className="text-xs text-blue-600 mt-1">
+                            Total acumulado nesta etapa: {getCumulativeWaterAmount(index)}ml
+                          </p>
+                        )}
                       </div>
                       
                       <div>

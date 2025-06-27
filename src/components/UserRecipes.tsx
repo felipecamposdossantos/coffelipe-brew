@@ -6,7 +6,7 @@ import { useUserRecipes } from '@/hooks/useUserRecipes';
 import { EditRecipeForm } from '@/components/EditRecipeForm';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Coffee, Droplets, Clock, Play, Thermometer, Settings, FileText, Edit, Trash2 } from 'lucide-react';
+import { Coffee, Droplets, Clock, Play, Thermometer, Settings, FileText, Edit, Trash2, GripVertical, ChevronUp, ChevronDown } from 'lucide-react';
 import { Recipe } from '@/pages/Index';
 
 interface UserRecipesProps {
@@ -14,7 +14,7 @@ interface UserRecipesProps {
 }
 
 export const UserRecipes = ({ onStartBrewing }: UserRecipesProps) => {
-  const { userRecipes, loading, deleteRecipe } = useUserRecipes();
+  const { userRecipes, loading, deleteRecipe, updateRecipeOrder } = useUserRecipes();
   const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
 
@@ -42,6 +42,22 @@ export const UserRecipes = ({ onStartBrewing }: UserRecipesProps) => {
     return recipe.steps.slice(0, stepIndex + 1).reduce((total, step) => {
       return total + (step.waterAmount || 0);
     }, 0);
+  };
+
+  const moveRecipeUp = async (index: number) => {
+    if (index > 0) {
+      const newOrder = [...userRecipes];
+      [newOrder[index - 1], newOrder[index]] = [newOrder[index], newOrder[index - 1]];
+      await updateRecipeOrder(newOrder);
+    }
+  };
+
+  const moveRecipeDown = async (index: number) => {
+    if (index < userRecipes.length - 1) {
+      const newOrder = [...userRecipes];
+      [newOrder[index], newOrder[index + 1]] = [newOrder[index + 1], newOrder[index]];
+      await updateRecipeOrder(newOrder);
+    }
   };
 
   if (loading) {
@@ -78,13 +94,35 @@ export const UserRecipes = ({ onStartBrewing }: UserRecipesProps) => {
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        {userRecipes.map((recipe) => {
+        {userRecipes.map((recipe, index) => {
           const totalTime = recipe.steps.reduce((acc, step) => acc + step.duration, 0);
           
           return (
-            <Card key={recipe.id} className="bg-white shadow-lg hover:shadow-xl transition-shadow duration-300 border-coffee-200">
+            <Card key={recipe.id} className="bg-white shadow-lg hover:shadow-xl transition-shadow duration-300 border-coffee-200 relative">
+              {/* Recipe Order Controls */}
+              <div className="absolute -top-2 -right-2 flex flex-col gap-1 z-10">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => moveRecipeUp(index)}
+                  disabled={index === 0}
+                  className="bg-white shadow-md h-6 w-6 p-0 hover:bg-coffee-50"
+                >
+                  <ChevronUp className="w-3 h-3" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => moveRecipeDown(index)}
+                  disabled={index === userRecipes.length - 1}
+                  className="bg-white shadow-md h-6 w-6 p-0 hover:bg-coffee-50"
+                >
+                  <ChevronDown className="w-3 h-3" />
+                </Button>
+              </div>
+
               <CardHeader className="pb-2 sm:pb-4">
-                <CardTitle className="flex items-start justify-between text-coffee-800 gap-2">
+                <CardTitle className="flex items-start justify-between text-coffee-800 gap-2 pr-8">
                   <span className="text-sm sm:text-base leading-tight">{recipe.name}</span>
                   <div className="flex gap-1 flex-shrink-0">
                     <Button
@@ -174,20 +212,18 @@ export const UserRecipes = ({ onStartBrewing }: UserRecipesProps) => {
                     </span>
                   </div>
                   
-                  {/* Water amounts per step */}
+                  {/* Water amounts per step - Destacando mais */}
                   {recipe.steps.some(step => step.waterAmount) && (
-                    <div className="space-y-1">
-                      <span className="text-xs text-coffee-600 font-medium">Quantidades de água:</span>
-                      <div className="flex flex-wrap gap-1">
+                    <div className="bg-blue-50 p-2 rounded-lg border border-blue-200">
+                      <span className="text-xs font-semibold text-blue-800 block mb-2">💧 Quantidades de Água por Etapa:</span>
+                      <div className="grid grid-cols-2 gap-1">
                         {recipe.steps.map((step, index) => (
                           step.waterAmount ? (
-                            <Badge 
-                              key={index} 
-                              variant="outline" 
-                              className="text-xs border-blue-300 text-blue-600"
-                            >
-                              {step.waterAmount}ml ({getCumulativeWaterAmount(recipe, index)}ml)
-                            </Badge>
+                            <div key={index} className="text-xs text-blue-700 bg-blue-100 px-2 py-1 rounded">
+                              <strong>{step.name}:</strong> {step.waterAmount}ml 
+                              <br />
+                              <span className="text-blue-600">Total: {getCumulativeWaterAmount(recipe, index)}ml</span>
+                            </div>
                           ) : null
                         ))}
                       </div>
@@ -201,7 +237,7 @@ export const UserRecipes = ({ onStartBrewing }: UserRecipesProps) => {
                         variant="outline" 
                         className="text-xs border-coffee-300 text-coffee-600"
                       >
-                        {step.name}
+                        {step.name} ({formatTime(step.duration)})
                       </Badge>
                     ))}
                   </div>

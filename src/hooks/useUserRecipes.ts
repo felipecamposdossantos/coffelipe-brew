@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
@@ -21,11 +22,33 @@ export interface BrewHistory {
   water_ratio?: number;
 }
 
+const GRINDER_BRANDS_KEY = 'coffee_custom_grinders';
+
 export const useUserRecipes = () => {
   const { user } = useAuth();
   const [userRecipes, setUserRecipes] = useState<Recipe[]>([]);
   const [brewHistory, setBrewHistory] = useState<BrewHistory[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // Custom grinder management
+  const getCustomGrinders = (): string[] => {
+    try {
+      const stored = localStorage.getItem(GRINDER_BRANDS_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const saveCustomGrinder = (grinderName: string) => {
+    if (!grinderName.trim()) return;
+    
+    const existing = getCustomGrinders();
+    if (!existing.includes(grinderName.trim())) {
+      const updated = [...existing, grinderName.trim()];
+      localStorage.setItem(GRINDER_BRANDS_KEY, JSON.stringify(updated));
+    }
+  };
 
   const loadUserRecipes = async () => {
     if (!user || !isSupabaseConfigured) {
@@ -39,7 +62,8 @@ export const useUserRecipes = () => {
       const { data, error } = await supabase
         .from('user_recipes')
         .select('*')
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: true });
 
       if (error) {
         console.error('Erro ao carregar receitas:', error);
@@ -124,6 +148,11 @@ export const useUserRecipes = () => {
       return false;
     }
 
+    // Save custom grinder if it's a new one
+    if (recipe.grinderBrand && !['Comandante', '1Zpresso JX-Pro', 'Baratza Encore', 'Hario Mini Mill Slim', 'Timemore C2', 'Timemore C3', 'Porlex Mini', 'Mazzer Mini', 'Fellow Ode', 'Wilfa Uniform', 'Hario Skerton', 'Rhinowares Hand Grinder', 'OE Lido 3', 'Orphan Espresso Pharos'].includes(recipe.grinderBrand)) {
+      saveCustomGrinder(recipe.grinderBrand);
+    }
+
     try {
       const { error } = await supabase
         .from('user_recipes')
@@ -164,6 +193,11 @@ export const useUserRecipes = () => {
       return false;
     }
 
+    // Save custom grinder if it's a new one
+    if (recipe.grinderBrand && !['Comandante', '1Zpresso JX-Pro', 'Baratza Encore', 'Hario Mini Mill Slim', 'Timemore C2', 'Timemore C3', 'Porlex Mini', 'Mazzer Mini', 'Fellow Ode', 'Wilfa Uniform', 'Hario Skerton', 'Rhinowares Hand Grinder', 'OE Lido 3', 'Orphan Espresso Pharos'].includes(recipe.grinderBrand)) {
+      saveCustomGrinder(recipe.grinderBrand);
+    }
+
     try {
       const { error } = await supabase
         .from('user_recipes')
@@ -195,6 +229,39 @@ export const useUserRecipes = () => {
     } catch (error) {
       console.error('Erro ao atualizar receita:', error);
       toast.error('Erro ao atualizar receita');
+      return false;
+    }
+  };
+
+  const updateRecipeOrder = async (newOrderedRecipes: Recipe[]) => {
+    if (!user || !isSupabaseConfigured) return false;
+
+    try {
+      // Update each recipe with new timestamp to maintain order
+      const updates = newOrderedRecipes.map((recipe, index) => ({
+        id: recipe.id,
+        user_id: user.id,
+        created_at: new Date(Date.now() + index * 1000).toISOString()
+      }));
+
+      for (const update of updates) {
+        const { error } = await supabase
+          .from('user_recipes')
+          .update({ created_at: update.created_at })
+          .eq('id', update.id)
+          .eq('user_id', user.id);
+
+        if (error) {
+          console.error('Erro ao reordenar receitas:', error);
+          return false;
+        }
+      }
+
+      setUserRecipes(newOrderedRecipes);
+      toast.success('Ordem das receitas atualizada!');
+      return true;
+    } catch (error) {
+      console.error('Erro ao reordenar receitas:', error);
       return false;
     }
   };
@@ -279,9 +346,12 @@ export const useUserRecipes = () => {
     loading,
     saveRecipe,
     updateRecipe,
+    updateRecipeOrder,
     deleteRecipe,
     addToBrewHistory,
     loadUserRecipes,
-    loadBrewHistory
+    loadBrewHistory,
+    getCustomGrinders,
+    saveCustomGrinder
   };
 };

@@ -3,8 +3,19 @@ import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Coffee, Clock, CheckCircle, ArrowRight, Pause, Play, Square, Thermometer, Settings, FileText } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Play, 
+  Pause, 
+  SkipForward, 
+  ArrowLeft, 
+  Coffee, 
+  Droplets,
+  CheckCircle
+} from "lucide-react";
 import { Recipe } from "@/pages/Index";
+import { WaterPourAnimation } from "@/components/WaterPourAnimation";
+import { useUserRecipes } from "@/hooks/useUserRecipes";
 
 interface AutoBrewingProcessProps {
   recipe: Recipe;
@@ -12,80 +23,35 @@ interface AutoBrewingProcessProps {
 }
 
 export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessProps) => {
-  const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [timeRemaining, setTimeRemaining] = useState(recipe.steps[0]?.duration || 0);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(recipe.steps[0]?.duration || 0);
   const [isRunning, setIsRunning] = useState(false);
-  const [isComplete, setIsComplete] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
+  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  const [currentWaterAmount, setCurrentWaterAmount] = useState(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  const currentStep = recipe.steps[currentStepIndex];
-  const totalSteps = recipe.steps.length;
-  const completedSteps = currentStepIndex;
-
-  // Criar um beep de notificação usando Web Audio API
-  const playNotificationSound = () => {
-    try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-      
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.5);
-    } catch (error) {
-      console.log('Não foi possível reproduzir o som de notificação');
-    }
-  };
-
-  const startTimer = () => {
-    setIsRunning(true);
-    setIsPaused(false);
-  };
-
-  const pauseTimer = () => {
-    setIsRunning(false);
-    setIsPaused(true);
-  };
-
-  const stopProcess = () => {
-    setIsRunning(false);
-    setIsPaused(false);
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
-    onComplete();
-  };
-
-  const nextStep = () => {
-    if (currentStepIndex < totalSteps - 1) {
-      const nextIndex = currentStepIndex + 1;
-      setCurrentStepIndex(nextIndex);
-      setTimeRemaining(recipe.steps[nextIndex].duration);
-      setIsRunning(true);
-      setIsPaused(false);
-      playNotificationSound();
-    } else {
-      setIsComplete(true);
-      setIsRunning(false);
-      playNotificationSound();
-    }
-  };
+  const { addToBrewHistory } = useUserRecipes();
 
   useEffect(() => {
-    if (isRunning && timeRemaining > 0) {
+    setTimeLeft(recipe.steps[currentStep]?.duration || 0);
+  }, [currentStep, recipe.steps]);
+
+  // Calculate cumulative water amounts
+  const getCumulativeWaterAmount = (stepIndex: number) => {
+    return recipe.steps.slice(0, stepIndex + 1).reduce((total, step) => {
+      return total + (step.waterAmount || 0);
+    }, 0);
+  };
+
+  const targetWaterAmount = getCumulativeWaterAmount(currentStep);
+
+  useEffect(() => {
+    if (isRunning && timeLeft > 0) {
       intervalRef.current = setInterval(() => {
-        setTimeRemaining((prev) => {
+        setTimeLeft((prev) => {
           if (prev <= 1) {
-            // Tempo acabou, próximo passo automaticamente
-            setTimeout(nextStep, 100);
+            setIsRunning(false);
+            setCompletedSteps(prev => [...prev, currentStep]);
+            setCurrentWaterAmount(targetWaterAmount);
             return 0;
           }
           return prev - 1;
@@ -94,6 +60,7 @@ export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessPro
     } else {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
     }
 
@@ -102,186 +69,284 @@ export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessPro
         clearInterval(intervalRef.current);
       }
     };
-  }, [isRunning, timeRemaining, currentStepIndex]);
+  }, [isRunning, timeLeft, currentStep, targetWaterAmount]);
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  // Update water amount during pouring
+  useEffect(() => {
+    if (isRunning && currentStep < recipe.steps.length) {
+      const stepDuration = recipe.steps[currentStep]?.duration || 1;
+      const stepWaterAmount = recipe.steps[currentStep]?.waterAmount || 0;
+      const previousWaterAmount = getCumulativeWaterAmount(currentStep - 1);
+      
+      const progress = (stepDuration - timeLeft) / stepDuration;
+      const currentStepWater = stepWaterAmount * progress;
+      setCurrentWaterAmount(previousWaterAmount + currentStepWater);
+    }
+  }, [timeLeft, isRunning, currentStep, recipe.steps]);
+
+  const formatTime = (time: number) => {
+    const mins = Math.floor(time / 60);
+    const secs = time % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const getProgress = () => {
-    if (!currentStep) return 0;
-    return ((currentStep.duration - timeRemaining) / currentStep.duration) * 100;
+  const handleStart = () => {
+    setIsRunning(true);
   };
 
-  const getOverallProgress = () => {
-    const totalDuration = recipe.steps.reduce((acc, step) => acc + step.duration, 0);
-    const completedDuration = recipe.steps
-      .slice(0, currentStepIndex)
-      .reduce((acc, step) => acc + step.duration, 0);
-    const currentStepProgress = currentStep ? ((currentStep.duration - timeRemaining) / currentStep.duration) * currentStep.duration : 0;
-    
-    return ((completedDuration + currentStepProgress) / totalDuration) * 100;
+  const handlePause = () => {
+    setIsRunning(false);
   };
 
-  if (isComplete) {
-    return (
-      <Card className="w-full max-w-2xl mx-auto">
-        <CardHeader className="text-center">
-          <CardTitle className="flex items-center justify-center gap-2 text-green-600">
-            <CheckCircle className="w-6 h-6" />
-            Preparo Concluído!
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-center space-y-4">
-          <p className="text-coffee-700">
-            Seu {recipe.name} está pronto! Aproveite seu café.
-          </p>
-          <Button 
-            onClick={onComplete}
-            className="bg-coffee-600 hover:bg-coffee-700"
-          >
-            Finalizar
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
+  const handleNextStep = () => {
+    if (currentStep < recipe.steps.length - 1) {
+      setIsRunning(false);
+      setCurrentStep(currentStep + 1);
+      if (!completedSteps.includes(currentStep)) {
+        setCompletedSteps(prev => [...prev, currentStep]);
+      }
+      setCurrentWaterAmount(getCumulativeWaterAmount(currentStep));
+    } else {
+      setCompletedSteps(prev => [...prev, currentStep]);
+      // Add to brew history when completing the recipe
+      addToBrewHistory(recipe);
+    }
+  };
+
+  const handleBack = () => {
+    onComplete();
+  };
+
+  const currentStepData = recipe.steps[currentStep];
+  const progress = currentStepData ? ((currentStepData.duration - timeLeft) / currentStepData.duration) * 100 : 0;
+  const overallProgress = ((currentStep + (completedSteps.includes(currentStep) ? 1 : progress / 100)) / recipe.steps.length) * 100;
+  const isStepCompleted = completedSteps.includes(currentStep);
+  const isAllCompleted = completedSteps.length === recipe.steps.length;
 
   return (
-    <div className="space-y-6">
-      <Card className="w-full max-w-2xl mx-auto">
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span className="flex items-center gap-2">
-              <Coffee className="w-5 h-5" />
-              {recipe.name}
-            </span>
-            <span className="text-sm text-coffee-600">
-              Etapa {currentStepIndex + 1} de {totalSteps}
-            </span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Informações da Receita */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-coffee-50 rounded-lg">
-            <div className="text-center">
-              <Coffee className="w-5 h-5 mx-auto mb-1 text-coffee-600" />
-              <p className="text-sm font-medium">{recipe.coffeeRatio}g</p>
-              <p className="text-xs text-coffee-600">Café</p>
+    <div className="max-w-2xl mx-auto space-y-4 sm:space-y-6 px-4 sm:px-0">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <Button 
+          variant="ghost" 
+          onClick={handleBack}
+          className="text-coffee-600 hover:bg-coffee-100"
+          size="sm"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          <span className="hidden sm:inline">Voltar</span>
+        </Button>
+        <h1 className="text-xl sm:text-2xl font-bold text-coffee-800 text-center flex-1">
+          {recipe.name}
+        </h1>
+        <div className="w-16 sm:w-20" />
+      </div>
+
+      {/* Recipe Info */}
+      <Card className="bg-coffee-50 border-coffee-200">
+        <CardContent className="pt-4 sm:pt-6">
+          <div className="flex items-center justify-center gap-4 sm:gap-8 text-sm sm:text-base">
+            <div className="flex items-center gap-2">
+              <Coffee className="w-4 h-4 sm:w-5 sm:h-5 text-coffee-600" />
+              <span className="font-medium">{recipe.coffeeRatio}g café</span>
             </div>
-            <div className="text-center">
-              <Clock className="w-5 h-5 mx-auto mb-1 text-blue-500" />
-              <p className="text-sm font-medium">{recipe.waterRatio}ml</p>
-              <p className="text-xs text-coffee-600">Água</p>
+            <div className="text-coffee-400 text-xl sm:text-2xl">:</div>
+            <div className="flex items-center gap-2">
+              <Droplets className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
+              <span className="font-medium">{recipe.waterRatio}ml água</span>
             </div>
-            {recipe.waterTemperature && (
-              <div className="text-center">
-                <Thermometer className="w-5 h-5 mx-auto mb-1 text-orange-500" />
-                <p className="text-sm font-medium">{recipe.waterTemperature}°C</p>
-                <p className="text-xs text-coffee-600">Temperatura</p>
-              </div>
-            )}
-            {recipe.grinderBrand && recipe.grinderClicks && (
-              <div className="text-center">
-                <Settings className="w-5 h-5 mx-auto mb-1 text-gray-600" />
-                <p className="text-sm font-medium">{recipe.grinderClicks}</p>
-                <p className="text-xs text-coffee-600">{recipe.grinderBrand}</p>
-              </div>
-            )}
           </div>
+        </CardContent>
+      </Card>
 
-          {recipe.paperBrand && (
-            <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
-              <FileText className="w-4 h-4 text-blue-600" />
-              <span className="text-sm text-blue-800">Papel: {recipe.paperBrand}</span>
-            </div>
-          )}
-
-          {/* Progresso Geral */}
+      {/* Overall Progress */}
+      <Card>
+        <CardContent className="pt-4 sm:pt-6">
           <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
+            <div className="flex justify-between text-sm">
               <span className="text-coffee-600">Progresso Geral</span>
-              <span className="text-coffee-800">{Math.round(getOverallProgress())}%</span>
+              <span className="text-coffee-600">
+                {Math.round(overallProgress)}%
+              </span>
             </div>
-            <Progress value={getOverallProgress()} className="h-2" />
+            <Progress value={overallProgress} className="h-2" />
+            <div className="text-center text-sm text-coffee-600">
+              Etapa {currentStep + 1} de {recipe.steps.length}
+            </div>
           </div>
+        </CardContent>
+      </Card>
 
-          {/* Etapa Atual */}
-          <div className="space-y-4">
+      {/* Water Animation */}
+      {!isAllCompleted && currentStepData?.waterAmount && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm sm:text-base text-coffee-800">
+              Quantidade de Água - {currentStepData.name}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <WaterPourAnimation 
+              isPouring={isRunning}
+              currentAmount={Math.round(currentWaterAmount)}
+              targetAmount={targetWaterAmount}
+            />
+            <div className="text-xs sm:text-sm text-coffee-600 text-center">
+              {currentStepData.waterAmount && (
+                <span>
+                  Adicionar: {currentStepData.waterAmount}ml • 
+                  Total acumulado: {targetWaterAmount}ml
+                </span>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Current Step */}
+      {!isAllCompleted && (
+        <Card className="bg-white shadow-lg">
+          <CardHeader className="pb-2 sm:pb-4">
+            <CardTitle className="flex items-center justify-between text-sm sm:text-base">
+              <span className="text-coffee-800">{currentStepData?.name}</span>
+              {isStepCompleted && (
+                <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-500" />
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 sm:space-y-6">
+            {/* Timer Display */}
             <div className="text-center">
-              <h3 className="text-xl font-semibold text-coffee-800 mb-2">
-                {currentStep?.name}
-              </h3>
-              <div className="text-4xl font-bold text-coffee-700 mb-2">
-                {formatTime(timeRemaining)}
+              <div className="text-3xl sm:text-5xl font-mono font-bold text-coffee-700 mb-4">
+                {formatTime(timeLeft)}
               </div>
-              <Progress value={getProgress()} className="h-3 mb-4" />
+              <Progress value={progress} className="h-2 sm:h-3 mb-4" />
             </div>
 
-            <div className="p-4 bg-cream-50 rounded-lg border border-coffee-200">
-              <p className="text-coffee-800 text-center">
-                {currentStep?.instruction}
+            {/* Instruction */}
+            <div className="bg-cream-50 p-3 sm:p-4 rounded-lg border border-cream-200">
+              <p className="text-coffee-700 leading-relaxed text-sm sm:text-base">
+                {currentStepData?.instruction}
               </p>
             </div>
-          </div>
 
-          {/* Controles */}
-          <div className="flex gap-3 justify-center">
-            {!isRunning && !isPaused ? (
-              <Button 
-                onClick={startTimer}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                <Play className="w-4 h-4 mr-2" />
-                Iniciar
-              </Button>
-            ) : isRunning ? (
-              <Button 
-                onClick={pauseTimer}
-                className="bg-yellow-600 hover:bg-yellow-700"
-              >
-                <Pause className="w-4 h-4 mr-2" />
-                Pausar
-              </Button>
-            ) : (
-              <Button 
-                onClick={startTimer}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                <Play className="w-4 h-4 mr-2" />
-                Continuar
-              </Button>
-            )}
-            
-            <Button 
-              onClick={stopProcess}
-              variant="outline"
-              className="border-red-300 text-red-600 hover:bg-red-50"
-            >
-              <Square className="w-4 h-4 mr-2" />
-              Parar
-            </Button>
-          </div>
+            {/* Controls */}
+            <div className="flex justify-center gap-2 flex-wrap">
+              {!isStepCompleted && !isRunning && timeLeft > 0 && (
+                <Button 
+                  onClick={handleStart}
+                  className="bg-coffee-600 hover:bg-coffee-700 text-white"
+                  size="sm"
+                >
+                  <Play className="w-4 h-4 mr-2" />
+                  Iniciar
+                </Button>
+              )}
+              
+              {!isStepCompleted && isRunning && (
+                <Button 
+                  onClick={handlePause}
+                  variant="outline"
+                  className="border-coffee-600 text-coffee-600 hover:bg-coffee-50"
+                  size="sm"
+                >
+                  <Pause className="w-4 h-4 mr-2" />
+                  Pausar
+                </Button>
+              )}
 
-          {/* Próximas Etapas */}
-          {currentStepIndex < totalSteps - 1 && (
-            <div className="mt-6">
-              <h4 className="text-sm font-medium text-coffee-700 mb-3">Próximas etapas:</h4>
-              <div className="space-y-2">
-                {recipe.steps.slice(currentStepIndex + 1, currentStepIndex + 3).map((step, index) => (
-                  <div key={index} className="flex items-center gap-3 p-2 bg-gray-50 rounded">
-                    <ArrowRight className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm text-gray-700">{step.name}</span>
-                    <span className="text-xs text-gray-500 ml-auto">
-                      {formatTime(step.duration)}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              {(isStepCompleted || timeLeft === 0) && currentStep < recipe.steps.length - 1 && (
+                <Button 
+                  onClick={handleNextStep}
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                  size="sm"
+                >
+                  <SkipForward className="w-4 h-4 mr-2" />
+                  Próxima
+                </Button>
+              )}
+
+              {(isStepCompleted || timeLeft === 0) && currentStep === recipe.steps.length - 1 && (
+                <Button 
+                  onClick={handleNextStep}
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                  size="sm"
+                >
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Finalizar
+                </Button>
+              )}
             </div>
-          )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Completion Message */}
+      {isAllCompleted && (
+        <Card className="bg-green-50 border-green-200">
+          <CardContent className="pt-6 text-center space-y-4">
+            <CheckCircle className="w-12 h-12 sm:w-16 sm:h-16 text-green-500 mx-auto" />
+            <h3 className="text-xl sm:text-2xl font-bold text-green-800">
+              Café Pronto! ☕
+            </h3>
+            <p className="text-green-700 text-sm sm:text-base">
+              Seu {recipe.name} está pronto para ser degustado. 
+              Aproveite o aroma e o sabor do café perfeitamente preparado!
+            </p>
+            <Button 
+              onClick={onComplete}
+              className="bg-coffee-600 hover:bg-coffee-700 text-white"
+            >
+              Fazer Outro Café
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Steps Overview */}
+      <Card>
+        <CardHeader className="pb-2 sm:pb-4">
+          <CardTitle className="text-sm sm:text-base text-coffee-800">Todas as Etapas</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2 sm:space-y-3">
+            {recipe.steps.map((step, index) => (
+              <div 
+                key={index} 
+                className={`flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg border text-sm ${
+                  index === currentStep 
+                    ? 'bg-coffee-100 border-coffee-300' 
+                    : completedSteps.includes(index)
+                    ? 'bg-green-50 border-green-200'
+                    : 'bg-gray-50 border-gray-200'
+                }`}
+              >
+                <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold ${
+                  completedSteps.includes(index)
+                    ? 'bg-green-500 text-white'
+                    : index === currentStep
+                    ? 'bg-coffee-600 text-white'
+                    : 'bg-gray-300 text-gray-600'
+                }`}>
+                  {completedSteps.includes(index) ? '✓' : index + 1}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-coffee-800 truncate">{step.name}</div>
+                  <div className="text-xs sm:text-sm text-coffee-600 flex flex-wrap gap-2">
+                    <span>{formatTime(step.duration)}</span>
+                    {step.waterAmount && (
+                      <span>• {step.waterAmount}ml (Total: {getCumulativeWaterAmount(index)}ml)</span>
+                    )}
+                  </div>
+                </div>
+                {index === currentStep && (
+                  <Badge className="bg-coffee-600 text-white text-xs">
+                    Atual
+                  </Badge>
+                )}
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
     </div>
