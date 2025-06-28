@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -70,7 +69,7 @@ export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessPro
 
               // Check if it's the last step
               if (currentStep === recipe.steps.length - 1) {
-                setIsRunning(false);
+                // For last step, enter overtime mode but keep running
                 setIsOvertime(true);
                 setOvertimeSeconds(0);
                 return 0;
@@ -140,14 +139,6 @@ export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessPro
     }
   }, [timeLeft, isRunning, isPaused, currentStep, recipe.steps, isOvertime]);
 
-  // Handle overtime for last step
-  useEffect(() => {
-    if (timeLeft === 0 && isRunning && currentStep === recipe.steps.length - 1) {
-      setIsOvertime(true);
-      setIsRunning(false);
-    }
-  }, [timeLeft, isRunning, currentStep]);
-
   const formatTime = (time: number) => {
     const mins = Math.floor(time / 60);
     const secs = time % 60;
@@ -191,10 +182,17 @@ export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessPro
     setIsRunning(false);
     setIsOvertime(false);
     
-    // Save to brew history
-    await addToBrewHistory(recipe);
+    // Calculate total extraction time including overtime
+    const totalExtractionTime = recipe.steps.reduce((total, step) => total + step.duration, 0) + overtimeSeconds;
     
-    toast.success(`Receita Finalizada! ${recipe.name} foi salva no seu histórico ☕`);
+    // Save to brew history with total time
+    await addToBrewHistory({
+      ...recipe,
+      extractionTime: totalExtractionTime
+    });
+    
+    const overtimeDisplay = overtimeSeconds > 0 ? ` (tempo total: ${formatTime(totalExtractionTime)})` : '';
+    toast.success(`Receita Finalizada! ${recipe.name} foi salva no seu histórico ☕${overtimeDisplay}`);
     
     onComplete();
   };
@@ -333,7 +331,7 @@ export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessPro
             {isOvertime && isLastStep && (
               <div className="text-orange-600 text-sm mb-2 flex items-center justify-center gap-2">
                 <Clock className="w-4 h-4" />
-                Tempo excedido - Controle manual ativo
+                Tempo excedido - Cronômetro em execução
               </div>
             )}
             
@@ -364,7 +362,7 @@ export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessPro
             )}
 
             {/* Pause/Resume button */}
-            {isRunning && !isOvertime && (
+            {isRunning && (
               <Button 
                 onClick={handlePause}
                 variant="outline"
@@ -389,8 +387,8 @@ export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessPro
               </Button>
             )}
 
-            {/* Finish recipe button (last step) */}
-            {isLastStep && (isStepCompleted || isOvertime || timeLeft === 0) && (
+            {/* Finish recipe button (last step - show when completed OR in overtime) */}
+            {isLastStep && (isStepCompleted || isOvertime) && (
               <Button 
                 onClick={handleFinishRecipe}
                 className="bg-green-600 hover:bg-green-700 text-white"
