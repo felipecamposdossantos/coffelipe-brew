@@ -185,11 +185,8 @@ export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessPro
     // Calculate total extraction time including overtime
     const totalExtractionTime = recipe.steps.reduce((total, step) => total + step.duration, 0) + overtimeSeconds;
     
-    // Save to brew history with total time
-    await addToBrewHistory({
-      ...recipe,
-      extractionTime: totalExtractionTime
-    });
+    // Save to brew history with original recipe (no modifications to recipe object)
+    await addToBrewHistory(recipe);
     
     const overtimeDisplay = overtimeSeconds > 0 ? ` (tempo total: ${formatTime(totalExtractionTime)})` : '';
     toast.success(`Receita Finalizada! ${recipe.name} foi salva no seu histórico ☕${overtimeDisplay}`);
