@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Recipe } from "@/pages/Index";
 import { toast } from "sonner";
@@ -11,9 +12,9 @@ export const useBrewingTimer = (recipe: Recipe) => {
   const [currentWaterAmount, setCurrentWaterAmount] = useState(0);
   const [isOvertime, setIsOvertime] = useState(false);
   const [overtimeSeconds, setOvertimeSeconds] = useState(0);
-  const [countdown, setCountdown] = useState(0);
   const [hasStarted, setHasStarted] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const wakeLockRef = useRef<any>(null);
 
   // Calculate cumulative water amounts
   const getCumulativeWaterAmount = (stepIndex: number) => {
@@ -23,6 +24,30 @@ export const useBrewingTimer = (recipe: Recipe) => {
   };
 
   const targetWaterAmount = getCumulativeWaterAmount(currentStep);
+
+  // Wake Lock para manter a tela ligada
+  const requestWakeLock = async () => {
+    try {
+      if ('wakeLock' in navigator) {
+        wakeLockRef.current = await (navigator as any).wakeLock.request('screen');
+        console.log('Wake lock ativado - tela permanecerá ligada');
+      }
+    } catch (err) {
+      console.log('Wake lock não suportado ou falhou:', err);
+    }
+  };
+
+  const releaseWakeLock = async () => {
+    if (wakeLockRef.current) {
+      try {
+        await wakeLockRef.current.release();
+        wakeLockRef.current = null;
+        console.log('Wake lock liberado');
+      } catch (err) {
+        console.log('Erro ao liberar wake lock:', err);
+      }
+    }
+  };
 
   useEffect(() => {
     setTimeLeft(recipe.steps[currentStep]?.duration || 0);
@@ -50,33 +75,11 @@ export const useBrewingTimer = (recipe: Recipe) => {
                 setIsOvertime(true);
                 setOvertimeSeconds(0);
                 return 0;
-              }
-
-              // Auto-progress to next step (only after first step)
-              if (hasStarted) {
-                setCountdown(3);
-                setIsRunning(false);
-                
-                // Countdown for next step
-                let countdownValue = 3;
-                const countdownInterval = setInterval(() => {
-                  countdownValue--;
-                  setCountdown(countdownValue);
-                  
-                  if (countdownValue <= 0) {
-                    clearInterval(countdownInterval);
-                    setCurrentStep(currentStep + 1);
-                    setIsRunning(true);
-                    setCountdown(0);
-                    
-                    toast.info(`Próxima Etapa: ${recipe.steps[currentStep + 1]?.name}`);
-                  }
-                }, 1000);
-                
-                return 0;
               } else {
-                setIsRunning(false);
-                return 0;
+                // Auto-progress to next step immediately (removed countdown)
+                setCurrentStep(currentStep + 1);
+                toast.info(`Próxima Etapa: ${recipe.steps[currentStep + 1]?.name}`);
+                return recipe.steps[currentStep + 1]?.duration || 0;
               }
             } else {
               // Continue overtime
@@ -99,7 +102,7 @@ export const useBrewingTimer = (recipe: Recipe) => {
         clearInterval(intervalRef.current);
       }
     };
-  }, [isRunning, isPaused, timeLeft, currentStep, targetWaterAmount, isOvertime, hasStarted]);
+  }, [isRunning, isPaused, timeLeft, currentStep, targetWaterAmount, isOvertime]);
 
   // Update water amount during pouring
   useEffect(() => {
@@ -129,9 +132,10 @@ export const useBrewingTimer = (recipe: Recipe) => {
     return formatTime(timeLeft);
   };
 
-  const handleStart = () => {
+  const handleStart = async () => {
     setIsRunning(true);
     setHasStarted(true);
+    await requestWakeLock();
     toast.success(`Receita Iniciada: ${recipe.steps[0]?.name}`);
   };
 
@@ -154,6 +158,18 @@ export const useBrewingTimer = (recipe: Recipe) => {
     }
   };
 
+  const handleFinish = async () => {
+    setIsRunning(false);
+    await releaseWakeLock();
+  };
+
+  // Cleanup wake lock on unmount
+  useEffect(() => {
+    return () => {
+      releaseWakeLock();
+    };
+  }, []);
+
   return {
     currentStep,
     timeLeft,
@@ -163,7 +179,6 @@ export const useBrewingTimer = (recipe: Recipe) => {
     currentWaterAmount,
     isOvertime,
     overtimeSeconds,
-    countdown,
     hasStarted,
     targetWaterAmount,
     getCumulativeWaterAmount,
@@ -172,6 +187,7 @@ export const useBrewingTimer = (recipe: Recipe) => {
     handleStart,
     handlePause,
     handleNextStep,
+    handleFinish,
     setIsRunning,
     setIsOvertime,
     setCompletedSteps

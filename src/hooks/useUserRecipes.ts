@@ -280,6 +280,35 @@ export const useUserRecipes = () => {
     }
   };
 
+  const deleteBrewHistory = async (brewId: string) => {
+    if (!user || !isSupabaseConfigured) {
+      toast.error('Faça login para excluir histórico');
+      return false;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('brew_history')
+        .delete()
+        .eq('id', brewId)
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Erro ao excluir preparo do histórico:', error);
+        toast.error('Erro ao excluir preparo do histórico');
+        return false;
+      }
+
+      toast.success('Preparo excluído do histórico!');
+      loadBrewHistory(); // Reload the history
+      return true;
+    } catch (error) {
+      console.error('Erro ao excluir preparo do histórico:', error);
+      toast.error('Erro ao excluir preparo do histórico');
+      return false;
+    }
+  };
+
   const addToBrewHistory = async (recipe: Recipe) => {
     if (!user || !isSupabaseConfigured) {
       console.log('addToBrewHistory: No user or Supabase not configured');
@@ -347,6 +376,7 @@ export const useUserRecipes = () => {
     updateRecipeOrder,
     deleteRecipe,
     addToBrewHistory,
+    deleteBrewHistory,
     loadUserRecipes,
     loadBrewHistory,
     getCustomGrinders,

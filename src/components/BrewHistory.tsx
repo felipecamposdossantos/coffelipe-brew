@@ -1,13 +1,19 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useUserRecipes } from '@/hooks/useUserRecipes';
 import { BrewHistoryDetails } from '@/components/BrewHistoryDetails';
-import { Clock, Coffee, Calendar, Thermometer, Droplets } from 'lucide-react';
+import { Clock, Coffee, Calendar, Thermometer, Droplets, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 export const BrewHistory = () => {
-  const { brewHistory, loading } = useUserRecipes();
+  const { brewHistory, loading, deleteBrewHistory } = useUserRecipes();
+
+  const handleDeleteBrew = async (brewId: string, recipeName: string) => {
+    await deleteBrewHistory(brewId);
+  };
 
   if (loading) {
     return (
@@ -107,8 +113,38 @@ export const BrewHistory = () => {
                     </div>
                   </div>
                   
-                  <div className="flex-shrink-0">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <BrewHistoryDetails brew={brew} />
+                    
+                    {/* Delete button */}
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="mx-4 sm:mx-0">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Excluir Preparo</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Tem certeza que deseja excluir este preparo da receita "{brew.recipe_name}"? Esta ação não pode ser desfeita.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDeleteBrew(brew.id, brew.recipe_name)}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            Excluir
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </div>
               </CardContent>
