@@ -87,6 +87,39 @@ export type Database = {
         }
         Relationships: []
       }
+      filter_papers: {
+        Row: {
+          brand: string
+          created_at: string
+          id: string
+          model: string
+          name: string
+          notes: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          brand: string
+          created_at?: string
+          id?: string
+          model: string
+          name: string
+          notes?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          brand?: string
+          created_at?: string
+          id?: string
+          model?: string
+          name?: string
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -114,6 +147,7 @@ export type Database = {
           coffee_ratio: number
           created_at: string
           description: string
+          filter_paper_id: string | null
           grinder_brand: string | null
           grinder_clicks: number | null
           id: string
@@ -130,6 +164,7 @@ export type Database = {
           coffee_ratio: number
           created_at?: string
           description: string
+          filter_paper_id?: string | null
           grinder_brand?: string | null
           grinder_clicks?: number | null
           id: string
@@ -146,6 +181,7 @@ export type Database = {
           coffee_ratio?: number
           created_at?: string
           description?: string
+          filter_paper_id?: string | null
           grinder_brand?: string | null
           grinder_clicks?: number | null
           id?: string
@@ -163,6 +199,13 @@ export type Database = {
             columns: ["coffee_bean_id"]
             isOneToOne: false
             referencedRelation: "coffee_beans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_recipes_filter_paper_id_fkey"
+            columns: ["filter_paper_id"]
+            isOneToOne: false
+            referencedRelation: "filter_papers"
             referencedColumns: ["id"]
           },
         ]

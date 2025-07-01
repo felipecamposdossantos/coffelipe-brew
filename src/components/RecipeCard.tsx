@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Coffee, Droplets, Clock, Play, Thermometer, Settings, FileText } from "lucide-react";
 import { Recipe } from "@/pages/Index";
 import { useCoffeeBeans } from "@/hooks/useCoffeeBeans";
+import { useFilterPapers } from "@/hooks/useFilterPapers";
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -32,12 +32,14 @@ export const RecipeCard = ({ recipe, onStartBrewing }: RecipeCardProps) => {
   const [selectedGrinder, setSelectedGrinder] = useState(recipe.grinderBrand || "");
   const [selectedClicks, setSelectedClicks] = useState(recipe.grinderClicks || 15);
   const [selectedCoffeeBeanId, setSelectedCoffeeBeanId] = useState(recipe.coffeeBeanId || "none");
+  const [selectedFilterPaperId, setSelectedFilterPaperId] = useState(recipe.filterPaperId || "none");
   const [selectedPaper, setSelectedPaper] = useState(recipe.paperBrand || "");
   const [customGrinder, setCustomGrinder] = useState("");
   const [customClicks, setCustomClicks] = useState(15);
   const [useCustomGrinder, setUseCustomGrinder] = useState(false);
 
   const { coffeeBeans } = useCoffeeBeans();
+  const { filterPapers } = useFilterPapers();
 
   const totalTime = recipe.steps.reduce((acc, step) => acc + step.duration, 0);
   
@@ -70,6 +72,7 @@ export const RecipeCard = ({ recipe, onStartBrewing }: RecipeCardProps) => {
       grinderBrand: finalGrinder || recipe.grinderBrand,
       grinderClicks: finalClicks || recipe.grinderClicks,
       coffeeBeanId: selectedCoffeeBeanId === "none" ? undefined : selectedCoffeeBeanId || recipe.coffeeBeanId,
+      filterPaperId: selectedFilterPaperId === "none" ? undefined : selectedFilterPaperId || recipe.filterPaperId,
       paperBrand: selectedPaper || recipe.paperBrand
     };
     onStartBrewing(updatedRecipe, mode);
@@ -118,16 +121,38 @@ export const RecipeCard = ({ recipe, onStartBrewing }: RecipeCardProps) => {
           </div>
         )}
 
-        {/* Paper Brand Selection */}
-        <div className="space-y-2">
-          <Label className="text-sm font-medium text-coffee-700">Papel do Filtro</Label>
-          <Input
-            value={selectedPaper}
-            onChange={(e) => setSelectedPaper(e.target.value)}
-            placeholder={recipe.paperBrand || "Digite a marca do papel"}
-            className="w-full"
-          />
-        </div>
+        {/* Filter Paper Selection */}
+        {filterPapers.length > 0 && (
+          <div className="space-y-2">
+            <Label className="text-sm font-medium text-coffee-700">Papel de Filtro</Label>
+            <Select value={selectedFilterPaperId} onValueChange={setSelectedFilterPaperId}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Selecione seu papel de filtro" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Usar papel padrão</SelectItem>
+                {filterPapers.map((paper) => (
+                  <SelectItem key={paper.id} value={paper.id}>
+                    {paper.name} - {paper.brand} {paper.model}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+        {/* Paper Brand Selection - fallback if no filter papers are registered */}
+        {filterPapers.length === 0 && (
+          <div className="space-y-2">
+            <Label className="text-sm font-medium text-coffee-700">Marca do Papel</Label>
+            <Input
+              value={selectedPaper}
+              onChange={(e) => setSelectedPaper(e.target.value)}
+              placeholder={recipe.paperBrand || "Digite a marca do papel"}
+              className="w-full"
+            />
+          </div>
+        )}
 
         {/* Grinder Selection */}
         <div className="space-y-2">

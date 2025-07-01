@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RecipeList } from "@/components/RecipeList";
@@ -14,6 +13,7 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { Coffee, Settings } from "lucide-react";
+import { FilterPapersManager } from "@/components/FilterPapersManager";
 
 export interface Recipe {
   id: string;
@@ -26,6 +26,7 @@ export interface Recipe {
   grinderClicks?: number;
   paperBrand?: string;
   coffeeBeanId?: string;
+  filterPaperId?: string;
   steps: Array<{
     name: string;
     duration: number;
@@ -144,7 +145,7 @@ const Index = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5 mb-8 h-auto">
+          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6 mb-8 h-auto">
             <TabsTrigger value="recipes" className="text-xs sm:text-sm p-2 sm:p-3">
               Receitas
             </TabsTrigger>
@@ -156,6 +157,11 @@ const Index = () => {
             {user && (
               <TabsTrigger value="coffee-beans" className="text-xs sm:text-sm p-2 sm:p-3">
                 Grãos
+              </TabsTrigger>
+            )}
+            {user && (
+              <TabsTrigger value="filter-papers" className="text-xs sm:text-sm p-2 sm:p-3">
+                Filtros
               </TabsTrigger>
             )}
             {user && (
@@ -181,6 +187,12 @@ const Index = () => {
           {user && (
             <TabsContent value="coffee-beans">
               <CoffeeBeansManager />
+            </TabsContent>
+          )}
+
+          {user && (
+            <TabsContent value="filter-papers">
+              <FilterPapersManager />
             </TabsContent>
           )}
 
