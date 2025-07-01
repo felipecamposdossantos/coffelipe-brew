@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -19,8 +20,6 @@ interface AutoBrewingProcessProps {
 
 export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessProps) => {
   const { addToBrewHistory } = useUserRecipes();
-  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
-  const [hasStarted, setHasStarted] = useState(false);
   const [startTime, setStartTime] = useState<Date | null>(null);
 
   const {
@@ -28,48 +27,51 @@ export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessPro
     timeLeft,
     isRunning,
     isPaused,
-    isStepCompleted,
-    isLastStep,
+    completedSteps,
+    currentWaterAmount,
     isOvertime,
-    startTimer,
-    pauseTimer,
-    nextStep,
-    formatTime
-  } = useBrewingTimer(recipe.steps);
+    overtimeSeconds,
+    countdown,
+    hasStarted,
+    targetWaterAmount,
+    getCumulativeWaterAmount,
+    formatTime,
+    formatOvertimeDisplay,
+    handleStart,
+    handlePause,
+    handleNextStep,
+    setCompletedSteps
+  } = useBrewingTimer(recipe);
+
+  // Derived values
+  const isStepCompleted = completedSteps.includes(currentStep);
+  const isLastStep = currentStep === recipe.steps.length - 1;
 
   useEffect(() => {
-    if (isStepCompleted && !completedSteps.includes(currentStep)) {
-      setCompletedSteps(prev => [...prev, currentStep]);
+    if (isStepCompleted && isLastStep && isOvertime) {
+      const endTime = new Date();
+      const totalTimeMs = startTime ? endTime.getTime() - startTime.getTime() : 0;
+      const totalTimeSeconds = Math.floor(totalTimeMs / 1000);
       
-      if (isLastStep) {
-        const endTime = new Date();
-        const totalTimeMs = startTime ? endTime.getTime() - startTime.getTime() : 0;
-        const totalTimeSeconds = Math.floor(totalTimeMs / 1000);
-        
-        console.log('Finalizando preparo e salvando no histórico');
-        handleFinish(totalTimeSeconds);
-      }
+      console.log('Finalizando preparo e salvando no histórico');
+      handleFinish(totalTimeSeconds);
     }
-  }, [isStepCompleted, currentStep, completedSteps, isLastStep, startTime]);
+  }, [isStepCompleted, isLastStep, isOvertime, startTime]);
 
-  const handleStart = () => {
+  const handleStartBrewing = () => {
     console.log('Iniciando primeira etapa');
-    setHasStarted(true);
     setStartTime(new Date());
-    startTimer();
+    handleStart();
   };
 
-  const handlePause = () => {
+  const handlePauseBrewing = () => {
     console.log('Pausando/Retomando timer');
-    pauseTimer();
+    handlePause();
   };
 
-  const handleNextStep = () => {
+  const handleNextStepBrewing = () => {
     console.log('Pulando para próxima etapa');
-    if (!completedSteps.includes(currentStep)) {
-      setCompletedSteps(prev => [...prev, currentStep]);
-    }
-    nextStep();
+    handleNextStep();
   };
 
   const handleFinish = async (totalExtractionTime?: number) => {
@@ -97,12 +99,6 @@ export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessPro
         onComplete();
       }, 2000);
     }
-  };
-
-  const getCumulativeWaterAmount = (stepIndex: number) => {
-    return recipe.steps.slice(0, stepIndex + 1).reduce((total, step) => {
-      return total + (step.waterAmount || 0);
-    }, 0);
   };
 
   const currentStepData = recipe.steps[currentStep];
@@ -154,7 +150,7 @@ export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessPro
 
                 <div className="text-center">
                   <div className="text-3xl sm:text-4xl font-mono font-bold text-coffee-800 mb-2">
-                    {formatTime(timeLeft)}
+                    {countdown > 0 ? countdown : formatOvertimeDisplay()}
                   </div>
                   <div className="flex items-center justify-center gap-2 text-coffee-600 text-sm">
                     <Clock className="w-4 h-4" />
@@ -177,7 +173,11 @@ export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessPro
         {/* Water Pour Animation */}
         <Card className="order-2">
           <CardContent className="pt-4 sm:pt-6 flex items-center justify-center h-40 sm:h-48">
-            <WaterPourAnimation isPouring={isRunning && !isPaused} />
+            <WaterPourAnimation 
+              isPouring={isRunning && !isPaused} 
+              currentAmount={currentWaterAmount}
+              targetAmount={targetWaterAmount}
+            />
           </CardContent>
         </Card>
       </div>
@@ -192,9 +192,9 @@ export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessPro
         isStepCompleted={isStepCompleted}
         isLastStep={isLastStep}
         isOvertime={isOvertime}
-        onStart={handleStart}
-        onPause={handlePause}
-        onNextStep={handleNextStep}
+        onStart={handleStartBrewing}
+        onPause={handlePauseBrewing}
+        onNextStep={handleNextStepBrewing}
         onFinish={() => handleFinish()}
       />
 
