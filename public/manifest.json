@@ -1,7 +1,7 @@
 
 {
-  "name": "CofFelipe Brew - Guia de Preparo de Café",
-  "short_name": "CofFelipe",
+  "name": "TimerCoffee Brew - Guia de Preparo de Café",
+  "short_name": "TimerCoffee",
   "description": "Aplicativo completo para preparo de café com receitas personalizadas e cronômetro automático",
   "icons": [
     {

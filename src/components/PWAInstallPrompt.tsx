@@ -75,7 +75,7 @@ export const PWAInstallPrompt = () => {
         <CardTitle className="flex items-center justify-between text-coffee-800">
           <div className="flex items-center gap-2">
             <Coffee className="w-5 h-5" />
-            <span className="text-sm">Instalar CofFelipe</span>
+            <span className="text-sm">Instalar TimerCoffee</span>
           </div>
           <Button
             variant="ghost"

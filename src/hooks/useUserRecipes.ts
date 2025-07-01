@@ -1,53 +1,19 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { Recipe } from '@/pages/Index';
 import { toast } from 'sonner';
-
-export interface BrewHistory {
-  id: string;
-  recipe_id: string;
-  recipe_name: string;
-  brewed_at: string;
-  user_id: string;
-  coffee_bean_name?: string;
-  coffee_bean_brand?: string;
-  coffee_bean_type?: string;
-  grinder_brand?: string;
-  grinder_clicks?: number;
-  paper_brand?: string;
-  water_temperature?: number;
-  coffee_ratio?: number;
-  water_ratio?: number;
-}
-
-const GRINDER_BRANDS_KEY = 'coffee_custom_grinders';
+import { useCustomGrinders } from './useCustomGrinders';
+import { useBrewHistory } from './useBrewHistory';
 
 export const useUserRecipes = () => {
   const { user } = useAuth();
   const [userRecipes, setUserRecipes] = useState<Recipe[]>([]);
-  const [brewHistory, setBrewHistory] = useState<BrewHistory[]>([]);
   const [loading, setLoading] = useState(false);
-
-  // Custom grinder management
-  const getCustomGrinders = (): string[] => {
-    try {
-      const stored = localStorage.getItem(GRINDER_BRANDS_KEY);
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
-    }
-  };
-
-  const saveCustomGrinder = (grinderName: string) => {
-    if (!grinderName.trim()) return;
-    
-    const existing = getCustomGrinders();
-    if (!existing.includes(grinderName.trim())) {
-      const updated = [...existing, grinderName.trim()];
-      localStorage.setItem(GRINDER_BRANDS_KEY, JSON.stringify(updated));
-    }
-  };
+  
+  const { getCustomGrinders, saveCustomGrinder } = useCustomGrinders();
+  const { brewHistory, deleteBrewHistory, addToBrewHistory, loadBrewHistory } = useBrewHistory();
 
   const loadUserRecipes = async () => {
     if (!user || !isSupabaseConfigured) {
@@ -97,43 +63,12 @@ export const useUserRecipes = () => {
     }
   };
 
-  const loadBrewHistory = async () => {
-    if (!user || !isSupabaseConfigured) {
-      console.log('loadBrewHistory: No user or Supabase not configured');
-      return;
-    }
-
-    console.log('loadBrewHistory: Starting to load history for user:', user.id);
-    try {
-      const { data, error } = await supabase
-        .from('brew_history')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('brewed_at', { ascending: false })
-        .limit(50);
-
-      if (error) {
-        console.error('Erro ao carregar histórico:', error);
-        return;
-      }
-
-      console.log('loadBrewHistory: Raw data from DB:', data);
-
-      if (data) {
-        setBrewHistory(data);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar histórico:', error);
-    }
-  };
-
   const saveRecipe = async (recipe: Recipe) => {
     if (!user || !isSupabaseConfigured) {
       toast.error('Faça login para salvar receitas');
       return false;
     }
 
-    // Save custom grinder if it's a new one
     if (recipe.grinderBrand && !['Comandante', '1Zpresso JX-Pro', 'Baratza Encore', 'Hario Mini Mill Slim', 'Timemore C2', 'Timemore C3', 'Porlex Mini', 'Mazzer Mini', 'Fellow Ode', 'Wilfa Uniform', 'Hario Skerton', 'Rhinowares Hand Grinder', 'OE Lido 3', 'Orphan Espresso Pharos'].includes(recipe.grinderBrand)) {
       saveCustomGrinder(recipe.grinderBrand);
     }
@@ -178,7 +113,6 @@ export const useUserRecipes = () => {
       return false;
     }
 
-    // Save custom grinder if it's a new one
     if (recipe.grinderBrand && !['Comandante', '1Zpresso JX-Pro', 'Baratza Encore', 'Hario Mini Mill Slim', 'Timemore C2', 'Timemore C3', 'Porlex Mini', 'Mazzer Mini', 'Fellow Ode', 'Wilfa Uniform', 'Hario Skerton', 'Rhinowares Hand Grinder', 'OE Lido 3', 'Orphan Espresso Pharos'].includes(recipe.grinderBrand)) {
       saveCustomGrinder(recipe.grinderBrand);
     }
@@ -222,7 +156,6 @@ export const useUserRecipes = () => {
     if (!user || !isSupabaseConfigured) return false;
 
     try {
-      // Update each recipe with new timestamp to maintain order
       const updates = newOrderedRecipes.map((recipe, index) => ({
         id: recipe.id,
         user_id: user.id,
@@ -280,90 +213,15 @@ export const useUserRecipes = () => {
     }
   };
 
-  const deleteBrewHistory = async (brewId: string) => {
-    if (!user || !isSupabaseConfigured) {
-      toast.error('Faça login para excluir histórico');
-      return false;
-    }
-
-    try {
-      const { error } = await supabase
-        .from('brew_history')
-        .delete()
-        .eq('id', brewId)
-        .eq('user_id', user.id);
-
-      if (error) {
-        console.error('Erro ao excluir preparo do histórico:', error);
-        toast.error('Erro ao excluir preparo do histórico');
-        return false;
-      }
-
-      toast.success('Preparo excluído do histórico!');
-      loadBrewHistory(); // Reload the history
-      return true;
-    } catch (error) {
-      console.error('Erro ao excluir preparo do histórico:', error);
-      toast.error('Erro ao excluir preparo do histórico');
-      return false;
-    }
-  };
-
-  const addToBrewHistory = async (recipe: Recipe) => {
-    if (!user || !isSupabaseConfigured) {
-      console.log('addToBrewHistory: No user or Supabase not configured');
-      return;
-    }
-
-    console.log('addToBrewHistory: Saving brew history for recipe:', recipe.name);
-
-    try {
-      const historyData = {
-        recipe_id: recipe.id,
-        recipe_name: recipe.name,
-        user_id: user.id,
-        brewed_at: new Date().toISOString(),
-        coffee_bean_id: recipe.coffeeBeanId || null,
-        grinder_brand: recipe.grinderBrand || null,
-        grinder_clicks: recipe.grinderClicks || null,
-        paper_brand: recipe.paperBrand || null,
-        water_temperature: recipe.waterTemperature || null,
-        coffee_ratio: recipe.coffeeRatio,
-        water_ratio: recipe.waterRatio
-      };
-
-      console.log('addToBrewHistory: Data to insert:', historyData);
-
-      const { data, error } = await supabase
-        .from('brew_history')
-        .insert(historyData)
-        .select();
-
-      if (error) {
-        console.error('Erro ao salvar histórico:', error);
-        toast.error('Erro ao salvar no histórico');
-        return;
-      }
-
-      console.log('addToBrewHistory: Successfully saved:', data);
-      await loadBrewHistory();
-    } catch (error) {
-      console.error('Erro ao salvar histórico:', error);
-      toast.error('Erro ao salvar no histórico');
-    }
-  };
-
   useEffect(() => {
     console.log('useUserRecipes useEffect triggered - user:', user?.id, 'isSupabaseConfigured:', isSupabaseConfigured);
     
     if (user && isSupabaseConfigured) {
       console.log('Loading user data...');
       loadUserRecipes();
-      loadBrewHistory();
     } else {
       console.log('Clearing user data...');
       setUserRecipes([]);
-      setBrewHistory([]);
     }
   }, [user, isSupabaseConfigured]);
 
