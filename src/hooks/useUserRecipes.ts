@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
@@ -108,17 +107,10 @@ export const useUserRecipes = () => {
     try {
       const { data, error } = await supabase
         .from('brew_history')
-        .select(`
-          *,
-          coffee_beans (
-            name,
-            brand,
-            type
-          )
-        `)
+        .select('*')
         .eq('user_id', user.id)
         .order('brewed_at', { ascending: false })
-        .limit(10);
+        .limit(50);
 
       if (error) {
         console.error('Erro ao carregar histórico:', error);
@@ -128,14 +120,7 @@ export const useUserRecipes = () => {
       console.log('loadBrewHistory: Raw data from DB:', data);
 
       if (data) {
-        const historyWithBeans = data.map(item => ({
-          ...item,
-          coffee_bean_name: item.coffee_beans?.name,
-          coffee_bean_brand: item.coffee_beans?.brand,
-          coffee_bean_type: item.coffee_beans?.type
-        }));
-        console.log('loadBrewHistory: Mapped history:', historyWithBeans);
-        setBrewHistory(historyWithBeans);
+        setBrewHistory(data);
       }
     } catch (error) {
       console.error('Erro ao carregar histórico:', error);
@@ -296,33 +281,46 @@ export const useUserRecipes = () => {
   };
 
   const addToBrewHistory = async (recipe: Recipe) => {
-    if (!user || !isSupabaseConfigured) return;
+    if (!user || !isSupabaseConfigured) {
+      console.log('addToBrewHistory: No user or Supabase not configured');
+      return;
+    }
+
+    console.log('addToBrewHistory: Saving brew history for recipe:', recipe.name);
 
     try {
-      const { error } = await supabase
+      const historyData = {
+        recipe_id: recipe.id,
+        recipe_name: recipe.name,
+        user_id: user.id,
+        brewed_at: new Date().toISOString(),
+        coffee_bean_id: recipe.coffeeBeanId || null,
+        grinder_brand: recipe.grinderBrand || null,
+        grinder_clicks: recipe.grinderClicks || null,
+        paper_brand: recipe.paperBrand || null,
+        water_temperature: recipe.waterTemperature || null,
+        coffee_ratio: recipe.coffeeRatio,
+        water_ratio: recipe.waterRatio
+      };
+
+      console.log('addToBrewHistory: Data to insert:', historyData);
+
+      const { data, error } = await supabase
         .from('brew_history')
-        .insert({
-          recipe_id: recipe.id,
-          recipe_name: recipe.name,
-          user_id: user.id,
-          brewed_at: new Date().toISOString(),
-          coffee_bean_id: recipe.coffeeBeanId,
-          grinder_brand: recipe.grinderBrand,
-          grinder_clicks: recipe.grinderClicks,
-          paper_brand: recipe.paperBrand,
-          water_temperature: recipe.waterTemperature,
-          coffee_ratio: recipe.coffeeRatio,
-          water_ratio: recipe.waterRatio
-        });
+        .insert(historyData)
+        .select();
 
       if (error) {
         console.error('Erro ao salvar histórico:', error);
+        toast.error('Erro ao salvar no histórico');
         return;
       }
 
-      loadBrewHistory();
+      console.log('addToBrewHistory: Successfully saved:', data);
+      await loadBrewHistory();
     } catch (error) {
       console.error('Erro ao salvar histórico:', error);
+      toast.error('Erro ao salvar no histórico');
     }
   };
 

@@ -136,7 +136,7 @@ const Index = () => {
             onClick={handleLogoClick}
           >
             <Coffee className="w-10 h-10 sm:w-12 sm:h-12 text-coffee-600" />
-            <h1 className="text-3xl sm:text-4xl font-bold text-coffee-800">CofFelipe Brew</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold text-coffee-800">TimerCoffee Brew</h1>
           </div>
           <p className="text-coffee-600 text-base sm:text-lg">
             Seu site de gerenciamento de receitas

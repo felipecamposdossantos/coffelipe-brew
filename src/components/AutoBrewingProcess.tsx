@@ -1,22 +1,15 @@
-
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { 
-  ArrowLeft, 
-  Coffee, 
-  Droplets,
-  CheckCircle,
-  Clock,
-  AlertTriangle
-} from "lucide-react";
-import { Recipe } from "@/pages/Index";
-import { WaterPourAnimation } from "@/components/WaterPourAnimation";
-import { RecipeInfoDisplay } from "@/components/RecipeInfoDisplay";
-import { BrewingControls } from "@/components/BrewingControls";
-import { StepsOverview } from "@/components/StepsOverview";
+import { Badge } from "@/components/ui/badge";
+import { Clock, CheckCircle } from "lucide-react";
 import { useBrewingTimer } from "@/hooks/useBrewingTimer";
+import { BrewingControls } from "@/components/BrewingControls";
+import { RecipeInfoDisplay } from "@/components/RecipeInfoDisplay";
+import { StepsOverview } from "@/components/StepsOverview";
+import { WaterPourAnimation } from "@/components/WaterPourAnimation";
 import { useUserRecipes } from "@/hooks/useUserRecipes";
+import { Recipe } from "@/pages/Index";
 import { toast } from "sonner";
 
 interface AutoBrewingProcessProps {
@@ -25,201 +18,185 @@ interface AutoBrewingProcessProps {
 }
 
 export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessProps) => {
+  const { addToBrewHistory } = useUserRecipes();
+  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  const [hasStarted, setHasStarted] = useState(false);
+  const [startTime, setStartTime] = useState<Date | null>(null);
+
   const {
     currentStep,
     timeLeft,
     isRunning,
     isPaused,
-    completedSteps,
-    currentWaterAmount,
+    isStepCompleted,
+    isLastStep,
     isOvertime,
-    overtimeSeconds,
-    countdown,
-    hasStarted,
-    targetWaterAmount,
-    getCumulativeWaterAmount,
-    formatTime,
-    formatOvertimeDisplay,
-    handleStart,
-    handlePause,
-    handleNextStep,
-    setIsRunning,
-    setIsOvertime,
-    setCompletedSteps
-  } = useBrewingTimer(recipe);
+    startTimer,
+    pauseTimer,
+    nextStep,
+    formatTime
+  } = useBrewingTimer(recipe.steps);
 
-  const { addToBrewHistory } = useUserRecipes();
+  useEffect(() => {
+    if (isStepCompleted && !completedSteps.includes(currentStep)) {
+      setCompletedSteps(prev => [...prev, currentStep]);
+      
+      if (isLastStep) {
+        const endTime = new Date();
+        const totalTimeMs = startTime ? endTime.getTime() - startTime.getTime() : 0;
+        const totalTimeSeconds = Math.floor(totalTimeMs / 1000);
+        
+        console.log('Finalizando preparo e salvando no histórico');
+        handleFinish(totalTimeSeconds);
+      }
+    }
+  }, [isStepCompleted, currentStep, completedSteps, isLastStep, startTime]);
 
-  const handleFinishRecipe = async () => {
-    setCompletedSteps(prev => [...prev, currentStep]);
-    setIsRunning(false);
-    setIsOvertime(false);
-    
-    // Calculate total extraction time including overtime
-    const totalExtractionTime = recipe.steps.reduce((total, step) => total + step.duration, 0) + overtimeSeconds;
-    
-    // Save to brew history with original recipe (no modifications to recipe object)
-    await addToBrewHistory(recipe);
-    
-    const overtimeDisplay = overtimeSeconds > 0 ? ` (tempo total: ${formatTime(totalExtractionTime)})` : '';
-    toast.success(`Receita Finalizada! ${recipe.name} foi salva no seu histórico ☕${overtimeDisplay}`);
-    
-    onComplete();
+  const handleStart = () => {
+    console.log('Iniciando primeira etapa');
+    setHasStarted(true);
+    setStartTime(new Date());
+    startTimer();
   };
 
-  const handleBack = () => {
-    onComplete();
+  const handlePause = () => {
+    console.log('Pausando/Retomando timer');
+    pauseTimer();
+  };
+
+  const handleNextStep = () => {
+    console.log('Pulando para próxima etapa');
+    if (!completedSteps.includes(currentStep)) {
+      setCompletedSteps(prev => [...prev, currentStep]);
+    }
+    nextStep();
+  };
+
+  const handleFinish = async (totalExtractionTime?: number) => {
+    console.log('Finalizando preparo - salvando histórico');
+    
+    try {
+      await addToBrewHistory(recipe);
+      
+      const totalTime = totalExtractionTime || recipe.steps.reduce((acc, step) => acc + step.duration, 0);
+      const totalMinutes = Math.floor(totalTime / 60);
+      const totalSeconds = totalTime % 60;
+      
+      toast.success(
+        `Preparo finalizado! Receita "${recipe.name}" salva no histórico. ` +
+        `Tempo total: ${totalMinutes > 0 ? `${totalMinutes}min ` : ''}${totalSeconds}s`
+      );
+      
+      setTimeout(() => {
+        onComplete();
+      }, 2000);
+    } catch (error) {
+      console.error('Erro ao salvar histórico:', error);
+      toast.error('Erro ao salvar no histórico, mas o preparo foi concluído!');
+      setTimeout(() => {
+        onComplete();
+      }, 2000);
+    }
+  };
+
+  const getCumulativeWaterAmount = (stepIndex: number) => {
+    return recipe.steps.slice(0, stepIndex + 1).reduce((total, step) => {
+      return total + (step.waterAmount || 0);
+    }, 0);
   };
 
   const currentStepData = recipe.steps[currentStep];
-  const progress = currentStepData && !isOvertime ? 
-    ((currentStepData.duration - timeLeft) / currentStepData.duration) * 100 : 
-    100;
-  const overallProgress = ((currentStep + (completedSteps.includes(currentStep) ? 1 : progress / 100)) / recipe.steps.length) * 100;
-  const isStepCompleted = completedSteps.includes(currentStep);
-  const isLastStep = currentStep === recipe.steps.length - 1;
+  const progress = currentStepData ? ((currentStepData.duration - timeLeft) / currentStepData.duration) * 100 : 0;
+  const totalSteps = recipe.steps.length;
 
   return (
-    <div className="max-w-2xl mx-auto space-y-4 sm:space-y-6 px-4 sm:px-0">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <Button 
-          variant="ghost" 
-          onClick={handleBack}
-          className="text-coffee-600 hover:bg-coffee-100"
-          size="sm"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          <span className="hidden sm:inline">Voltar</span>
-        </Button>
-        <h1 className="text-xl sm:text-2xl font-bold text-coffee-800 text-center flex-1">
-          {recipe.name}
-        </h1>
-        <div className="w-16 sm:w-20" />
-      </div>
-
-      {/* Recipe Info */}
+    <div className="space-y-4 sm:space-y-6">
       <RecipeInfoDisplay recipe={recipe} />
 
-      {/* Overall Progress */}
-      <Card>
-        <CardContent className="pt-4 sm:pt-6">
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-coffee-600">Progresso Geral</span>
-              <span className="text-coffee-600">
-                {Math.round(overallProgress)}%
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        {/* Current Step */}
+        <Card className="order-1">
+          <CardHeader className="pb-2 sm:pb-4">
+            <CardTitle className="flex items-center justify-between text-coffee-800">
+              <span className="text-base sm:text-lg">
+                Etapa {currentStep + 1} de {totalSteps}
               </span>
-            </div>
-            <Progress value={overallProgress} className="h-2" />
-            <div className="text-center text-sm text-coffee-600">
-              Etapa {currentStep + 1} de {recipe.steps.length}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Countdown Display */}
-      {countdown > 0 && (
-        <Card className="bg-yellow-50 border-yellow-200">
-          <CardContent className="pt-6 text-center">
-            <div className="text-3xl font-bold text-yellow-600 mb-2">
-              {countdown}
-            </div>
-            <p className="text-yellow-700">
-              Próxima etapa iniciando em...
-            </p>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Water Animation */}
-      {currentStepData?.waterAmount && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm sm:text-base text-coffee-800 flex items-center gap-2">
-              <Droplets className="w-4 h-4" />
-              {currentStepData.name}
+              {isStepCompleted && (
+                <Badge className="bg-green-500 text-white">
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                  Concluída
+                </Badge>
+              )}
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
-            <WaterPourAnimation 
-              isPouring={isRunning && !isPaused}
-              currentAmount={Math.round(currentWaterAmount)}
-              targetAmount={targetWaterAmount}
-            />
-            <div className="text-xs sm:text-sm text-coffee-600 text-center">
-              {currentStepData.waterAmount && (
-                <span>
-                  Adicionar: <strong>{currentStepData.waterAmount}ml</strong> • 
-                  Total acumulado: <strong>{targetWaterAmount}ml</strong>
-                </span>
-              )}
-            </div>
+          <CardContent className="space-y-3 sm:space-y-4">
+            {currentStepData && (
+              <>
+                <div className="text-center">
+                  <h3 className="text-lg sm:text-xl font-bold text-coffee-800 mb-2">
+                    {currentStepData.name}
+                  </h3>
+                  <p className="text-coffee-600 text-sm sm:text-base mb-4">
+                    {currentStepData.instruction}
+                  </p>
+                  
+                  {currentStepData.waterAmount && (
+                    <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <p className="text-blue-800 font-medium">
+                        💧 Adicionar: <span className="font-bold">{currentStepData.waterAmount}ml</span> de água
+                      </p>
+                      <p className="text-blue-600 text-sm">
+                        Total acumulado: <span className="font-semibold">{getCumulativeWaterAmount(currentStep)}ml</span>
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="text-center">
+                  <div className="text-3xl sm:text-4xl font-mono font-bold text-coffee-800 mb-2">
+                    {formatTime(timeLeft)}
+                  </div>
+                  <div className="flex items-center justify-center gap-2 text-coffee-600 text-sm">
+                    <Clock className="w-4 h-4" />
+                    <span>de {formatTime(currentStepData.duration)}</span>
+                  </div>
+                </div>
+
+                <Progress value={progress} className="h-2 sm:h-3" />
+
+                {isOvertime && (
+                  <div className="text-center text-red-600 font-medium animate-pulse">
+                    ⏰ Tempo extra! Você pode finalizar quando quiser.
+                  </div>
+                )}
+              </>
+            )}
           </CardContent>
         </Card>
-      )}
 
-      {/* Current Step */}
-      <Card className={`bg-white shadow-lg ${isOvertime ? 'border-orange-300' : ''}`}>
-        <CardHeader className="pb-2 sm:pb-4">
-          <CardTitle className="flex items-center justify-between text-sm sm:text-base">
-            <span className="text-coffee-800">{currentStepData?.name}</span>
-            <div className="flex items-center gap-2">
-              {isOvertime && isLastStep && (
-                <AlertTriangle className="w-5 h-5 text-orange-500" />
-              )}
-              {isStepCompleted && (
-                <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-500" />
-              )}
-            </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 sm:space-y-6">
-          {/* Timer Display */}
-          <div className="text-center">
-            <div className={`text-3xl sm:text-5xl font-mono font-bold mb-4 ${
-              isOvertime ? 'text-orange-600' : 'text-coffee-700'
-            }`}>
-              {formatOvertimeDisplay()}
-            </div>
-            
-            {isOvertime && isLastStep && (
-              <div className="text-orange-600 text-sm mb-2 flex items-center justify-center gap-2">
-                <Clock className="w-4 h-4" />
-                Tempo excedido - Cronômetro em execução
-              </div>
-            )}
-            
-            {!isOvertime && (
-              <Progress value={progress} className="h-2 sm:h-3 mb-4" />
-            )}
-          </div>
+        {/* Water Pour Animation */}
+        <Card className="order-2">
+          <CardContent className="pt-4 sm:pt-6 flex items-center justify-center h-40 sm:h-48">
+            <WaterPourAnimation isPouring={isRunning && !isPaused} />
+          </CardContent>
+        </Card>
+      </div>
 
-          {/* Instruction */}
-          <div className="bg-cream-50 p-3 sm:p-4 rounded-lg border border-cream-200">
-            <p className="text-coffee-700 leading-relaxed text-sm sm:text-base">
-              {currentStepData?.instruction}
-            </p>
-          </div>
-
-          {/* Controls */}
-          <BrewingControls
-            hasStarted={hasStarted}
-            currentStep={currentStep}
-            totalSteps={recipe.steps.length}
-            isRunning={isRunning}
-            isPaused={isPaused}
-            isStepCompleted={isStepCompleted}
-            isLastStep={isLastStep}
-            isOvertime={isOvertime}
-            onStart={handleStart}
-            onPause={handlePause}
-            onNextStep={handleNextStep}
-            onFinish={handleFinishRecipe}
-          />
-        </CardContent>
-      </Card>
+      {/* Controls */}
+      <BrewingControls
+        hasStarted={hasStarted}
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+        isRunning={isRunning}
+        isPaused={isPaused}
+        isStepCompleted={isStepCompleted}
+        isLastStep={isLastStep}
+        isOvertime={isOvertime}
+        onStart={handleStart}
+        onPause={handlePause}
+        onNextStep={handleNextStep}
+        onFinish={() => handleFinish()}
+      />
 
       {/* Steps Overview */}
       <StepsOverview

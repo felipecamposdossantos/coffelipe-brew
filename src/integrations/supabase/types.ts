@@ -12,24 +12,45 @@ export type Database = {
       brew_history: {
         Row: {
           brewed_at: string
+          coffee_bean_id: string | null
+          coffee_ratio: number | null
+          grinder_brand: string | null
+          grinder_clicks: number | null
           id: string
+          paper_brand: string | null
           recipe_id: string
           recipe_name: string
           user_id: string
+          water_ratio: number | null
+          water_temperature: number | null
         }
         Insert: {
           brewed_at?: string
+          coffee_bean_id?: string | null
+          coffee_ratio?: number | null
+          grinder_brand?: string | null
+          grinder_clicks?: number | null
           id?: string
+          paper_brand?: string | null
           recipe_id: string
           recipe_name: string
           user_id: string
+          water_ratio?: number | null
+          water_temperature?: number | null
         }
         Update: {
           brewed_at?: string
+          coffee_bean_id?: string | null
+          coffee_ratio?: number | null
+          grinder_brand?: string | null
+          grinder_clicks?: number | null
           id?: string
+          paper_brand?: string | null
           recipe_id?: string
           recipe_name?: string
           user_id?: string
+          water_ratio?: number | null
+          water_temperature?: number | null
         }
         Relationships: []
       }
