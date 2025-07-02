@@ -151,6 +151,7 @@ export type Database = {
           grinder_brand: string | null
           grinder_clicks: number | null
           id: string
+          method: string
           name: string
           paper_brand: string | null
           steps: Json
@@ -168,6 +169,7 @@ export type Database = {
           grinder_brand?: string | null
           grinder_clicks?: number | null
           id: string
+          method: string
           name: string
           paper_brand?: string | null
           steps: Json
@@ -185,6 +187,7 @@ export type Database = {
           grinder_brand?: string | null
           grinder_clicks?: number | null
           id?: string
+          method?: string
           name?: string
           paper_brand?: string | null
           steps?: Json

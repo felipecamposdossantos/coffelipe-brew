@@ -27,6 +27,7 @@ export interface Recipe {
   paperBrand?: string;
   coffeeBeanId?: string;
   filterPaperId?: string;
+  method?: string;
   steps: Array<{
     name: string;
     duration: number;
