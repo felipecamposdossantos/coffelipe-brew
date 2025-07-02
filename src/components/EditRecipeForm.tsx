@@ -45,9 +45,22 @@ const baseGrinderOptions = [
   { brand: "Outro", defaultClicks: 15 }
 ];
 
+const availableMethods = [
+  "V60",
+  "French Press", 
+  "AeroPress",
+  "Chemex",
+  "Melita",
+  "Clever",
+  "UFO Dripper",
+  "Kalita",
+  "Moka"
+];
+
 export const EditRecipeForm = ({ recipe, open, onOpenChange, onRecipeUpdated }: EditRecipeFormProps) => {
   const [name, setName] = useState(recipe.name);
   const [description, setDescription] = useState(recipe.description);
+  const [method, setMethod] = useState(recipe.method || 'V60');
   const [coffeeRatio, setCoffeeRatio] = useState(recipe.coffeeRatio);
   const [waterRatio, setWaterRatio] = useState(recipe.waterRatio);
   const [waterTemperature, setWaterTemperature] = useState(recipe.waterTemperature || 94);
@@ -111,6 +124,7 @@ export const EditRecipeForm = ({ recipe, open, onOpenChange, onRecipeUpdated }: 
       ...recipe,
       name,
       description,
+      method,
       coffeeRatio,
       waterRatio,
       waterTemperature,
@@ -163,6 +177,22 @@ export const EditRecipeForm = ({ recipe, open, onOpenChange, onRecipeUpdated }: 
                 onChange={(e) => setDescription(e.target.value)}
                 required
               />
+            </div>
+
+            <div>
+              <Label htmlFor="method">Método *</Label>
+              <Select value={method} onValueChange={setMethod}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o método" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableMethods.map((methodOption) => (
+                    <SelectItem key={methodOption} value={methodOption}>
+                      {methodOption}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

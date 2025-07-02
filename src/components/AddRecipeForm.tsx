@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,9 +44,22 @@ const baseGrinderOptions = [
   { brand: "Outro", defaultClicks: 15 }
 ];
 
+const availableMethods = [
+  "V60",
+  "French Press", 
+  "AeroPress",
+  "Chemex",
+  "Melita",
+  "Clever",
+  "UFO Dripper",
+  "Kalita",
+  "Moka"
+];
+
 export const AddRecipeForm = ({ open, onOpenChange, onRecipeAdded }: AddRecipeFormProps) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [method, setMethod] = useState("V60");
   const [coffeeRatio, setCoffeeRatio] = useState(20);
   const [waterRatio, setWaterRatio] = useState(320);
   const [waterTemperature, setWaterTemperature] = useState(94);
@@ -100,6 +114,7 @@ export const AddRecipeForm = ({ open, onOpenChange, onRecipeAdded }: AddRecipeFo
   const resetForm = () => {
     setName("");
     setDescription("");
+    setMethod("V60");
     setCoffeeRatio(20);
     setWaterRatio(320);
     setWaterTemperature(94);
@@ -127,6 +142,7 @@ export const AddRecipeForm = ({ open, onOpenChange, onRecipeAdded }: AddRecipeFo
       id: `recipe_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       name,
       description,
+      method,
       coffeeRatio,
       waterRatio,
       waterTemperature,
@@ -186,6 +202,22 @@ export const AddRecipeForm = ({ open, onOpenChange, onRecipeAdded }: AddRecipeFo
                   placeholder="Descreva sua receita..."
                   required
                 />
+              </div>
+
+              <div>
+                <Label htmlFor="method">Método *</Label>
+                <Select value={method} onValueChange={setMethod}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o método" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableMethods.map((methodOption) => (
+                      <SelectItem key={methodOption} value={methodOption}>
+                        {methodOption}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </CardContent>
           </Card>

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { RecipeCard } from "@/components/RecipeCard";
 import { AddRecipeForm } from "@/components/AddRecipeForm";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, ArrowUp, ArrowDown } from "lucide-react";
 import { Recipe } from "@/pages/Index";
 
 interface RecipeListProps {
@@ -15,6 +15,7 @@ const defaultRecipes: Recipe[] = [
     id: "v60-classic",
     name: "V60 Clássico",
     description: "Método tradicional para um café limpo e aromático",
+    method: "V60",
     coffeeRatio: 20,
     waterRatio: 300,
     waterTemperature: 94,
@@ -52,6 +53,7 @@ const defaultRecipes: Recipe[] = [
     id: "french-press",
     name: "French Press",
     description: "Café encorpado com 4 minutos de infusão",
+    method: "French Press",
     coffeeRatio: 30,
     waterRatio: 500,
     waterTemperature: 96,
@@ -82,6 +84,7 @@ const defaultRecipes: Recipe[] = [
     id: "aeropress",
     name: "AeroPress",
     description: "Método rápido para um café concentrado e suave",
+    method: "AeroPress",
     coffeeRatio: 15,
     waterRatio: 200,
     waterTemperature: 85,
@@ -119,6 +122,7 @@ const defaultRecipes: Recipe[] = [
     id: "chemex",
     name: "Chemex",
     description: "Café limpo e bem filtrado com notas delicadas",
+    method: "Chemex",
     coffeeRatio: 25,
     waterRatio: 400,
     waterTemperature: 93,
@@ -156,6 +160,7 @@ const defaultRecipes: Recipe[] = [
     id: "melita",
     name: "Melita",
     description: "Método tradicional alemão com filtro cônico para café equilibrado",
+    method: "Melita",
     coffeeRatio: 22,
     waterRatio: 350,
     waterTemperature: 92,
@@ -194,15 +199,183 @@ const defaultRecipes: Recipe[] = [
         waterAmount: 50
       }
     ]
+  },
+  {
+    id: "clever",
+    name: "Clever Dripper",
+    description: "Combinação única de imersão e filtração para café encorpado e limpo",
+    method: "Clever",
+    coffeeRatio: 24,
+    waterRatio: 360,
+    waterTemperature: 95,
+    grinderBrand: "Comandante",
+    grinderClicks: 20,
+    paperBrand: "Clever Original",
+    steps: [
+      {
+        name: "Pré-infusão",
+        duration: 30,
+        instruction: "Adicione o café e despeje toda a água de uma vez",
+        waterAmount: 360
+      },
+      {
+        name: "Misturar",
+        duration: 15,
+        instruction: "Mexa delicadamente para garantir saturação completa",
+        waterAmount: 0
+      },
+      {
+        name: "Infusão",
+        duration: 195,
+        instruction: "Deixe em repouso por 3 minutos e 15 segundos",
+        waterAmount: 0
+      },
+      {
+        name: "Drenagem",
+        duration: 60,
+        instruction: "Coloque sobre a xícara para iniciar a drenagem",
+        waterAmount: 0
+      }
+    ]
+  },
+  {
+    id: "ufo-dripper",
+    name: "UFO Dripper",
+    description: "Método japonês inovador com múltiplos furos para extração uniforme",
+    method: "UFO Dripper",
+    coffeeRatio: 18,
+    waterRatio: 280,
+    waterTemperature: 90,
+    grinderBrand: "1Zpresso JX-Pro",
+    grinderClicks: 16,
+    paperBrand: "UFO Original",
+    steps: [
+      {
+        name: "Bloom",
+        duration: 45,
+        instruction: "Despeje 36ml de água em movimentos circulares suaves",
+        waterAmount: 36
+      },
+      {
+        name: "Primeiro despejo",
+        duration: 30,
+        instruction: "Adicione 80ml de água do centro para fora",
+        waterAmount: 80
+      },
+      {
+        name: "Segundo despejo",
+        duration: 30,
+        instruction: "Despeje mais 82ml mantendo ritmo constante",
+        waterAmount: 82
+      },
+      {
+        name: "Despejo final",
+        duration: 45,
+        instruction: "Complete com 82ml e aguarde drenagem completa",
+        waterAmount: 82
+      }
+    ]
+  },
+  {
+    id: "kalita",
+    name: "Kalita Wave",
+    description: "Extração uniforme com fundo plano para café equilibrado e doce",
+    method: "Kalita",
+    coffeeRatio: 21,
+    waterRatio: 320,
+    waterTemperature: 93,
+    grinderBrand: "Timemore C3",
+    grinderClicks: 18,
+    paperBrand: "Kalita Wave",
+    steps: [
+      {
+        name: "Bloom",
+        duration: 45,
+        instruction: "Molhe o café com 42ml de água e aguarde a florada",
+        waterAmount: 42
+      },
+      {
+        name: "Primeiro despejo",
+        duration: 45,
+        instruction: "Despeje 90ml em pequenos círculos no centro",
+        waterAmount: 90
+      },
+      {
+        name: "Segundo despejo",
+        duration: 45,
+        instruction: "Adicione mais 94ml mantendo o nível da água",
+        waterAmount: 94
+      },
+      {
+        name: "Despejo final",
+        duration: 60,
+        instruction: "Complete com 94ml e aguarde drenagem total",
+        waterAmount: 94
+      }
+    ]
+  },
+  {
+    id: "moka",
+    name: "Moka Pot",
+    description: "Café italiano tradicional com corpo intenso e sabor marcante",
+    method: "Moka",
+    coffeeRatio: 18,
+    waterRatio: 180,
+    waterTemperature: 100,
+    grinderBrand: "Baratza Encore",
+    grinderClicks: 15,
+    steps: [
+      {
+        name: "Preparação",
+        duration: 60,
+        instruction: "Encha a base com água quente até a válvula e adicione o café no funil",
+        waterAmount: 180
+      },
+      {
+        name: "Aquecimento",
+        duration: 240,
+        instruction: "Coloque no fogo médio-baixo com a tampa aberta",
+        waterAmount: 0
+      },
+      {
+        name: "Extração",
+        duration: 120,
+        instruction: "Quando o café começar a sair, feche a tampa e aguarde",
+        waterAmount: 0
+      },
+      {
+        name: "Finalização",
+        duration: 30,
+        instruction: "Retire do fogo quando ouvir o ruído característico",
+        waterAmount: 0
+      }
+    ]
   }
 ];
 
 export const RecipeList = ({ onStartBrewing }: RecipeListProps) => {
   const [showAddForm, setShowAddForm] = useState(false);
+  const [recipes, setRecipes] = useState(defaultRecipes);
 
   const handleRecipeAdded = () => {
     // This will trigger a re-render of the component that uses RecipeList
     // The parent component should handle refreshing the recipe list
+  };
+
+  const moveRecipeUp = (index: number) => {
+    if (index > 0) {
+      const newRecipes = [...recipes];
+      [newRecipes[index - 1], newRecipes[index]] = [newRecipes[index], newRecipes[index - 1]];
+      setRecipes(newRecipes);
+    }
+  };
+
+  const moveRecipeDown = (index: number) => {
+    if (index < recipes.length - 1) {
+      const newRecipes = [...recipes];
+      [newRecipes[index], newRecipes[index + 1]] = [newRecipes[index + 1], newRecipes[index]];
+      setRecipes(newRecipes);
+    }
   };
 
   return (
@@ -228,12 +401,33 @@ export const RecipeList = ({ onStartBrewing }: RecipeListProps) => {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        {defaultRecipes.map((recipe) => (
-          <RecipeCard 
-            key={recipe.id} 
-            recipe={recipe} 
-            onStartBrewing={onStartBrewing}
-          />
+        {recipes.map((recipe, index) => (
+          <div key={recipe.id} className="relative">
+            <RecipeCard 
+              recipe={recipe} 
+              onStartBrewing={onStartBrewing}
+            />
+            <div className="absolute top-2 right-2 flex flex-col gap-1">
+              <Button
+                onClick={() => moveRecipeUp(index)}
+                disabled={index === 0}
+                size="sm"
+                variant="outline"
+                className="w-8 h-8 p-0 bg-white/90 hover:bg-white"
+              >
+                <ArrowUp className="w-3 h-3" />
+              </Button>
+              <Button
+                onClick={() => moveRecipeDown(index)}
+                disabled={index === recipes.length - 1}
+                size="sm"
+                variant="outline"
+                className="w-8 h-8 p-0 bg-white/90 hover:bg-white"
+              >
+                <ArrowDown className="w-3 h-3" />
+              </Button>
+            </div>
+          </div>
         ))}
       </div>
       
