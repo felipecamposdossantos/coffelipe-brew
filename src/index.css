@@ -34,25 +34,25 @@
   }
 
   .dark {
-    --background: 20 14.3% 4.1%;
-    --foreground: 60 9.1% 97.8%;
-    --card: 20 14.3% 4.1%;
-    --card-foreground: 60 9.1% 97.8%;
-    --popover: 20 14.3% 4.1%;
-    --popover-foreground: 60 9.1% 97.8%;
-    --primary: 60 9.1% 97.8%;
-    --primary-foreground: 24 9.8% 10%;
-    --secondary: 12 6.5% 15.1%;
-    --secondary-foreground: 60 9.1% 97.8%;
-    --muted: 12 6.5% 15.1%;
-    --muted-foreground: 24 5.4% 63.9%;
-    --accent: 12 6.5% 15.1%;
-    --accent-foreground: 60 9.1% 97.8%;
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 60 9.1% 97.8%;
-    --border: 12 6.5% 15.1%;
-    --input: 12 6.5% 15.1%;
-    --ring: 24 5.7% 82.9%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
@@ -116,24 +116,84 @@
   }
 }
 
-/* Coffee theme colors */
-.coffee-50 { background-color: #fdf6e3; }
-.coffee-100 { background-color: #f5e6d3; }
-.coffee-200 { background-color: #e5c7a6; }
-.coffee-300 { background-color: #d4a574; }
-.coffee-400 { background-color: #c08552; }
-.coffee-500 { background-color: #a67c52; }
-.coffee-600 { background-color: #8b5a3c; }
-.coffee-700 { background-color: #6d4c41; }
-.coffee-800 { background-color: #5d4037; }
-.coffee-900 { background-color: #4e342e; }
+/* Enhanced Coffee theme colors with better dark mode support */
+.coffee-50 { 
+  background-color: hsl(35, 44%, 96%); 
+}
+.coffee-100 { 
+  background-color: hsl(33, 41%, 91%); 
+}
+.coffee-200 { 
+  background-color: hsl(31, 32%, 79%); 
+}
+.coffee-300 { 
+  background-color: hsl(28, 25%, 66%); 
+}
+.coffee-400 { 
+  background-color: hsl(26, 33%, 58%); 
+}
+.coffee-500 { 
+  background-color: hsl(25, 31%, 53%); 
+}
+.coffee-600 { 
+  background-color: hsl(22, 39%, 45%); 
+}
+.coffee-700 { 
+  background-color: hsl(20, 37%, 37%); 
+}
+.coffee-800 { 
+  background-color: hsl(19, 43%, 30%); 
+}
+.coffee-900 { 
+  background-color: hsl(15, 25%, 23%); 
+}
 
-.cream-50 { background-color: #fffbf0; }
-.cream-100 { background-color: #fef7e0; }
-.cream-200 { background-color: #fcefc7; }
-.cream-300 { background-color: #f8e6a0; }
+.cream-50 { 
+  background-color: hsl(44, 100%, 97%); 
+}
+.cream-100 { 
+  background-color: hsl(44, 75%, 91%); 
+}
+.cream-200 { 
+  background-color: hsl(43, 74%, 81%); 
+}
+.cream-300 { 
+  background-color: hsl(42, 67%, 69%); 
+}
 
-/* Custom animations for water pour */
+/* Dark mode enhanced colors */
+.dark .coffee-50 { 
+  background-color: hsl(15, 25%, 8%); 
+}
+.dark .coffee-100 { 
+  background-color: hsl(15, 25%, 12%); 
+}
+.dark .coffee-200 { 
+  background-color: hsl(15, 25%, 16%); 
+}
+.dark .coffee-300 { 
+  background-color: hsl(20, 25%, 20%); 
+}
+.dark .coffee-400 { 
+  background-color: hsl(22, 30%, 35%); 
+}
+.dark .coffee-500 { 
+  background-color: hsl(25, 35%, 45%); 
+}
+.dark .coffee-600 { 
+  background-color: hsl(28, 40%, 55%); 
+}
+.dark .coffee-700 { 
+  background-color: hsl(30, 45%, 65%); 
+}
+.dark .coffee-800 { 
+  background-color: hsl(32, 50%, 75%); 
+}
+.dark .coffee-900 { 
+  background-color: hsl(35, 55%, 85%); 
+}
+
+/* Custom animations for water pour - enhanced for dark mode */
 @keyframes pour {
   0% {
     transform: translateY(-100%) scaleY(0);
@@ -168,6 +228,15 @@
   }
 }
 
+@keyframes water-shimmer {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
 .animate-pour {
   animation: pour 1.5s ease-in-out infinite;
 }
@@ -180,37 +249,63 @@
   animation: float 3s ease-in-out infinite;
 }
 
-/* Custom scrollbar for better mobile experience */
+.animate-water-shimmer {
+  animation: water-shimmer 3s ease-in-out infinite;
+  background-size: 200% 200%;
+}
+
+/* Enhanced scrollbar for dark mode */
 ::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: hsl(var(--muted));
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #8b5a3c;
-  border-radius: 2px;
+  background: hsl(var(--muted-foreground));
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #6d4c41;
+  background: hsl(var(--accent-foreground));
 }
 
-/* Focus styles for accessibility */
+/* Dark mode specific scrollbar */
+.dark ::-webkit-scrollbar-track {
+  background: hsl(217.2, 32.6%, 17.5%);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: hsl(215, 20.2%, 65.1%);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: hsl(210, 40%, 98%);
+}
+
+/* Focus styles for accessibility - improved for dark mode */
 .focus-visible {
-  @apply ring-2 ring-coffee-500 ring-offset-2;
+  @apply ring-2 ring-coffee-500 dark:ring-coffee-400 ring-offset-2 dark:ring-offset-gray-800;
 }
 
 /* High contrast mode support */
 @media (prefers-contrast: high) {
   .coffee-600 {
-    background-color: #4e342e;
+    background-color: hsl(15, 50%, 25%);
   }
   
   .coffee-700 {
-    background-color: #3e2723;
+    background-color: hsl(15, 50%, 20%);
+  }
+  
+  .dark .coffee-600 {
+    background-color: hsl(30, 60%, 70%);
+  }
+  
+  .dark .coffee-700 {
+    background-color: hsl(32, 65%, 80%);
   }
 }
 
@@ -221,7 +316,31 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-}a[href*="lovable.dev"], 
+}
+
+/* Enhanced gradient animations for water */
+.water-gradient {
+  background: linear-gradient(
+    45deg,
+    hsl(200, 100%, 60%),
+    hsl(210, 100%, 70%), 
+    hsl(220, 100%, 80%),
+    hsl(200, 100%, 60%)
+  );
+}
+
+.dark .water-gradient {
+  background: linear-gradient(
+    45deg,
+    hsl(200, 80%, 40%),
+    hsl(210, 80%, 50%), 
+    hsl(220, 80%, 60%),
+    hsl(200, 80%, 40%)
+  );
+}
+
+/* Remove Lovable branding */
+a[href*="lovable.dev"], 
 iframe[src*="lovable.dev"],
 div[style*="Edit with Lovable"],
 .lovable-badge {
