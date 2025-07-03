@@ -68,7 +68,6 @@ export const usePWANotifications = () => {
         badge: '/lovable-uploads/49af2e43-3983-4eab-85c9-d3cd8c4e7deb.png',
         tag: options.tag || 'coffee-timer',
         requireInteraction: options.requireInteraction || false,
-        vibrate: [200, 100, 200],
         actions: [
           {
             action: 'view',
