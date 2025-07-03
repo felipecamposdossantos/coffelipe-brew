@@ -50,3 +50,52 @@ self.addEventListener('activate', (event) => {
     })
   );
 });
+
+// Handle notification clicks
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  
+  if (event.action === 'view' || !event.action) {
+    event.waitUntil(
+      clients.matchAll({ type: 'window' }).then((clientList) => {
+        // Check if there's already a window/tab open
+        for (let i = 0; i < clientList.length; i++) {
+          const client = clientList[i];
+          if (client.url === '/' && 'focus' in client) {
+            return client.focus();
+          }
+        }
+        // If no window/tab is open, open a new one
+        if (clients.openWindow) {
+          return clients.openWindow('/');
+        }
+      })
+    );
+  }
+});
+
+// Handle background sync for offline functionality
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'background-sync') {
+    event.waitUntil(
+      // Handle any offline actions here
+      console.log('Background sync triggered')
+    );
+  }
+});
+
+// Handle push notifications (for future enhancement)
+self.addEventListener('push', (event) => {
+  if (event.data) {
+    const data = event.data.json();
+    event.waitUntil(
+      self.registration.showNotification(data.title, {
+        body: data.body,
+        icon: '/lovable-uploads/49af2e43-3983-4eab-85c9-d3cd8c4e7deb.png',
+        badge: '/lovable-uploads/49af2e43-3983-4eab-85c9-d3cd8c4e7deb.png',
+        vibrate: [200, 100, 200],
+        tag: 'coffee-notification'
+      })
+    );
+  }
+});

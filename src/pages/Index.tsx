@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RecipeList } from "@/components/RecipeList";
@@ -10,10 +11,12 @@ import { LoginForm } from "@/components/LoginForm";
 import { UserProfile } from "@/components/UserProfile";
 import { BrewHistory } from "@/components/BrewHistory";
 import { Footer } from "@/components/Footer";
+import { Timer } from "@/components/Timer";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { Coffee, Settings } from "lucide-react";
+import { Coffee, Settings, Timer as TimerIcon, Moon, Sun } from "lucide-react";
 import { FilterPapersManager } from "@/components/FilterPapersManager";
+import { useTheme } from "@/hooks/useTheme";
 
 export interface Recipe {
   id: string;
@@ -38,6 +41,7 @@ export interface Recipe {
 
 const Index = () => {
   const { user, loading } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [currentRecipe, setCurrentRecipe] = useState<Recipe | null>(null);
   const [brewingMode, setBrewingMode] = useState<'auto' | 'manual'>('auto');
   const [activeTab, setActiveTab] = useState("recipes");
@@ -64,10 +68,10 @@ const Index = () => {
   if (loading) {
     console.log('Index: Showing loading screen');
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
         <div className="text-center">
           <Coffee className="w-12 h-12 mx-auto text-coffee-600 animate-pulse mb-4" />
-          <p className="text-coffee-600">Carregando...</p>
+          <p className="text-coffee-600 dark:text-coffee-300">Carregando...</p>
         </div>
       </div>
     );
@@ -76,11 +80,11 @@ const Index = () => {
   if (currentRecipe) {
     console.log('Index: Showing brewing process for recipe:', currentRecipe.name);
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 p-4">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 dark:from-gray-900 dark:to-gray-800 p-4">
         <div className="container mx-auto py-8">
           <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h1 className="text-2xl sm:text-4xl font-bold text-coffee-800 mb-2">
+              <h1 className="text-2xl sm:text-4xl font-bold text-coffee-800 dark:text-coffee-200 mb-2">
                 Preparando: {currentRecipe.name}
               </h1>
               <div className="flex gap-2">
@@ -130,25 +134,41 @@ const Index = () => {
   console.log('Index: Showing main tabs interface');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 dark:from-gray-900 dark:to-gray-800">
       <div className="container mx-auto px-4 py-8">
         <div className="text-center mb-8">
           <div 
             className="flex items-center justify-center gap-3 mb-4 cursor-pointer hover:opacity-80 transition-opacity"
             onClick={handleLogoClick}
           >
-            <Coffee className="w-10 h-10 sm:w-12 sm:h-12 text-coffee-600" />
-            <h1 className="text-3xl sm:text-4xl font-bold text-coffee-800">TimerCoffee Brew</h1>
+            <Coffee className="w-10 h-10 sm:w-12 sm:h-12 text-coffee-600 dark:text-coffee-400" />
+            <h1 className="text-3xl sm:text-4xl font-bold text-coffee-800 dark:text-coffee-200">TimerCoffee Brew</h1>
           </div>
-          <p className="text-coffee-600 text-base sm:text-lg">
+          <p className="text-coffee-600 dark:text-coffee-300 text-base sm:text-lg">
             Seu site de gerenciamento de receitas
           </p>
+          
+          <div className="flex justify-center mt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleTheme}
+              className="gap-2"
+            >
+              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              {theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}
+            </Button>
+          </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6 mb-8 h-auto">
+          <TabsList className="grid w-full grid-cols-4 sm:grid-cols-7 mb-8 h-auto">
             <TabsTrigger value="recipes" className="text-xs sm:text-sm p-2 sm:p-3">
               Receitas
+            </TabsTrigger>
+            <TabsTrigger value="timer" className="text-xs sm:text-sm p-2 sm:p-3 flex items-center gap-1">
+              <TimerIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Timer</span>
             </TabsTrigger>
             {user && (
               <TabsTrigger value="my-recipes" className="text-xs sm:text-sm p-2 sm:p-3">
@@ -177,6 +197,12 @@ const Index = () => {
 
           <TabsContent value="recipes">
             <RecipeList onStartBrewing={handleStartBrewing} />
+          </TabsContent>
+
+          <TabsContent value="timer">
+            <div className="flex justify-center">
+              <Timer />
+            </div>
           </TabsContent>
 
           {user && (

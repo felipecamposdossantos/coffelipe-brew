@@ -2,7 +2,8 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Download, X, Coffee } from 'lucide-react';
+import { Download, X, Coffee, Bell } from 'lucide-react';
+import { usePWANotifications } from '@/hooks/usePWANotifications';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -13,6 +14,7 @@ export const PWAInstallPrompt = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+  const { isSupported, permission, requestPermission } = usePWANotifications();
 
   useEffect(() => {
     // Check if it's iOS
@@ -67,12 +69,16 @@ export const PWAInstallPrompt = () => {
     localStorage.setItem('pwa-dismissed', 'true');
   };
 
+  const handleEnableNotifications = async () => {
+    await requestPermission();
+  };
+
   if (!showPrompt) return null;
 
   return (
-    <Card className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-sm bg-coffee-50 border-coffee-200 shadow-xl">
+    <Card className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-sm bg-coffee-50 dark:bg-gray-800 border-coffee-200 dark:border-gray-700 shadow-xl">
       <CardHeader className="pb-2">
-        <CardTitle className="flex items-center justify-between text-coffee-800">
+        <CardTitle className="flex items-center justify-between text-coffee-800 dark:text-coffee-200">
           <div className="flex items-center gap-2">
             <Coffee className="w-5 h-5" />
             <span className="text-sm">Instalar TimerCoffee</span>
@@ -81,14 +87,14 @@ export const PWAInstallPrompt = () => {
             variant="ghost"
             size="sm"
             onClick={handleDismiss}
-            className="h-6 w-6 p-0 text-coffee-600"
+            className="h-6 w-6 p-0 text-coffee-600 dark:text-coffee-400"
           >
             <X className="w-4 h-4" />
           </Button>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        <p className="text-xs text-coffee-600">
+        <p className="text-xs text-coffee-600 dark:text-coffee-300">
           {isIOS 
             ? "Para instalar, toque no botão 'Compartilhar' e selecione 'Adicionar à Tela de Início'"
             : "Instale o app para uma experiência completa offline!"
@@ -105,9 +111,21 @@ export const PWAInstallPrompt = () => {
             Instalar App
           </Button>
         )}
+
+        {isSupported && permission !== 'granted' && (
+          <Button
+            onClick={handleEnableNotifications}
+            variant="outline"
+            className="w-full"
+            size="sm"
+          >
+            <Bell className="w-4 h-4 mr-2" />
+            Ativar Notificações
+          </Button>
+        )}
         
         {isIOS && (
-          <div className="text-xs text-coffee-600 bg-coffee-100 p-2 rounded">
+          <div className="text-xs text-coffee-600 dark:text-coffee-300 bg-coffee-100 dark:bg-gray-700 p-2 rounded">
             <p className="font-medium mb-1">Como instalar no iOS:</p>
             <p>1. Toque no botão compartilhar (□↗)</p>
             <p>2. Role para baixo e toque em "Adicionar à Tela de Início"</p>

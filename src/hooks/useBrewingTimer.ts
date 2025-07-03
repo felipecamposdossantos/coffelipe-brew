@@ -4,6 +4,7 @@ import { Recipe } from "@/pages/Index";
 import { toast } from "sonner";
 import { useWakeLock } from "./useWakeLock";
 import { useTimerLogic } from "./useTimerLogic";
+import { usePWANotifications } from "./usePWANotifications";
 
 export const useBrewingTimer = (recipe: Recipe) => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -12,6 +13,7 @@ export const useBrewingTimer = (recipe: Recipe) => {
   const [hasStarted, setHasStarted] = useState(false);
   
   const { requestWakeLock, releaseWakeLock } = useWakeLock();
+  const { showTimerNotification } = usePWANotifications();
   const {
     timeLeft,
     isRunning,
@@ -46,6 +48,17 @@ export const useBrewingTimer = (recipe: Recipe) => {
     }
   }, [timeLeft, isRunning, isPaused, currentStep, recipe.steps, isOvertime]);
 
+  // Show notification when step completes
+  useEffect(() => {
+    if (completedSteps.length > 0) {
+      const lastCompletedStep = Math.max(...completedSteps);
+      const stepName = recipe.steps[lastCompletedStep]?.name;
+      if (stepName) {
+        showTimerNotification(stepName, true);
+      }
+    }
+  }, [completedSteps, recipe.steps, showTimerNotification]);
+
   const formatTime = (time: number) => {
     const mins = Math.floor(time / 60);
     const secs = time % 60;
@@ -64,6 +77,9 @@ export const useBrewingTimer = (recipe: Recipe) => {
     setHasStarted(true);
     await requestWakeLock();
     toast.success(`Receita Iniciada: ${recipe.steps[0]?.name}`);
+    
+    // Show notification when starting
+    showTimerNotification(recipe.steps[0]?.name, false);
   };
 
   const handlePause = () => {
@@ -82,6 +98,12 @@ export const useBrewingTimer = (recipe: Recipe) => {
       setIsOvertime(false);
       setOvertimeSeconds(0);
       setCurrentWaterAmount(getCumulativeWaterAmount(currentStep));
+      
+      // Show notification for next step
+      const nextStepName = recipe.steps[currentStep + 1]?.name;
+      if (nextStepName) {
+        showTimerNotification(nextStepName, false);
+      }
     }
   };
 
