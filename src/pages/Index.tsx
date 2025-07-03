@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RecipeList } from "@/components/RecipeList";
@@ -10,10 +9,14 @@ import { ManualBrewingProcess } from "@/components/ManualBrewingProcess";
 import { LoginForm } from "@/components/LoginForm";
 import { UserProfile } from "@/components/UserProfile";
 import { BrewHistory } from "@/components/BrewHistory";
+import { RecipeAnalytics } from "@/components/RecipeAnalytics";
+import { SmartSuggestions } from "@/components/SmartSuggestions";
+import { RecipeComparison } from "@/components/RecipeComparison";
 import { Footer } from "@/components/Footer";
 import { Timer } from "@/components/Timer";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserRecipes } from "@/hooks/useUserRecipes";
 import { Coffee, Settings, Timer as TimerIcon, Moon, Sun } from "lucide-react";
 import { FilterPapersManager } from "@/components/FilterPapersManager";
 import { useTheme } from "@/hooks/useTheme";
@@ -42,6 +45,7 @@ export interface Recipe {
 const Index = () => {
   const { user, loading } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { userRecipes, brewHistory } = useUserRecipes();
   const [currentRecipe, setCurrentRecipe] = useState<Recipe | null>(null);
   const [brewingMode, setBrewingMode] = useState<'auto' | 'manual'>('auto');
   const [activeTab, setActiveTab] = useState("recipes");
@@ -162,7 +166,7 @@ const Index = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 sm:grid-cols-7 mb-8 h-auto">
+          <TabsList className="grid w-full grid-cols-4 sm:grid-cols-9 mb-8 h-auto">
             <TabsTrigger value="recipes" className="text-xs sm:text-sm p-2 sm:p-3">
               Receitas
             </TabsTrigger>
@@ -173,6 +177,21 @@ const Index = () => {
             {user && (
               <TabsTrigger value="my-recipes" className="text-xs sm:text-sm p-2 sm:p-3">
                 Minhas Receitas
+              </TabsTrigger>
+            )}
+            {user && (
+              <TabsTrigger value="analytics" className="text-xs sm:text-sm p-2 sm:p-3">
+                Analytics
+              </TabsTrigger>
+            )}
+            {user && (
+              <TabsTrigger value="suggestions" className="text-xs sm:text-sm p-2 sm:p-3">
+                Sugestões
+              </TabsTrigger>
+            )}
+            {user && (
+              <TabsTrigger value="comparison" className="text-xs sm:text-sm p-2 sm:p-3">
+                Comparar
               </TabsTrigger>
             )}
             {user && (
@@ -208,6 +227,28 @@ const Index = () => {
           {user && (
             <TabsContent value="my-recipes">
               <UserRecipes onStartBrewing={handleStartBrewing} />
+            </TabsContent>
+          )}
+
+          {user && (
+            <TabsContent value="analytics">
+              <RecipeAnalytics recipes={userRecipes} brewHistory={brewHistory} />
+            </TabsContent>
+          )}
+
+          {user && (
+            <TabsContent value="suggestions">
+              <SmartSuggestions 
+                recipes={userRecipes} 
+                brewHistory={brewHistory}
+                onStartBrewing={handleStartBrewing}
+              />
+            </TabsContent>
+          )}
+
+          {user && (
+            <TabsContent value="comparison">
+              <RecipeComparison recipes={userRecipes} />
             </TabsContent>
           )}
 
