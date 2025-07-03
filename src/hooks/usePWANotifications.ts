@@ -67,14 +67,7 @@ export const usePWANotifications = () => {
         icon: options.icon || '/lovable-uploads/49af2e43-3983-4eab-85c9-d3cd8c4e7deb.png',
         badge: '/lovable-uploads/49af2e43-3983-4eab-85c9-d3cd8c4e7deb.png',
         tag: options.tag || 'coffee-timer',
-        requireInteraction: options.requireInteraction || false,
-        actions: [
-          {
-            action: 'view',
-            title: 'Ver App',
-            icon: '/lovable-uploads/49af2e43-3983-4eab-85c9-d3cd8c4e7deb.png'
-          }
-        ]
+        requireInteraction: options.requireInteraction || false
       });
       return true;
     } catch (error) {
