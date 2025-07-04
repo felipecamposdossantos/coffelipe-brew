@@ -77,10 +77,39 @@
   * {
     @apply border-border;
   }
+  
+  html {
+    /* Scroll suave e otimizado */
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    overflow-x: hidden;
+  }
+  
   body {
     @apply bg-background text-foreground;
     font-family: "Inter", sans-serif;
+    /* Otimizações para PWA móvel */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: none;
+    overflow-x: hidden;
   }
+}
+
+/* PWA e Mobile optimizations */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Melhorias de rolagem */
+.overflow-y-auto {
+  /* Rolagem nativa suave no iOS */
+  -webkit-overflow-scrolling: touch;
+  /* Previne bounce no topo/fundo */
+  overscroll-behavior-y: contain;
 }
 
 /* Custom animations */
@@ -201,10 +230,11 @@
   perspective: 1000;
 }
 
-/* Touch targets */
+/* Touch targets - Melhorado para PWA */
 .touch-target {
-  min-height: 44px;
-  min-width: 44px;
+  min-height: 48px;
+  min-width: 48px;
+  position: relative;
 }
 
 /* Smooth scrolling */
@@ -234,6 +264,8 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Hide Lovable badge */
 a[href*="lovable.dev"], 
 iframe[src*="lovable.dev"],
 div[style*="Edit with Lovable"],
@@ -244,4 +276,30 @@ div[style*="Edit with Lovable"],
   pointer-events: none !important;
   position: absolute !important;
   z-index: -9999 !important;
+}
+
+/* PWA específico - Backdrop blur otimizado */
+@supports (backdrop-filter: blur(10px)) {
+  .backdrop-blur-sm {
+    backdrop-filter: blur(4px);
+  }
+  .backdrop-blur-md {
+    backdrop-filter: blur(12px);
+  }
+}
+
+/* Fallback para dispositivos que não suportam backdrop-filter */
+@supports not (backdrop-filter: blur(10px)) {
+  .backdrop-blur-sm {
+    background-color: rgba(255, 255, 255, 0.95);
+  }
+  .backdrop-blur-md {
+    background-color: rgba(255, 255, 255, 0.95);
+  }
+  .dark .backdrop-blur-sm {
+    background-color: rgba(17, 24, 39, 0.95);
+  }
+  .dark .backdrop-blur-md {
+    background-color: rgba(17, 24, 39, 0.95);
+  }
 }

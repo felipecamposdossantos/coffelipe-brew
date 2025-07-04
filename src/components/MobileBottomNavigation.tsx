@@ -1,5 +1,4 @@
 
-
 import { useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
@@ -98,7 +97,7 @@ export const MobileBottomNavigation = ({
 
   return (
     <>
-      <AnimatedContainer animation="slide-up" className="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700 px-4 py-2 z-50">
+      <div className="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-t border-gray-200 dark:border-gray-700 px-4 py-2 z-50 safe-area-inset-bottom">
         <div className="flex justify-around items-center max-w-md mx-auto">
           {tabs.map((tab, index) => {
             const Icon = tab.icon;
@@ -115,7 +114,7 @@ export const MobileBottomNavigation = ({
                   size="sm"
                   onClick={() => handleTabClick(tab.id)}
                   className={cn(
-                    "flex flex-col items-center gap-1 px-3 py-2 h-auto transition-all duration-200",
+                    "flex flex-col items-center gap-1 px-3 py-2 h-auto transition-all duration-200 touch-target",
                     isActive && "text-coffee-600 dark:text-coffee-400 scale-105"
                   )}
                 >
@@ -129,11 +128,11 @@ export const MobileBottomNavigation = ({
             );
           })}
         </div>
-      </AnimatedContainer>
+      </div>
 
       {/* More Menu Sheet */}
       <Sheet open={isMoreMenuOpen} onOpenChange={setIsMoreMenuOpen}>
-        <SheetContent side="bottom" className="h-[80vh]">
+        <SheetContent side="bottom" className="h-[80vh] overflow-y-auto">
           <SheetHeader className="pb-4">
             <SheetTitle className="text-left">Menu</SheetTitle>
             <SheetDescription className="text-left">
@@ -141,7 +140,7 @@ export const MobileBottomNavigation = ({
             </SheetDescription>
           </SheetHeader>
           
-          <div className="space-y-6 overflow-y-auto h-full pb-20">
+          <div className="space-y-6 pb-20">
             {Object.entries(groupedItems).map(([category, items]) => (
               <AnimatedContainer key={category} animation="fade-in">
                 <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wide">
@@ -159,7 +158,7 @@ export const MobileBottomNavigation = ({
                         <Button
                           variant="ghost"
                           onClick={() => handleMoreMenuItemClick(item.id)}
-                          className="w-full justify-start h-12 px-4 hover:bg-coffee-50 dark:hover:bg-coffee-900/20 transition-all duration-200"
+                          className="w-full justify-start h-12 px-4 hover:bg-coffee-50 dark:hover:bg-coffee-900/20 transition-all duration-200 touch-target"
                         >
                           <Icon className="mr-3 h-5 w-5 text-coffee-600 dark:text-coffee-400" />
                           <span className="text-base">{item.label}</span>
@@ -176,4 +175,3 @@ export const MobileBottomNavigation = ({
     </>
   );
 };
-
