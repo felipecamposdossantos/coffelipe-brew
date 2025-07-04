@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Recipe } from "@/pages/Index";
 import { toast } from "sonner";
