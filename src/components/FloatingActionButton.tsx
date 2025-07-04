@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { EnhancedButton } from '@/components/ui/enhanced-button';
-import { Coffee, Plus, X } from 'lucide-react';
+import { Coffee, Plus, X, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { AnimatedContainer } from '@/components/ui/animated-container';
@@ -32,7 +32,7 @@ export const FloatingActionButton = ({
   };
 
   return (
-    <div className="fixed bottom-20 right-4 z-40">
+    <div className="fixed bottom-24 right-4 z-40">
       {/* Backdrop */}
       {isExpanded && (
         <div 
@@ -46,25 +46,36 @@ export const FloatingActionButton = ({
         "flex flex-col gap-3 mb-3 transition-all duration-300 ease-out",
         isExpanded ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-8 scale-95 pointer-events-none"
       )}>
-        <AnimatedContainer animation="scale-in" delay={100}>
+        <AnimatedContainer animation="scale-in" delay={50}>
           <EnhancedButton
             size="sm"
             onClick={() => handleActionClick(onStartQuickBrew)}
             hapticFeedback="medium"
             glowEffect
-            className="bg-coffee-600 hover:bg-coffee-700 text-white rounded-full w-12 h-12 shadow-lg hover:shadow-xl transition-all duration-300"
+            className="bg-coffee-600 hover:bg-coffee-700 text-white rounded-full w-12 h-12 shadow-lg hover:shadow-xl transition-all duration-300 touch-target"
             icon={<Coffee className="w-5 h-5" />}
           />
         </AnimatedContainer>
         
-        <AnimatedContainer animation="scale-in" delay={150}>
+        <AnimatedContainer animation="scale-in" delay={100}>
           <EnhancedButton
             size="sm"
             onClick={() => handleActionClick(onCreateRecipe)}
             hapticFeedback="medium"
             glowEffect
-            className="bg-coffee-500 hover:bg-coffee-600 text-white rounded-full w-12 h-12 shadow-lg hover:shadow-xl transition-all duration-300"
+            className="bg-coffee-500 hover:bg-coffee-600 text-white rounded-full w-12 h-12 shadow-lg hover:shadow-xl transition-all duration-300 touch-target"
             icon={<Plus className="w-5 h-5" />}
+          />
+        </AnimatedContainer>
+
+        <AnimatedContainer animation="scale-in" delay={150}>
+          <EnhancedButton
+            size="sm"
+            onClick={() => handleActionClick(onOpenRecipes)}
+            hapticFeedback="medium"
+            glowEffect
+            className="bg-coffee-400 hover:bg-coffee-500 text-white rounded-full w-12 h-12 shadow-lg hover:shadow-xl transition-all duration-300 touch-target"
+            icon={<BookOpen className="w-5 h-5" />}
           />
         </AnimatedContainer>
       </div>
@@ -75,7 +86,7 @@ export const FloatingActionButton = ({
         hapticFeedback="medium"
         glowEffect
         className={cn(
-          "bg-coffee-600 hover:bg-coffee-700 text-white rounded-full w-14 h-14 shadow-lg hover:shadow-xl transition-all duration-300",
+          "bg-coffee-600 hover:bg-coffee-700 text-white rounded-full w-14 h-14 shadow-lg hover:shadow-xl transition-all duration-300 touch-target",
           isExpanded && "rotate-45 bg-coffee-700"
         )}
         icon={isExpanded ? <X className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
