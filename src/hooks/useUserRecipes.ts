@@ -1,7 +1,8 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
-import { Recipe } from '@/pages/Index';
+import { Recipe } from '@/types/recipe';
 import { toast } from 'sonner';
 import { useCustomGrinders } from './useCustomGrinders';
 import { useBrewHistory } from './useBrewHistory';
@@ -12,7 +13,7 @@ export const useUserRecipes = () => {
   const [loading, setLoading] = useState(false);
   
   const { getCustomGrinders, saveCustomGrinder } = useCustomGrinders();
-  const { brewHistory, deleteBrewHistory, addToBrewHistory, loadBrewHistory } = useBrewHistory();
+  const { brewHistory, deleteBrewHistory, loadBrewHistory } = useBrewHistory();
 
   const loadUserRecipes = async () => {
     if (!user || !isSupabaseConfigured) {
@@ -49,7 +50,6 @@ export const useUserRecipes = () => {
           grinderClicks: item.grinder_clicks || undefined,
           paperBrand: item.paper_brand || undefined,
           coffeeBeanId: item.coffee_bean_id || undefined,
-          filterPaperId: item.filter_paper_id || undefined,
           method: item.method || 'V60',
           steps: item.steps
         }));
@@ -88,7 +88,6 @@ export const useUserRecipes = () => {
           grinder_clicks: recipe.grinderClicks,
           paper_brand: recipe.paperBrand,
           coffee_bean_id: recipe.coffeeBeanId,
-          filter_paper_id: recipe.filterPaperId,
           method: recipe.method || 'V60',
           steps: recipe.steps,
           user_id: user.id
@@ -133,7 +132,6 @@ export const useUserRecipes = () => {
           grinder_clicks: recipe.grinderClicks,
           paper_brand: recipe.paperBrand,
           coffee_bean_id: recipe.coffeeBeanId,
-          filter_paper_id: recipe.filterPaperId,
           method: recipe.method || 'V60',
           steps: recipe.steps,
           updated_at: new Date().toISOString()
@@ -215,6 +213,51 @@ export const useUserRecipes = () => {
       console.error('Erro ao excluir receita:', error);
       toast.error('Erro ao excluir receita');
       return false;
+    }
+  };
+
+  const addToBrewHistory = async (recipe: Recipe) => {
+    if (!user || !isSupabaseConfigured) {
+      console.log('addToBrewHistory: No user or Supabase not configured');
+      return;
+    }
+
+    console.log('addToBrewHistory: Saving brew history for recipe:', recipe.name);
+
+    try {
+      const historyData = {
+        recipe_id: recipe.id,
+        recipe_name: recipe.name,
+        user_id: user.id,
+        brewed_at: new Date().toISOString(),
+        coffee_bean_id: recipe.coffeeBeanId || null,
+        grinder_brand: recipe.grinderBrand || null,
+        grinder_clicks: recipe.grinderClicks || null,
+        paper_brand: recipe.paperBrand || null,
+        water_temperature: recipe.waterTemperature || null,
+        coffee_ratio: recipe.coffeeRatio,
+        water_ratio: recipe.waterRatio
+      };
+
+      console.log('addToBrewHistory: Data to insert:', historyData);
+
+      const { data, error } = await supabase
+        .from('brew_history')
+        .insert(historyData)
+        .select();
+
+      if (error) {
+        console.error('Erro ao salvar histórico:', error);
+        toast.error('Erro ao salvar no histórico');
+        return;
+      }
+
+      console.log('addToBrewHistory: Successfully saved:', data);
+      await loadBrewHistory();
+      toast.success('Preparo salvo no histórico!');
+    } catch (error) {
+      console.error('Erro ao salvar histórico:', error);
+      toast.error('Erro ao salvar no histórico');
     }
   };
 

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,15 +7,15 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Thermometer, Scale, Clock, Coffee, ChevronDown, ChevronUp } from 'lucide-react';
 import { Recipe } from '@/pages/Index';
-import { useBrewingTimer } from '@/hooks/useBrewingTimer';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface ExpertBrewingProcessProps {
   recipe: Recipe;
   onComplete: () => void;
+  timerState: any; // Shared timer state from useBrewingTimer
 }
 
-export const ExpertBrewingProcess = ({ recipe, onComplete }: ExpertBrewingProcessProps) => {
+export const ExpertBrewingProcess = ({ recipe, onComplete, timerState }: ExpertBrewingProcessProps) => {
   const [stepTemperatures, setStepTemperatures] = useState<number[]>([]);
   const [totalElapsedTime, setTotalElapsedTime] = useState(0);
   const [extractionData, setExtractionData] = useState({
@@ -36,25 +35,6 @@ export const ExpertBrewingProcess = ({ recipe, onComplete }: ExpertBrewingProces
   });
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showTastingNotes, setShowTastingNotes] = useState(false);
-  
-  const {
-    currentStep,
-    timeLeft,
-    isRunning,
-    isPaused,
-    completedSteps,
-    currentWaterAmount,
-    isOvertime,
-    overtimeSeconds,
-    hasStarted,
-    targetWaterAmount,
-    formatTime,
-    formatOvertimeDisplay,
-    handleStart,
-    handlePause,
-    handleNextStep,
-    handleFinish
-  } = useBrewingTimer(recipe);
 
   useEffect(() => {
     // Inicializar temperaturas para cada etapa
@@ -64,20 +44,20 @@ export const ExpertBrewingProcess = ({ recipe, onComplete }: ExpertBrewingProces
 
   // Acompanhar tempo total decorrido
   useEffect(() => {
-    if (isRunning && !isPaused) {
+    if (timerState.isRunning && !timerState.isPaused) {
       const interval = setInterval(() => {
         setTotalElapsedTime(prev => prev + 1);
       }, 1000);
       return () => clearInterval(interval);
     }
-  }, [isRunning, isPaused]);
+  }, [timerState.isRunning, timerState.isPaused]);
 
-  const currentStepData = recipe.steps[currentStep];
-  const isLastStep = currentStep === recipe.steps.length - 1;
-  const progress = ((currentStep + 1) / recipe.steps.length) * 100;
+  const currentStepData = recipe.steps[timerState.currentStep];
+  const isLastStep = timerState.currentStep === recipe.steps.length - 1;
+  const progress = ((timerState.currentStep + 1) / recipe.steps.length) * 100;
 
   const handleStepComplete = () => {
-    if (isLastStep && (completedSteps.includes(currentStep) || isOvertime)) {
+    if (isLastStep && (timerState.completedSteps.includes(timerState.currentStep) || timerState.isOvertime)) {
       // Calcular dados de extração
       const totalWater = recipe.steps.reduce((sum, step) => sum + (step.waterAmount || 0), 0);
       setExtractionData(prev => ({
@@ -88,7 +68,7 @@ export const ExpertBrewingProcess = ({ recipe, onComplete }: ExpertBrewingProces
       }));
       setShowTastingNotes(true);
     } else {
-      handleNextStep();
+      timerState.handleNextStep();
     }
   };
 
@@ -103,7 +83,7 @@ export const ExpertBrewingProcess = ({ recipe, onComplete }: ExpertBrewingProces
   };
 
   const handleCompleteBrewing = () => {
-    handleFinish();
+    timerState.handleFinish();
     onComplete();
   };
 
@@ -121,7 +101,7 @@ export const ExpertBrewingProcess = ({ recipe, onComplete }: ExpertBrewingProces
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center p-3 bg-coffee-50 dark:bg-coffee-900/50 rounded-lg">
                 <div className="text-2xl font-bold text-coffee-800 dark:text-coffee-200">
-                  {formatTime(extractionData.totalTime)}
+                  {timerState.formatTime(extractionData.totalTime)}
                 </div>
                 <div className="text-sm text-coffee-600 dark:text-coffee-400">Tempo Total</div>
               </div>
@@ -257,7 +237,7 @@ export const ExpertBrewingProcess = ({ recipe, onComplete }: ExpertBrewingProces
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium">Progresso</span>
             <span className="text-sm text-coffee-600 dark:text-coffee-400">
-              {currentStep + 1} de {recipe.steps.length}
+              {timerState.currentStep + 1} de {recipe.steps.length}
             </span>
           </div>
           <Progress value={progress} className="h-2" />
@@ -272,7 +252,7 @@ export const ExpertBrewingProcess = ({ recipe, onComplete }: ExpertBrewingProces
               <Clock className="w-5 h-5" />
               {currentStepData?.name}
             </CardTitle>
-            <Badge variant="outline">Etapa {currentStep + 1}</Badge>
+            <Badge variant="outline">Etapa {timerState.currentStep + 1}</Badge>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -281,19 +261,19 @@ export const ExpertBrewingProcess = ({ recipe, onComplete }: ExpertBrewingProces
           {/* Timer */}
           <div className="text-center">
             <div className="text-4xl font-bold text-coffee-800 dark:text-coffee-200 mb-4">
-              {formatOvertimeDisplay()}
+              {timerState.formatOvertimeDisplay()}
             </div>
             <div className="flex justify-center gap-2">
-              {!hasStarted ? (
+              {!timerState.hasStarted ? (
                 <Button 
-                  onClick={handleStart}
+                  onClick={timerState.handleStart}
                   variant="default"
                 >
                   Iniciar
                 </Button>
               ) : (
-                <Button onClick={handlePause} variant="outline">
-                  {isPaused ? 'Retomar' : 'Pausar'}
+                <Button onClick={timerState.handlePause} variant="outline">
+                  {timerState.isPaused ? 'Retomar' : 'Pausar'}
                 </Button>
               )}
             </div>
@@ -312,11 +292,11 @@ export const ExpertBrewingProcess = ({ recipe, onComplete }: ExpertBrewingProces
                 <div>
                   <label className="text-sm font-medium flex items-center gap-2 mb-2">
                     <Thermometer className="w-4 h-4" />
-                    Temperatura: {stepTemperatures[currentStep] || recipe.waterTemperature}°C
+                    Temperatura: {stepTemperatures[timerState.currentStep] || recipe.waterTemperature}°C
                   </label>
                   <Slider
-                    value={[stepTemperatures[currentStep] || recipe.waterTemperature || 94]}
-                    onValueChange={(value) => handleTemperatureChange(currentStep, value[0])}
+                    value={[stepTemperatures[timerState.currentStep] || recipe.waterTemperature || 94]}
+                    onValueChange={(value) => handleTemperatureChange(timerState.currentStep, value[0])}
                     max={100}
                     min={70}
                     step={1}

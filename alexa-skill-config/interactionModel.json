@@ -1,0 +1,164 @@
+
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "timer coffee",
+      "intents": [
+        {
+          "name": "StartBrewingIntent",
+          "slots": [
+            {
+              "name": "Method",
+              "type": "COFFEE_METHODS"
+            }
+          ],
+          "samples": [
+            "preparar um {Method}",
+            "fazer um {Method}",
+            "preparar café com {Method}",
+            "usar {Method}",
+            "começar um {Method}",
+            "preparar um café",
+            "fazer um café",
+            "começar a preparar",
+            "iniciar preparo"
+          ]
+        },
+        {
+          "name": "ListMethodsIntent",
+          "samples": [
+            "listar métodos",
+            "que métodos você tem",
+            "quais receitas você conhece",
+            "mostrar métodos",
+            "métodos disponíveis",
+            "o que você sabe fazer"
+          ]
+        },
+        {
+          "name": "NextStepIntent",
+          "samples": [
+            "próxima etapa",
+            "próximo passo",
+            "continuar",
+            "avançar",
+            "próximo",
+            "seguir",
+            "etapa seguinte"
+          ]
+        },
+        {
+          "name": "PauseTimerIntent",
+          "samples": [
+            "pausar cronômetro",
+            "pausar timer",
+            "parar cronômetro",
+            "pausar",
+            "esperar"
+          ]
+        },
+        {
+          "name": "ResumeTimerIntent",
+          "samples": [
+            "continuar cronômetro",
+            "retomar cronômetro",
+            "continuar timer",
+            "voltar cronômetro",
+            "retomar"
+          ]
+        },
+        {
+          "name": "RepeatInstructionIntent",
+          "samples": [
+            "repetir instrução",
+            "repetir",
+            "o que eu faço agora",
+            "qual a instrução",
+            "repete",
+            "não entendi"
+          ]
+        },
+        {
+          "name": "GetTimeLeftIntent",
+          "samples": [
+            "quanto tempo falta",
+            "tempo restante",
+            "quanto tempo ainda",
+            "falta quanto tempo",
+            "tempo"
+          ]
+        },
+        {
+          "name": "CustomRecipeIntent",
+          "samples": [
+            "criar receita",
+            "receita personalizada",
+            "minha receita",
+            "nova receita"
+          ]
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        }
+      ],
+      "types": [
+        {
+          "name": "COFFEE_METHODS",
+          "values": [
+            {
+              "name": {
+                "value": "V60"
+              },
+              "id": "V60"
+            },
+            {
+              "name": {
+                "value": "prensa francesa"
+              },
+              "id": "FRENCH_PRESS"
+            },
+            {
+              "name": {
+                "value": "french press"
+              },
+              "id": "FRENCH_PRESS"
+            },
+            {
+              "name": {
+                "value": "aeropress"
+              },
+              "id": "AEROPRESS"
+            },
+            {
+              "name": {
+                "value": "chemex"
+              },
+              "id": "CHEMEX"
+            },
+            {
+              "name": {
+                "value": "kalita"
+              },
+              "id": "KALITA"
+            },
+            {
+              "name": {
+                "value": "hario"
+              },
+              "id": "V60"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -6,8 +6,8 @@ import { useWakeLock } from "./useWakeLock";
 import { useTimerLogic } from "./useTimerLogic";
 import { usePWANotifications } from "./usePWANotifications";
 import { useUserRecipes } from "./useUserRecipes";
-import { useAchievements } from "./useAchievements";
 import { useHapticFeedback } from "./useHapticFeedback";
+import { showEnhancedToast } from "@/components/ui/enhanced-toast";
 
 export const useBrewingTimer = (recipe: Recipe) => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -18,7 +18,6 @@ export const useBrewingTimer = (recipe: Recipe) => {
   const { requestWakeLock, releaseWakeLock } = useWakeLock();
   const { showTimerNotification } = usePWANotifications();
   const { addToBrewHistory } = useUserRecipes();
-  const { checkAndUnlockAchievements } = useAchievements();
   const { impactFeedback } = useHapticFeedback();
   const {
     timeLeft,
@@ -85,9 +84,10 @@ export const useBrewingTimer = (recipe: Recipe) => {
     await requestWakeLock();
     
     // Enhanced toast notification
-    const { EnhancedToast } = await import('@/components/ui/enhanced-toast');
-    EnhancedToast.coffee(`Receita Iniciada: ${recipe.steps[0]?.name}`, {
-      description: 'Cronômetro iniciado com sucesso'
+    showEnhancedToast({
+      title: `Receita Iniciada: ${recipe.steps[0]?.name}`,
+      description: 'Cronômetro iniciado com sucesso',
+      variant: 'info'
     });
     
     impactFeedback('medium');
@@ -98,8 +98,9 @@ export const useBrewingTimer = (recipe: Recipe) => {
     setIsPaused(!isPaused);
     
     // Enhanced toast notification
-    import('@/components/ui/enhanced-toast').then(({ EnhancedToast }) => {
-      EnhancedToast.info(isPaused ? "Cronômetro retomado" : "Cronômetro pausado");
+    showEnhancedToast({
+      title: isPaused ? "Cronômetro retomado" : "Cronômetro pausado",
+      variant: 'info'
     });
     
     impactFeedback('light');
@@ -131,34 +132,23 @@ export const useBrewingTimer = (recipe: Recipe) => {
     await releaseWakeLock();
     impactFeedback('success');
     
-    // Enhanced completion notification
-    const { EnhancedToast } = await import('@/components/ui/enhanced-toast');
-    
-    // Adicionar ao histórico quando finalizar
-    await addToBrewHistory({
-      recipe_id: recipe.id,
-      recipe_name: recipe.name,
-      coffee_ratio: recipe.coffeeRatio,
-      water_ratio: recipe.waterRatio,
-      water_temperature: recipe.waterTemperature,
-      grinder_brand: recipe.grinderBrand,
-      grinder_clicks: recipe.grinderClicks,
-      paper_brand: recipe.paperBrand,
-      coffee_bean_id: recipe.coffeeBeanId
-    });
-    
-    // Verificar e desbloquear conquistas
-    setTimeout(() => {
-      checkAndUnlockAchievements();
-    }, 1000);
-    
-    EnhancedToast.success('Preparo finalizado!', {
-      description: 'Adicionado ao histórico com sucesso',
-      action: {
-        label: 'Ver Histórico',
-        onClick: () => console.log('Navigate to history')
-      }
-    });
+    // Passar a receita completa para o histórico
+    try {
+      await addToBrewHistory(recipe);
+      
+      showEnhancedToast({
+        title: 'Preparo finalizado!',
+        description: 'Adicionado ao histórico com sucesso',
+        variant: 'success'
+      });
+    } catch (error) {
+      console.error('Erro ao salvar no histórico:', error);
+      showEnhancedToast({
+        title: 'Preparo finalizado!',
+        description: 'Erro ao salvar no histórico, mas o preparo foi concluído',
+        variant: 'default'
+      });
+    }
   };
 
   useEffect(() => {
@@ -187,6 +177,7 @@ export const useBrewingTimer = (recipe: Recipe) => {
     handleFinish,
     setIsRunning,
     setIsOvertime,
-    setCompletedSteps
+    setCompletedSteps,
+    setCurrentStep
   };
 };

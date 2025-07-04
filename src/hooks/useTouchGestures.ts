@@ -8,12 +8,14 @@ interface TouchGestureOptions {
   onSwipeDown?: () => void;
   onPinch?: (scale: number) => void;
   threshold?: number;
+  enabled?: boolean;
 }
 
 export const useTouchGestures = (options: TouchGestureOptions) => {
   const elementRef = useRef<HTMLDivElement>(null);
   const startTouch = useRef<{ x: number; y: number; time: number } | null>(null);
   const initialDistance = useRef<number>(0);
+  const hasMoved = useRef<boolean>(false);
 
   const {
     onSwipeLeft,
@@ -21,14 +23,17 @@ export const useTouchGestures = (options: TouchGestureOptions) => {
     onSwipeUp,
     onSwipeDown,
     onPinch,
-    threshold = 50
+    threshold = 50,
+    enabled = true
   } = options;
 
   useEffect(() => {
     const element = elementRef.current;
-    if (!element) return;
+    if (!element || !enabled) return;
 
     const handleTouchStart = (e: TouchEvent) => {
+      hasMoved.current = false;
+      
       if (e.touches.length === 1) {
         const touch = e.touches[0];
         startTouch.current = {
@@ -48,7 +53,10 @@ export const useTouchGestures = (options: TouchGestureOptions) => {
     };
 
     const handleTouchMove = (e: TouchEvent) => {
+      hasMoved.current = true;
+      
       if (e.touches.length === 2 && onPinch && initialDistance.current > 0) {
+        // Only prevent default for pinch gestures
         e.preventDefault();
         const touch1 = e.touches[0];
         const touch2 = e.touches[1];
@@ -62,32 +70,34 @@ export const useTouchGestures = (options: TouchGestureOptions) => {
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
-      if (!startTouch.current || e.touches.length > 0) return;
+      if (!startTouch.current || e.touches.length > 0 || !hasMoved.current) {
+        startTouch.current = null;
+        return;
+      }
 
       const endTouch = e.changedTouches[0];
       const deltaX = endTouch.clientX - startTouch.current.x;
       const deltaY = endTouch.clientY - startTouch.current.y;
       const deltaTime = Date.now() - startTouch.current.time;
 
-      // Ignore if gesture took too long or was too short
-      if (deltaTime > 500 || (Math.abs(deltaX) < threshold && Math.abs(deltaY) < threshold)) {
+      // Only process swipes if they're fast enough and significant enough
+      if (deltaTime > 300 || (Math.abs(deltaX) < threshold && Math.abs(deltaY) < threshold)) {
         startTouch.current = null;
         return;
       }
 
-      // Determine swipe direction
-      if (Math.abs(deltaX) > Math.abs(deltaY)) {
-        // Horizontal swipe
-        if (deltaX > threshold && onSwipeRight) {
+      // Only process horizontal swipes if they're more horizontal than vertical
+      if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > threshold) {
+        if (deltaX > 0 && onSwipeRight) {
           onSwipeRight();
-        } else if (deltaX < -threshold && onSwipeLeft) {
+        } else if (deltaX < 0 && onSwipeLeft) {
           onSwipeLeft();
         }
-      } else {
-        // Vertical swipe
-        if (deltaY > threshold && onSwipeDown) {
+      } else if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > threshold) {
+        // Only process vertical swipes if they're more vertical than horizontal
+        if (deltaY > 0 && onSwipeDown) {
           onSwipeDown();
-        } else if (deltaY < -threshold && onSwipeUp) {
+        } else if (deltaY < 0 && onSwipeUp) {
           onSwipeUp();
         }
       }
@@ -96,16 +106,17 @@ export const useTouchGestures = (options: TouchGestureOptions) => {
       initialDistance.current = 0;
     };
 
-    element.addEventListener('touchstart', handleTouchStart, { passive: false });
+    // Use passive listeners for better performance
+    element.addEventListener('touchstart', handleTouchStart, { passive: true });
     element.addEventListener('touchmove', handleTouchMove, { passive: false });
-    element.addEventListener('touchend', handleTouchEnd, { passive: false });
+    element.addEventListener('touchend', handleTouchEnd, { passive: true });
 
     return () => {
       element.removeEventListener('touchstart', handleTouchStart);
       element.removeEventListener('touchmove', handleTouchMove);
       element.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [onSwipeLeft, onSwipeRight, onSwipeUp, onSwipeDown, onPinch, threshold]);
+  }, [onSwipeLeft, onSwipeRight, onSwipeUp, onSwipeDown, onPinch, threshold, enabled]);
 
   return elementRef;
 };

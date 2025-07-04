@@ -1,209 +1,123 @@
 
-import { useEffect } from "react";
-import { Coffee } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUserRecipes } from "@/hooks/useUserRecipes";
-import { useTheme } from "@/hooks/useTheme";
-import { useDeviceDetection } from "@/hooks/useDeviceDetection";
-import { useAppPerformance } from "@/hooks/useAppPerformance";
-import { useHapticFeedback } from "@/hooks/useHapticFeedback";
-import { useTouchGestures } from "@/hooks/useTouchGestures";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { useIndexState } from "@/hooks/useIndexState";
 import { useIndexHandlers } from "@/hooks/useIndexHandlers";
-import { MainHeader } from "@/components/MainHeader";
-import { BrewingInterface } from "@/components/BrewingInterface";
-import { DesktopNavigation } from "@/components/DesktopNavigation";
 import { MobileContent } from "@/components/MobileContent";
-import { MobileBottomNavigation } from "@/components/MobileBottomNavigation";
-import { FloatingActionButton } from "@/components/FloatingActionButton";
-import { Footer } from "@/components/Footer";
-import { AnimatedContainer } from "@/components/ui/animated-container";
-import { PullToRefresh } from "@/components/ui/pull-to-refresh";
-
-export interface Recipe {
-  id: string;
-  name: string;
-  description: string;
-  coffeeRatio: number;
-  waterRatio: number;
-  waterTemperature?: number;
-  grinderBrand?: string;
-  grinderClicks?: number;
-  paperBrand?: string;
-  coffeeBeanId?: string;
-  filterPaperId?: string;
-  method?: string;
-  steps: Array<{
-    name: string;
-    duration: number;
-    instruction: string;
-    waterAmount?: number;
-  }>;
-}
+import { DesktopNavigation } from "@/components/DesktopNavigation";
+import { BrewingInterface } from "@/components/BrewingInterface";
+import { FocusMode } from "@/components/FocusMode";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Recipe } from "@/types/recipe";
 
 const Index = () => {
   const { user, loading } = useAuth();
-  const { theme, toggleTheme } = useTheme();
-  const { userRecipes, brewHistory } = useUserRecipes();
-  const deviceInfo = useDeviceDetection();
-  const { cleanupMemory } = useAppPerformance();
-  const { impactFeedback } = useHapticFeedback();
   const isMobile = useIsMobile();
-
+  
   const {
-    currentRecipe,
-    setCurrentRecipe,
+    currentTab,
+    selectedRecipe,
+    isBrewingActive,
     brewingMode,
-    setBrewingMode,
-    activeTab,
-    setActiveTab,
     focusModeActive,
-    setFocusModeActive,
-    showPerformanceMonitor,
-    setShowPerformanceMonitor
-  } = useIndexState(user, loading);
+    showMobileMenu,
+    showBrewingScheduler,
+    searchQuery,
+    selectedMethods,
+    selectedBeans,
+  } = useIndexState();
 
   const {
+    setCurrentTab,
+    setSelectedRecipe,
+    setIsBrewingActive,
+    setBrowingMode,
+    setFocusModeActive,
+    setShowMobileMenu,
+    setShowBrewingScheduler,
+    setSearchQuery,
+    setSelectedMethods,
+    setSelectedBeans,
     handleStartBrewing,
-    handleCompleteBrewing,
-    handleLogoClick,
-    handleMoreMenuSelect,
-    handleRefresh,
-    handleQuickBrew,
-    handleCreateRecipe,
-    handleOpenRecipes
-  } = useIndexHandlers({
-    setCurrentRecipe,
-    setBrewingMode,
-    setActiveTab,
-    user
-  });
+    handleToggleFocusMode,
+  } = useIndexHandlers();
 
-  // Touch gestures para navegação
-  const gestureRef = useTouchGestures({
-    onSwipeLeft: () => {
-      if (isMobile && !currentRecipe) {
-        const tabs = user ? ['dashboard', 'recipes', 'timer', 'my-recipes'] : ['recipes', 'timer', 'auth'];
-        const currentIndex = tabs.indexOf(activeTab);
-        if (currentIndex < tabs.length - 1) {
-          setActiveTab(tabs[currentIndex + 1]);
-          impactFeedback('light');
-        }
-      }
-    },
-    onSwipeRight: () => {
-      if (isMobile && !currentRecipe) {
-        const tabs = user ? ['dashboard', 'recipes', 'timer', 'my-recipes'] : ['recipes', 'timer', 'auth'];
-        const currentIndex = tabs.indexOf(activeTab);
-        if (currentIndex > 0) {
-          setActiveTab(tabs[currentIndex - 1]);
-          impactFeedback('light');
-        }
-      }
-    }
-  });
-
-  // Cleanup memory periodically on mobile
-  useEffect(() => {
-    if (isMobile) {
-      const interval = setInterval(cleanupMemory, 10 * 60 * 1000); // 10 minutos
-      return () => clearInterval(interval);
-    }
-  }, [isMobile, cleanupMemory]);
-
-  console.log('Index render - loading:', loading, 'user:', user?.email, 'activeTab:', activeTab);
-
+  // Show loading state while auth is initializing
   if (loading) {
-    console.log('Index: Showing loading screen');
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
-        <AnimatedContainer animation="bounce-in">
-          <div className="text-center">
-            <Coffee className="w-12 h-12 mx-auto text-coffee-600 animate-pulse mb-4" />
-            <p className="text-coffee-600 dark:text-coffee-300">Carregando...</p>
+      <div className="min-h-screen bg-gradient-to-br from-coffee-50 to-coffee-100 flex items-center justify-center safe-area-top safe-area-bottom">
+        <div className="text-center p-8">
+          <div className="animate-pulse">
+            <div className="w-16 h-16 bg-coffee-300 rounded-full mx-auto mb-4"></div>
+            <div className="h-4 bg-coffee-200 rounded w-32 mx-auto mb-2"></div>
+            <div className="h-3 bg-coffee-200 rounded w-24 mx-auto"></div>
           </div>
-        </AnimatedContainer>
+          <p className="text-coffee-600 mt-4 text-sm">Carregando TimerCoffee...</p>
+        </div>
       </div>
     );
   }
-
-  if (currentRecipe) {
-    console.log('Index: Showing brewing process for recipe:', currentRecipe.name);
-    return (
-      <BrewingInterface
-        recipe={currentRecipe}
-        brewingMode={brewingMode}
-        onBrewingModeChange={setBrewingMode}
-        onComplete={handleCompleteBrewing}
-        focusModeActive={focusModeActive}
-        onToggleFocusMode={() => setFocusModeActive(!focusModeActive)}
-      />
-    );
-  }
-
-  console.log('Index: Showing main tabs interface');
 
   return (
-    <PullToRefresh onRefresh={handleRefresh}>
-      <div 
-        ref={gestureRef}
-        className={`min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 dark:from-gray-900 dark:to-gray-800 ${isMobile ? 'pb-20' : ''}`}
-      >
-        <div className="container mx-auto px-4 py-8">
-          <MainHeader
-            theme={theme}
-            toggleTheme={toggleTheme}
-            onLogoClick={handleLogoClick}
-            user={user}
-            showPerformanceMonitor={showPerformanceMonitor}
-            onTogglePerformanceMonitor={() => setShowPerformanceMonitor(!showPerformanceMonitor)}
-          />
+    <div className="min-h-screen bg-gradient-to-br from-coffee-50 via-coffee-100 to-coffee-200 safe-area-top safe-area-bottom">
+      <PWAInstallPrompt />
+      <Toaster />
+      <Sonner />
+      
+      {/* Focus Mode Overlay */}
+      {focusModeActive && selectedRecipe && (
+        <FocusMode
+          recipe={selectedRecipe}
+          isActive={focusModeActive}
+          onToggle={handleToggleFocusMode}
+          timerState={null}
+        />
+      )}
 
-          {/* Desktop Navigation */}
-          {!isMobile && (
-            <DesktopNavigation
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
-              onMoreMenuSelect={handleMoreMenuSelect}
-              onStartBrewing={handleStartBrewing}
-              user={user}
-              userRecipes={userRecipes}
-              brewHistory={brewHistory}
-            />
-          )}
+      {/* Brewing Interface */}
+      {isBrewingActive && selectedRecipe && !focusModeActive && (
+        <BrewingInterface
+          recipe={selectedRecipe}
+          brewingMode={brewingMode}
+          onBrewingModeChange={setBrowingMode}
+          onComplete={() => {
+            setIsBrewingActive(false);
+            setSelectedRecipe(null);
+          }}
+          onToggleFocusMode={handleToggleFocusMode}
+          focusModeActive={focusModeActive}
+        />
+      )}
 
-          {/* Mobile Content */}
-          {isMobile && (
+      {/* Main Content */}
+      {!isBrewingActive && !focusModeActive && (
+        <>
+          {isMobile ? (
             <MobileContent
-              activeTab={activeTab}
+              activeTab={currentTab}
               onStartBrewing={handleStartBrewing}
               user={user}
-              userRecipes={userRecipes}
-              brewHistory={brewHistory}
+              userRecipes={[]}
+              brewHistory={[]}
+            />
+          ) : (
+            <DesktopNavigation
+              activeTab={currentTab}
+              onTabChange={setCurrentTab}
+              onMoreMenuSelect={setCurrentTab}
+              onStartBrewing={handleStartBrewing}
+              user={user}
+              userRecipes={[]}
+              brewHistory={[]}
             />
           )}
-        </div>
-
-        {/* Mobile Bottom Navigation */}
-        <MobileBottomNavigation
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          onMoreMenuSelect={handleMoreMenuSelect}
-          isAuthenticated={!!user}
-        />
-
-        {/* Floating Action Button */}
-        <FloatingActionButton
-          onStartQuickBrew={handleQuickBrew}
-          onCreateRecipe={handleCreateRecipe}
-          onOpenRecipes={handleOpenRecipes}
-        />
-        
-        <Footer />
-      </div>
-    </PullToRefresh>
+        </>
+      )}
+    </div>
   );
 };
 
 export default Index;
+export type { Recipe };

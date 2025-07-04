@@ -6,6 +6,7 @@ import { ExpertBrewingProcess } from "@/components/ExpertBrewingProcess";
 import { FocusMode } from "@/components/FocusMode";
 import { AnimatedContainer } from "@/components/ui/animated-container";
 import { Recipe } from "@/pages/Index";
+import { useBrewingTimer } from "@/hooks/useBrewingTimer";
 
 interface BrewingInterfaceProps {
   recipe: Recipe;
@@ -24,6 +25,17 @@ export const BrewingInterface = ({
   focusModeActive,
   onToggleFocusMode
 }: BrewingInterfaceProps) => {
+  // Move the brewing timer logic here to share between all components
+  const timerState = useBrewingTimer(recipe);
+
+  const handleComplete = () => {
+    // Make sure to finish the timer before completing
+    if (timerState.isRunning) {
+      timerState.handleFinish();
+    }
+    onComplete();
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 dark:from-gray-900 dark:to-gray-800 p-4">
       <div className="container mx-auto py-8">
@@ -61,7 +73,7 @@ export const BrewingInterface = ({
               </div>
             </div>
             <Button 
-              onClick={onComplete}
+              onClick={handleComplete}
               variant="outline"
               size="sm"
             >
@@ -73,17 +85,20 @@ export const BrewingInterface = ({
         {brewingMode === 'auto' ? (
           <AutoBrewingProcess 
             recipe={recipe} 
-            onComplete={onComplete} 
+            onComplete={handleComplete}
+            timerState={timerState}
           />
         ) : brewingMode === 'manual' ? (
           <ManualBrewingProcess 
             recipe={recipe} 
-            onComplete={onComplete} 
+            onComplete={handleComplete}
+            timerState={timerState}
           />
         ) : (
           <ExpertBrewingProcess 
             recipe={recipe} 
-            onComplete={onComplete} 
+            onComplete={handleComplete}
+            timerState={timerState}
           />
         )}
 
@@ -91,9 +106,7 @@ export const BrewingInterface = ({
           recipe={recipe}
           isActive={focusModeActive}
           onToggle={onToggleFocusMode}
-          currentStep={0}
-          timeLeft={180}
-          isRunning={true}
+          timerState={timerState}
         />
       </div>
     </div>

@@ -1,71 +1,88 @@
 
-import { Coffee, Moon, Sun } from "lucide-react";
+import { Coffee } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { RecipeExportImport } from "@/components/RecipeExportImport";
-import { PerformanceMonitor } from "@/components/ui/performance-monitor";
-import { AnimatedContainer } from "@/components/ui/animated-container";
+import { useAuth } from "@/contexts/AuthContext";
+import { LoginForm } from "@/components/LoginForm";
+import { UserProfile } from "@/components/UserProfile";
+import { useState } from "react";
 
 interface MainHeaderProps {
-  theme: string;
-  toggleTheme: () => void;
-  onLogoClick: () => void;
-  user: any;
-  showPerformanceMonitor: boolean;
-  onTogglePerformanceMonitor: () => void;
+  onMenuClick?: () => void;
+  showMenuButton?: boolean;
 }
 
-export const MainHeader = ({
-  theme,
-  toggleTheme,
-  onLogoClick,
-  user,
-  showPerformanceMonitor,
-  onTogglePerformanceMonitor
-}: MainHeaderProps) => {
-  return (
-    <AnimatedContainer animation="fade-in">
-      <div className="text-center mb-8">
-        <div 
-          className="flex items-center justify-center gap-3 mb-4 cursor-pointer hover:opacity-80 transition-opacity"
-          onClick={onLogoClick}
-        >
-          <Coffee className="w-10 h-10 sm:w-12 sm:h-12 text-coffee-600 dark:text-coffee-400" />
-          <h1 className="text-3xl sm:text-4xl font-bold text-coffee-800 dark:text-coffee-200">TimerCoffee Brew</h1>
-        </div>
-        <p className="text-coffee-600 dark:text-coffee-300 text-base sm:text-lg">
-          Seu aplicativo completo para preparo de café
-        </p>
-        
-        <div className="flex justify-center items-center gap-2 mt-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={toggleTheme}
-            className="gap-2"
-          >
-            {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            {theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}
-          </Button>
-          
-          {user && <RecipeExportImport />}
-          
-          {process.env.NODE_ENV === 'development' && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onTogglePerformanceMonitor}
-            >
-              Perf
-            </Button>
-          )}
-        </div>
+export const MainHeader = ({ onMenuClick, showMenuButton = false }: MainHeaderProps) => {
+  const { user } = useAuth();
+  const [showLogin, setShowLogin] = useState(false);
 
-        {showPerformanceMonitor && (
-          <div className="mt-4 flex justify-center">
-            <PerformanceMonitor showDetails />
+  return (
+    <header className="sticky top-0 z-50 w-full border-b border-coffee-200 bg-white/80 backdrop-blur-md safe-area-top">
+      <div className="container mx-auto px-4 py-3">
+        <div className="flex items-center justify-between">
+          {/* Logo and Title */}
+          <div className="flex items-center gap-3">
+            {showMenuButton && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onMenuClick}
+                className="touch-target p-2 lg:hidden"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                </svg>
+              </Button>
+            )}
+            
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <Coffee className="w-6 h-6 text-coffee-600" />
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-coffee-500 rounded-full animate-pulse"></div>
+              </div>
+              <div className="flex flex-col">
+                <h1 className="text-lg font-bold text-coffee-800 leading-tight">
+                  TimerCoffee
+                </h1>
+                <span className="text-xs text-coffee-500 hidden sm:block">
+                  Seu assistente de café
+                </span>
+              </div>
+            </div>
           </div>
-        )}
+
+          {/* User Section */}
+          <div className="flex items-center gap-2">
+            {user ? (
+              <UserProfile />
+            ) : (
+              <Button
+                onClick={() => setShowLogin(true)}
+                variant="outline"
+                size="sm"
+                className="touch-target border-coffee-300 text-coffee-700 hover:bg-coffee-50 hover:border-coffee-400 transition-colors"
+              >
+                <span className="hidden sm:inline">Entrar</span>
+                <span className="sm:hidden">Login</span>
+              </Button>
+            )}
+          </div>
+        </div>
       </div>
-    </AnimatedContainer>
+
+      {/* Login Modal */}
+      {showLogin && (
+        <LoginForm />
+      )}
+    </header>
   );
 };

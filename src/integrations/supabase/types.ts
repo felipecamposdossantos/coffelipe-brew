@@ -353,6 +353,33 @@ export type Database = {
           },
         ]
       }
+      user_favorites: {
+        Row: {
+          favorited_at: string
+          id: string
+          recipe_data: Json
+          recipe_id: string
+          recipe_name: string
+          user_id: string
+        }
+        Insert: {
+          favorited_at?: string
+          id?: string
+          recipe_data: Json
+          recipe_id: string
+          recipe_name: string
+          user_id: string
+        }
+        Update: {
+          favorited_at?: string
+          id?: string
+          recipe_data?: Json
+          recipe_id?: string
+          recipe_name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_recipes: {
         Row: {
           coffee_bean_id: string | null

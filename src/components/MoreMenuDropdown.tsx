@@ -20,7 +20,8 @@ import {
   Calendar,
   Package,
   TrendingUp,
-  Zap
+  Zap,
+  Heart
 } from 'lucide-react';
 
 interface MoreMenuDropdownProps {
@@ -90,6 +91,13 @@ export const MoreMenuDropdown = ({ onMenuSelect }: MoreMenuDropdownProps) => {
         <DropdownMenuItem onClick={() => onMenuSelect('advanced')}>
           <Settings className="mr-2 h-4 w-4" />
           Configurações
+        </DropdownMenuItem>
+        
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel>Apoio</DropdownMenuLabel>
+        <DropdownMenuItem onClick={() => onMenuSelect('support')}>
+          <Heart className="mr-2 h-4 w-4" />
+          Apoie o Projeto
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
