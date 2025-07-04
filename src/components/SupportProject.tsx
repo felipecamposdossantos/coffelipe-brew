@@ -29,7 +29,7 @@ export const SupportProject = () => {
             {/* Mensagem principal */}
             <div className="text-center">
               <p className="text-coffee-700 dark:text-coffee-300 mb-4">
-                Se esse site for útil para você, compartilhe e fique à vontade em fazer sua contribuição
+                Se esse site está sendo útil para você, deixe sua contribuição para o projeto
               </p>
             </div>
             
