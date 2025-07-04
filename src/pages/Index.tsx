@@ -18,7 +18,6 @@ import { MobileContent } from "@/components/MobileContent";
 import { MobileBottomNavigation } from "@/components/MobileBottomNavigation";
 import { FloatingActionButton } from "@/components/FloatingActionButton";
 import { AnimatedContainer } from "@/components/ui/animated-container";
-import { PullToRefresh } from "@/components/ui/pull-to-refresh";
 
 export interface Recipe {
   id: string;
@@ -161,42 +160,40 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Scrollable Content */}
-        <PullToRefresh onRefresh={handleRefresh}>
+        {/* Content with normal scroll */}
+        <div className="flex-1 overflow-y-auto">
           <div 
             ref={gestureRef} 
-            className="flex-1 mobile-scroll-container no-scroll-block"
+            className="container mx-auto px-4 py-4"
           >
-            <div className="container mx-auto px-4 py-4">
-              {/* Desktop Navigation */}
-              {!isMobile && (
-                <DesktopNavigation
-                  activeTab={activeTab}
-                  onTabChange={setActiveTab}
-                  onMoreMenuSelect={handleMoreMenuSelect}
-                  onStartBrewing={handleStartBrewing}
-                  user={user}
-                  userRecipes={userRecipes}
-                  brewHistory={brewHistory}
-                />
-              )}
+            {/* Desktop Navigation */}
+            {!isMobile && (
+              <DesktopNavigation
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                onMoreMenuSelect={handleMoreMenuSelect}
+                onStartBrewing={handleStartBrewing}
+                user={user}
+                userRecipes={userRecipes}
+                brewHistory={brewHistory}
+              />
+            )}
 
-              {/* Mobile Content */}
-              {isMobile && (
-                <MobileContent
-                  activeTab={activeTab}
-                  onStartBrewing={handleStartBrewing}
-                  user={user}
-                  userRecipes={userRecipes}
-                  brewHistory={brewHistory}
-                />
-              )}
-            </div>
-            
-            {/* Spacing for fixed bottom navigation */}
-            {isMobile && <div className="h-32" />}
+            {/* Mobile Content */}
+            {isMobile && (
+              <MobileContent
+                activeTab={activeTab}
+                onStartBrewing={handleStartBrewing}
+                user={user}
+                userRecipes={userRecipes}
+                brewHistory={brewHistory}
+              />
+            )}
           </div>
-        </PullToRefresh>
+          
+          {/* Spacing for fixed bottom navigation */}
+          {isMobile && <div className="h-32" />}
+        </div>
 
         {/* Fixed Mobile Bottom Navigation */}
         {isMobile && (

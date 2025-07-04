@@ -1,3 +1,4 @@
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Home, Timer as TimerIcon } from "lucide-react";
 import { Dashboard } from "@/components/Dashboard";
@@ -14,7 +15,6 @@ import { AdvancedSettings } from "@/components/AdvancedSettings";
 import { BrewingScheduler } from "@/components/BrewingScheduler";
 import { StockManager } from "@/components/StockManager";
 import { AdvancedAnalytics } from "@/components/AdvancedAnalytics";
-import { SmoothScrollContainer } from "@/components/ui/smooth-scroll-container";
 import { AnimatedContainer } from "@/components/ui/animated-container";
 import { Recipe } from "@/pages/Index";
 
@@ -84,7 +84,7 @@ export const DesktopNavigation = ({
         </TabsList>
       </AnimatedContainer>
 
-      <SmoothScrollContainer>
+      <div className="w-full">
         {user && (
           <TabsContent value="dashboard">
             <AnimatedContainer animation="fade-in">
@@ -206,7 +206,7 @@ export const DesktopNavigation = ({
             {user ? <UserProfile /> : <LoginForm />}
           </AnimatedContainer>
         </TabsContent>
-      </SmoothScrollContainer>
+      </div>
     </Tabs>
   );
 };

@@ -79,8 +79,6 @@
   }
   
   html {
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
     height: 100%;
   }
   
@@ -92,9 +90,6 @@
     -webkit-tap-highlight-color: transparent;
     height: 100%;
     overflow-x: hidden;
-    /* Improved scroll performance */
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: auto;
   }
 
   #root {
@@ -108,21 +103,6 @@
   .safe-area-inset-bottom {
     padding-bottom: env(safe-area-inset-bottom);
   }
-}
-
-/* Scroll optimizations for mobile */
-.mobile-scroll-container {
-  -webkit-overflow-scrolling: touch;
-  overflow-y: auto;
-  overscroll-behavior-y: auto;
-  /* Ensure smooth scrolling */
-  scroll-behavior: smooth;
-}
-
-/* Remove any scroll blocking */
-.no-scroll-block {
-  touch-action: auto !important;
-  -webkit-overflow-scrolling: touch;
 }
 
 /* Custom animations */
@@ -248,13 +228,6 @@
   min-height: 48px;
   min-width: 48px;
   position: relative;
-}
-
-/* Smooth scrolling */
-@media (prefers-reduced-motion: no-preference) {
-  html {
-    scroll-behavior: smooth;
-  }
 }
 
 /* High contrast mode support */
