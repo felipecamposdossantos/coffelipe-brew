@@ -1,10 +1,10 @@
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { EnhancedButton } from '@/components/ui/enhanced-button';
 import { Coffee, Plus, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useHapticFeedback } from '@/hooks/useHapticFeedback';
+import { AnimatedContainer } from '@/components/ui/animated-container';
 
 interface FloatingActionButtonProps {
   onStartQuickBrew: () => void;
@@ -19,21 +19,14 @@ export const FloatingActionButton = ({
 }: FloatingActionButtonProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const isMobile = useIsMobile();
-  const { impactFeedback } = useHapticFeedback();
 
   if (!isMobile) return null;
 
   const handleMainClick = () => {
-    impactFeedback('medium');
-    if (isExpanded) {
-      setIsExpanded(false);
-    } else {
-      setIsExpanded(true);
-    }
+    setIsExpanded(!isExpanded);
   };
 
   const handleActionClick = (action: () => void) => {
-    impactFeedback('light');
     action();
     setIsExpanded(false);
   };
@@ -43,43 +36,50 @@ export const FloatingActionButton = ({
       {/* Backdrop */}
       {isExpanded && (
         <div 
-          className="fixed inset-0 bg-black/20 -z-10"
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm -z-10 transition-opacity duration-300"
           onClick={() => setIsExpanded(false)}
         />
       )}
 
       {/* Action buttons */}
       <div className={cn(
-        "flex flex-col gap-3 mb-3 transition-all duration-300",
-        isExpanded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8 pointer-events-none"
+        "flex flex-col gap-3 mb-3 transition-all duration-300 ease-out",
+        isExpanded ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-8 scale-95 pointer-events-none"
       )}>
-        <Button
-          size="sm"
-          onClick={() => handleActionClick(onStartQuickBrew)}
-          className="bg-coffee-600 hover:bg-coffee-700 text-white rounded-full w-12 h-12 shadow-lg"
-        >
-          <Coffee className="w-5 h-5" />
-        </Button>
+        <AnimatedContainer animation="scale-in" delay={100}>
+          <EnhancedButton
+            size="sm"
+            onClick={() => handleActionClick(onStartQuickBrew)}
+            hapticFeedback="medium"
+            glowEffect
+            className="bg-coffee-600 hover:bg-coffee-700 text-white rounded-full w-12 h-12 shadow-lg hover:shadow-xl transition-all duration-300"
+            icon={<Coffee className="w-5 h-5" />}
+          />
+        </AnimatedContainer>
         
-        <Button
-          size="sm"
-          onClick={() => handleActionClick(onCreateRecipe)}
-          className="bg-coffee-500 hover:bg-coffee-600 text-white rounded-full w-12 h-12 shadow-lg"
-        >
-          <Plus className="w-5 h-5" />
-        </Button>
+        <AnimatedContainer animation="scale-in" delay={150}>
+          <EnhancedButton
+            size="sm"
+            onClick={() => handleActionClick(onCreateRecipe)}
+            hapticFeedback="medium"
+            glowEffect
+            className="bg-coffee-500 hover:bg-coffee-600 text-white rounded-full w-12 h-12 shadow-lg hover:shadow-xl transition-all duration-300"
+            icon={<Plus className="w-5 h-5" />}
+          />
+        </AnimatedContainer>
       </div>
 
       {/* Main FAB */}
-      <Button
+      <EnhancedButton
         onClick={handleMainClick}
+        hapticFeedback="medium"
+        glowEffect
         className={cn(
-          "bg-coffee-600 hover:bg-coffee-700 text-white rounded-full w-14 h-14 shadow-lg transition-transform duration-300",
-          isExpanded && "rotate-45"
+          "bg-coffee-600 hover:bg-coffee-700 text-white rounded-full w-14 h-14 shadow-lg hover:shadow-xl transition-all duration-300",
+          isExpanded && "rotate-45 bg-coffee-700"
         )}
-      >
-        {isExpanded ? <X className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
-      </Button>
+        icon={isExpanded ? <X className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
+      />
     </div>
   );
 };

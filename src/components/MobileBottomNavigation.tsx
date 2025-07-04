@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Button } from '@/components/ui/button';
+import { EnhancedButton } from '@/components/ui/enhanced-button';
 import {
   Sheet,
   SheetContent,
@@ -25,7 +25,7 @@ import {
   Package,
   TrendingUp,
   Zap,
-  X
+  Heart
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AnimatedContainer } from '@/components/ui/animated-container';
@@ -82,9 +82,9 @@ export const MobileBottomNavigation = ({
       { id: 'scheduler', icon: Calendar, label: 'Agenda', category: 'Outros' },
       { id: 'history', icon: History, label: 'Histórico', category: 'Outros' },
       { id: 'advanced', icon: Settings, label: 'Configurações', category: 'Outros' },
-      { id: 'support', icon: User, label: 'Apoie o Projeto', category: 'Apoio' }
+      { id: 'support', icon: Heart, label: 'Apoie o Projeto', category: 'Apoio' }
     ] : [
-      { id: 'support', icon: User, label: 'Apoie o Projeto', category: 'Apoio' },
+      { id: 'support', icon: Heart, label: 'Apoie o Projeto', category: 'Apoio' },
       { id: 'auth', icon: User, label: 'Login', category: 'Conta' }
     ])
   ];
@@ -111,21 +111,23 @@ export const MobileBottomNavigation = ({
                 animation="fade-in"
                 delay={index * 100}
               >
-                <Button
+                <EnhancedButton
                   variant="ghost"
                   size="sm"
                   onClick={() => handleTabClick(tab.id)}
+                  hapticFeedback="light"
                   className={cn(
-                    "flex flex-col items-center gap-1 px-3 py-2 h-auto transition-all duration-200 touch-target min-h-[48px]",
-                    isActive && "text-coffee-600 dark:text-coffee-400 scale-105"
+                    "flex flex-col items-center gap-1 px-3 py-2 h-auto transition-all duration-300 touch-target min-h-[48px]",
+                    "hover:bg-coffee-50 dark:hover:bg-coffee-900/20",
+                    isActive && "text-coffee-600 dark:text-coffee-400 bg-coffee-50 dark:bg-coffee-900/20 scale-105"
                   )}
                 >
                   <Icon className={cn(
-                    "w-5 h-5 transition-all duration-200",
+                    "w-5 h-5 transition-all duration-300",
                     isActive && "text-coffee-600 dark:text-coffee-400"
                   )} />
                   <span className="text-xs font-medium">{tab.label}</span>
-                </Button>
+                </EnhancedButton>
               </AnimatedContainer>
             );
           })}
@@ -157,14 +159,15 @@ export const MobileBottomNavigation = ({
                         animation="slide-up"
                         delay={index * 50}
                       >
-                        <Button
+                        <EnhancedButton
                           variant="ghost"
                           onClick={() => handleMoreMenuItemClick(item.id)}
+                          hapticFeedback="light"
                           className="w-full justify-start h-12 px-4 hover:bg-coffee-50 dark:hover:bg-coffee-900/20 transition-all duration-200 touch-target"
                         >
                           <Icon className="mr-3 h-5 w-5 text-coffee-600 dark:text-coffee-400" />
                           <span className="text-base">{item.label}</span>
-                        </Button>
+                        </EnhancedButton>
                       </AnimatedContainer>
                     );
                   })}

@@ -17,8 +17,8 @@ export const SupportProject = () => {
         </div>
       </AnimatedContainer>
 
-      <AnimatedContainer animation="slide-in-up" delay={200}>
-        <Card className="bg-coffee-50 dark:bg-coffee-900/20 border-coffee-200 dark:border-coffee-700">
+      <AnimatedContainer animation="slide-up" delay={200}>
+        <Card className="bg-coffee-50 dark:bg-coffee-900/20 border-coffee-200 dark:border-coffee-700 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
           <CardHeader className="text-center">
             <CardTitle className="flex items-center justify-center gap-2 text-coffee-800 dark:text-coffee-200">
               <Heart className="w-5 h-5 text-red-500" />
@@ -34,7 +34,7 @@ export const SupportProject = () => {
             </div>
             
             {/* Seção PIX */}
-            <div className="bg-coffee-100 dark:bg-coffee-800/30 rounded-lg p-6">
+            <div className="bg-coffee-100 dark:bg-coffee-800/30 rounded-lg p-6 transition-colors duration-300">
               <div className="text-center mb-6">
                 <h3 className="text-xl font-semibold text-coffee-800 dark:text-coffee-200 mb-2">
                   Contribua via PIX
@@ -45,7 +45,7 @@ export const SupportProject = () => {
               </div>
               
               <div className="flex flex-col items-center gap-6">
-                <div className="bg-white p-4 rounded-lg shadow-md">
+                <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
                   <img 
                     src="/lovable-uploads/dc58db2b-85bb-421b-bfd2-4c1634090f2b.png" 
                     alt="QR Code PIX para doação" 
@@ -57,7 +57,7 @@ export const SupportProject = () => {
                   <p className="text-sm text-coffee-600 dark:text-coffee-400 mb-3">
                     ou use a chave PIX:
                   </p>
-                  <div className="bg-coffee-200 dark:bg-coffee-700 px-4 py-3 rounded-lg">
+                  <div className="bg-coffee-200 dark:bg-coffee-700 px-4 py-3 rounded-lg hover:bg-coffee-300 dark:hover:bg-coffee-600 transition-colors duration-300">
                     <code className="text-coffee-800 dark:text-coffee-200 font-mono text-sm break-all">
                       felipe_campos_santos@hotmail.com.br
                     </code>
