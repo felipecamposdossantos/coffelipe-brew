@@ -81,6 +81,7 @@
   html {
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
+    height: 100%;
   }
   
   body {
@@ -89,6 +90,16 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-tap-highlight-color: transparent;
+    height: 100%;
+    overflow-x: hidden;
+    /* Improved scroll performance */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: auto;
+  }
+
+  #root {
+    height: 100%;
+    min-height: 100vh;
   }
 }
 
@@ -99,8 +110,18 @@
   }
 }
 
-/* Melhorias de rolagem - Simplificado para rolagem livre */
-.overflow-y-auto {
+/* Scroll optimizations for mobile */
+.mobile-scroll-container {
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+  overscroll-behavior-y: auto;
+  /* Ensure smooth scrolling */
+  scroll-behavior: smooth;
+}
+
+/* Remove any scroll blocking */
+.no-scroll-block {
+  touch-action: auto !important;
   -webkit-overflow-scrolling: touch;
 }
 

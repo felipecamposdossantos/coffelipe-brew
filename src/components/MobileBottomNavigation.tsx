@@ -97,8 +97,8 @@ export const MobileBottomNavigation = ({
 
   return (
     <>
-      <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border border-gray-200 dark:border-gray-700 rounded-xl mx-4 p-4 shadow-lg">
-        <div className="flex justify-around items-center max-w-md mx-auto">
+      <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg">
+        <div className="flex justify-around items-center max-w-md mx-auto px-2 py-3">
           {tabs.map((tab, index) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -114,7 +114,7 @@ export const MobileBottomNavigation = ({
                   size="sm"
                   onClick={() => handleTabClick(tab.id)}
                   className={cn(
-                    "flex flex-col items-center gap-1 px-3 py-2 h-auto transition-all duration-200 touch-target",
+                    "flex flex-col items-center gap-1 px-3 py-2 h-auto transition-all duration-200 touch-target min-h-[48px]",
                     isActive && "text-coffee-600 dark:text-coffee-400 scale-105"
                   )}
                 >
@@ -122,7 +122,7 @@ export const MobileBottomNavigation = ({
                     "w-5 h-5 transition-all duration-200",
                     isActive && "text-coffee-600 dark:text-coffee-400"
                   )} />
-                  <span className="text-xs">{tab.label}</span>
+                  <span className="text-xs font-medium">{tab.label}</span>
                 </Button>
               </AnimatedContainer>
             );
