@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Coffee, TrendingUp, Calendar, Trophy, Target, Users } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,7 +13,6 @@ import { useUserRecipes } from '@/hooks/useUserRecipes';
 import { Recipe } from '@/pages/Index';
 import { RecipeCard } from './RecipeCard';
 import { ActivityFeed } from './ActivityFeed';
-import { ChallengesPanel } from './ChallengesPanel';
 import { AchievementBadge } from './AchievementBadge';
 
 interface DashboardProps {
@@ -78,11 +78,10 @@ export const Dashboard = ({ onStartBrewing }: DashboardProps) => {
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
           <TabsTrigger value="social">Social</TabsTrigger>
           <TabsTrigger value="achievements">Conquistas</TabsTrigger>
-          <TabsTrigger value="challenges">Desafios</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -296,10 +295,6 @@ export const Dashboard = ({ onStartBrewing }: DashboardProps) => {
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
-
-        <TabsContent value="challenges">
-          <ChallengesPanel />
         </TabsContent>
       </Tabs>
     </div>

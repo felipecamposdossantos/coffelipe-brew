@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RecipeList } from "@/components/RecipeList";
@@ -24,6 +23,8 @@ import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { Coffee, Settings, Timer as TimerIcon, Moon, Sun, Zap, Download, Home } from "lucide-react";
 import { FilterPapersManager } from "@/components/FilterPapersManager";
 import { useTheme } from "@/hooks/useTheme";
+import { SmartRecommendations } from "@/components/SmartRecommendations";
+import { ExpertBrewingProcess } from "@/components/ExpertBrewingProcess";
 
 export interface Recipe {
   id: string;
@@ -52,7 +53,7 @@ const Index = () => {
   const { userRecipes, brewHistory } = useUserRecipes();
   const { preferences } = useUserPreferences();
   const [currentRecipe, setCurrentRecipe] = useState<Recipe | null>(null);
-  const [brewingMode, setBrewingMode] = useState<'auto' | 'manual'>('auto');
+  const [brewingMode, setBrewingMode] = useState<'auto' | 'manual' | 'expert'>('auto');
   const [activeTab, setActiveTab] = useState("recipes"); // Default to recipes for everyone
   const [showOnboarding, setShowOnboarding] = useState(false);
 
@@ -76,7 +77,7 @@ const Index = () => {
 
   console.log('Index render - loading:', loading, 'user:', user?.email, 'activeTab:', activeTab);
 
-  const handleStartBrewing = (recipe: Recipe, mode: 'auto' | 'manual' = 'auto') => {
+  const handleStartBrewing = (recipe: Recipe, mode: 'auto' | 'manual' | 'expert' = 'auto') => {
     console.log('Starting brewing with recipe:', recipe.name, 'mode:', mode);
     setCurrentRecipe(recipe);
     setBrewingMode(mode);
@@ -144,6 +145,14 @@ const Index = () => {
                 >
                   Manual
                 </Button>
+                <Button
+                  variant={brewingMode === 'expert' ? 'default' : 'outline'}
+                  onClick={() => setBrewingMode('expert')}
+                  className={brewingMode === 'expert' ? 'bg-coffee-600 hover:bg-coffee-700' : ''}
+                  size="sm"
+                >
+                  Especialista
+                </Button>
               </div>
             </div>
             <Button 
@@ -160,8 +169,13 @@ const Index = () => {
               recipe={currentRecipe} 
               onComplete={handleCompleteBrewing} 
             />
-          ) : (
+          ) : brewingMode === 'manual' ? (
             <ManualBrewingProcess 
+              recipe={currentRecipe} 
+              onComplete={handleCompleteBrewing} 
+            />
+          ) : (
+            <ExpertBrewingProcess 
               recipe={currentRecipe} 
               onComplete={handleCompleteBrewing} 
             />
@@ -219,7 +233,7 @@ const Index = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 sm:grid-cols-12 mb-8 h-auto">
+          <TabsList className="grid w-full grid-cols-4 sm:grid-cols-11 mb-8 h-auto">
             {user && (
               <TabsTrigger value="dashboard" className="text-xs sm:text-sm p-2 sm:p-3 flex items-center gap-1">
                 <Home className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -246,6 +260,11 @@ const Index = () => {
             {user && (
               <TabsTrigger value="suggestions" className="text-xs sm:text-sm p-2 sm:p-3">
                 Sugestões
+              </TabsTrigger>
+            )}
+            {user && (
+              <TabsTrigger value="smart-rec" className="text-xs sm:text-sm p-2 sm:p-3">
+                IA
               </TabsTrigger>
             )}
             {user && (
@@ -322,6 +341,12 @@ const Index = () => {
                   onStartBrewing={handleStartBrewing}
                 />
               </LazyWrapper>
+            </TabsContent>
+          )}
+
+          {user && (
+            <TabsContent value="smart-rec">
+              <SmartRecommendations onStartBrewing={handleStartBrewing} />
             </TabsContent>
           )}
 
