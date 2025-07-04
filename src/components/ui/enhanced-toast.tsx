@@ -1,6 +1,5 @@
-
 import { ReactNode } from 'react';
-import { Toast, ToastDescription, ToastProvider, ToastTitle, ToastViewport } from '@/components/ui/toast';
+import { Toast, ToastDescription, ToastProvider, ToastTitle, ToastViewport, ToastActionElement } from '@/components/ui/toast';
 import { useToast } from '@/hooks/use-toast';
 import { CheckCircle, AlertCircle, Info, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -9,7 +8,7 @@ export interface EnhancedToastProps {
   title?: string;
   description?: string;
   variant?: 'default' | 'success' | 'error' | 'warning' | 'info';
-  action?: ReactNode;
+  action?: ToastActionElement;
   duration?: number;
 }
 
