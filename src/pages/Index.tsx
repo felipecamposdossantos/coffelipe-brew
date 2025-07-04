@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RecipeList } from "@/components/RecipeList";
 import { UserRecipes } from "@/components/UserRecipes";
@@ -53,15 +53,26 @@ const Index = () => {
   const { preferences } = useUserPreferences();
   const [currentRecipe, setCurrentRecipe] = useState<Recipe | null>(null);
   const [brewingMode, setBrewingMode] = useState<'auto' | 'manual'>('auto');
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState("recipes"); // Default to recipes for everyone
   const [showOnboarding, setShowOnboarding] = useState(false);
 
+  // Set default tab based on authentication status
+  useEffect(() => {
+    if (!loading) {
+      if (user) {
+        setActiveTab("dashboard");
+      } else {
+        setActiveTab("recipes");
+      }
+    }
+  }, [user, loading]);
+
   // Verificar se deve mostrar onboarding
-  useState(() => {
+  useEffect(() => {
     if (user && preferences && !preferences.onboarding_completed) {
       setShowOnboarding(true);
     }
-  });
+  }, [user, preferences]);
 
   console.log('Index render - loading:', loading, 'user:', user?.email, 'activeTab:', activeTab);
 
@@ -74,12 +85,20 @@ const Index = () => {
   const handleCompleteBrewing = () => {
     console.log('Completing brewing');
     setCurrentRecipe(null);
-    setActiveTab("dashboard");
+    if (user) {
+      setActiveTab("dashboard");
+    } else {
+      setActiveTab("recipes");
+    }
   };
 
   const handleLogoClick = () => {
     setCurrentRecipe(null);
-    setActiveTab("dashboard");
+    if (user) {
+      setActiveTab("dashboard");
+    } else {
+      setActiveTab("recipes");
+    }
   };
 
   const handleOnboardingComplete = () => {
