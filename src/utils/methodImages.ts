@@ -1,15 +1,15 @@
 
 // Mapeamento de métodos para imagens específicas
 export const methodImages = {
-  "V60": "/lovable-uploads/v60-method.jpg",
-  "Melita": "/lovable-uploads/melita-method.jpg", 
-  "French Press": "/lovable-uploads/french-press-method.jpg",
-  "AeroPress": "/lovable-uploads/aeropress-method.jpg",
-  "Clever": "/lovable-uploads/clever-method.jpg",
-  "Chemex": "/lovable-uploads/chemex-method.jpg",
-  "Kalita": "/lovable-uploads/kalita-method.jpg",
-  "UFO Dripper": "/lovable-uploads/ufo-dripper-method.jpg",
-  "Moka": "/lovable-uploads/moka-method.jpg"
+  "V60": "/lovable-uploads/V60.jpg",
+  "Melita": "/lovable-uploads/Melita.jpg", 
+  "French Press": "/lovable-uploads/French Press.jpg",
+  "AeroPress": "/lovable-uploads/AeroPress.jpg",
+  "Clever": "/lovable-uploads/Clever.jpg",
+  "Chemex": "/lovable-uploads/Chemex.jpg",
+  "Kalita": "/lovable-uploads/Kalita.jpg",
+  "UFO Dripper": "/lovable-uploads/UFO Dripper.jpg",
+  "Moka": "/lovable-uploads/Moka.jpg"
 };
 
 // Função para obter a imagem do método
