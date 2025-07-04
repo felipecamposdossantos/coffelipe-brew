@@ -1,96 +1,71 @@
 
-import { useState } from 'react';
-import { EnhancedButton } from '@/components/ui/enhanced-button';
-import { Coffee, Plus, X, BookOpen } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { AnimatedContainer } from '@/components/ui/animated-container';
+import { useState } from "react";
+import { Plus, Coffee, Timer, BookOpen } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface FloatingActionButtonProps {
-  onStartQuickBrew: () => void;
-  onCreateRecipe: () => void;
-  onOpenRecipes: () => void;
+  onAddRecipe: () => void;
+  onQuickBrew: () => void;
+  onOpenTimer: () => void;
 }
 
 export const FloatingActionButton = ({ 
-  onStartQuickBrew, 
-  onCreateRecipe, 
-  onOpenRecipes 
+  onAddRecipe, 
+  onQuickBrew, 
+  onOpenTimer 
 }: FloatingActionButtonProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const isMobile = useIsMobile();
+  const [isOpen, setIsOpen] = useState(false);
 
-  if (!isMobile) return null;
+  const toggleMenu = () => setIsOpen(!isOpen);
 
-  const handleMainClick = () => {
-    setIsExpanded(!isExpanded);
-  };
-
-  const handleActionClick = (action: () => void) => {
+  const handleAction = (action: () => void) => {
     action();
-    setIsExpanded(false);
+    setIsOpen(false);
   };
 
   return (
-    <div className="fixed bottom-24 right-4 z-40">
-      {/* Backdrop */}
-      {isExpanded && (
-        <div 
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm -z-10 transition-opacity duration-300"
-          onClick={() => setIsExpanded(false)}
-        />
-      )}
-
-      {/* Action buttons */}
+    <div className="fixed bottom-20 right-4 z-50 safe-area-bottom">
+      {/* Action Buttons */}
       <div className={cn(
-        "flex flex-col gap-3 mb-3 transition-all duration-300 ease-out",
-        isExpanded ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-8 scale-95 pointer-events-none"
+        "flex flex-col gap-3 mb-4 transition-all duration-200 ease-out",
+        isOpen ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 translate-y-4 pointer-events-none"
       )}>
-        <AnimatedContainer animation="scale-in" delay={50}>
-          <EnhancedButton
-            size="sm"
-            onClick={() => handleActionClick(onStartQuickBrew)}
-            hapticFeedback="medium"
-            glowEffect
-            className="bg-coffee-600 hover:bg-coffee-700 text-white rounded-full w-12 h-12 shadow-lg hover:shadow-xl transition-all duration-300 touch-target"
-            icon={<Coffee className="w-5 h-5" />}
-          />
-        </AnimatedContainer>
+        <Button
+          onClick={() => handleAction(onAddRecipe)}
+          className="touch-target w-12 h-12 rounded-full bg-coffee-600 hover:bg-coffee-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+          size="sm"
+        >
+          <BookOpen className="w-5 h-5" />
+        </Button>
         
-        <AnimatedContainer animation="scale-in" delay={100}>
-          <EnhancedButton
-            size="sm"
-            onClick={() => handleActionClick(onCreateRecipe)}
-            hapticFeedback="medium"
-            glowEffect
-            className="bg-coffee-500 hover:bg-coffee-600 text-white rounded-full w-12 h-12 shadow-lg hover:shadow-xl transition-all duration-300 touch-target"
-            icon={<Plus className="w-5 h-5" />}
-          />
-        </AnimatedContainer>
-
-        <AnimatedContainer animation="scale-in" delay={150}>
-          <EnhancedButton
-            size="sm"
-            onClick={() => handleActionClick(onOpenRecipes)}
-            hapticFeedback="medium"
-            glowEffect
-            className="bg-coffee-400 hover:bg-coffee-500 text-white rounded-full w-12 h-12 shadow-lg hover:shadow-xl transition-all duration-300 touch-target"
-            icon={<BookOpen className="w-5 h-5" />}
-          />
-        </AnimatedContainer>
+        <Button
+          onClick={() => handleAction(onOpenTimer)}
+          className="touch-target w-12 h-12 rounded-full bg-coffee-500 hover:bg-coffee-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+          size="sm"
+        >
+          <Timer className="w-5 h-5" />
+        </Button>
+        
+        <Button
+          onClick={() => handleAction(onQuickBrew)}
+          className="touch-target w-12 h-12 rounded-full bg-coffee-400 hover:bg-coffee-500 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+          size="sm"
+        >
+          <Coffee className="w-5 h-5" />
+        </Button>
       </div>
 
       {/* Main FAB */}
-      <EnhancedButton
-        onClick={handleMainClick}
-        hapticFeedback="medium"
-        glowEffect
+      <Button
+        onClick={toggleMenu}
         className={cn(
-          "bg-coffee-600 hover:bg-coffee-700 text-white rounded-full w-14 h-14 shadow-lg hover:shadow-xl transition-all duration-300 touch-target",
-          isExpanded && "rotate-45 bg-coffee-700"
+          "touch-target w-14 h-14 rounded-full bg-coffee-700 hover:bg-coffee-800 text-white shadow-xl hover:shadow-2xl transition-all duration-200 transform",
+          isOpen ? "rotate-45" : "rotate-0"
         )}
-        icon={isExpanded ? <X className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
-      />
+      >
+        <Plus className="w-6 h-6" />
+      </Button>
     </div>
   );
 };
