@@ -18,7 +18,7 @@ export const useIndexHandlers = ({
   user
 }: UseIndexHandlersProps) => {
   const { requestWakeLock, releaseWakeLock } = useWakeLock();
-  const { refreshUserRecipes } = useUserRecipes();
+  const { loadUserRecipes } = useUserRecipes();
   const { impactFeedback } = useHapticFeedback();
 
   const handleStartBrewing = async (recipe: Recipe, mode: 'auto' | 'manual' | 'expert' = 'auto') => {
@@ -62,7 +62,7 @@ export const useIndexHandlers = ({
   };
 
   const handleRefresh = async () => {
-    await refreshUserRecipes();
+    await loadUserRecipes();
     impactFeedback('success');
   };
 

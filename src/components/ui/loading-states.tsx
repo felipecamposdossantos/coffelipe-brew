@@ -11,7 +11,7 @@ interface LoadingStatesProps {
   isEmpty?: boolean;
   emptyTitle?: string;
   emptyDescription?: string;
-  emptyIcon?: React.ReactNode;
+  emptyVariant?: 'recipes' | 'my-recipes' | 'history' | 'search' | 'timer' | 'general';
   onRetry?: () => void;
   skeletonVariant?: 'recipe-card' | 'recipe-list' | 'dashboard' | 'timer' | 'user-profile';
   skeletonCount?: number;
@@ -22,9 +22,9 @@ export const LoadingStates = ({
   isLoading = false,
   error = null,
   isEmpty = false,
-  emptyTitle = 'Nenhum item encontrado',
-  emptyDescription = 'Não há dados para exibir no momento.',
-  emptyIcon = <Coffee className="w-12 h-12" />,
+  emptyTitle,
+  emptyDescription,
+  emptyVariant = 'general',
   onRetry,
   skeletonVariant = 'recipe-card',
   skeletonCount = 3,
@@ -42,15 +42,14 @@ export const LoadingStates = ({
     return (
       <AnimatedContainer animation="fade-in">
         <EmptyState
-          icon={<AlertCircle className="w-12 h-12 text-red-500" />}
+          variant="general"
           title="Erro ao carregar"
           description={error}
-          action={onRetry && (
-            <Button onClick={onRetry} variant="outline" className="gap-2">
-              <RefreshCw className="w-4 h-4" />
-              Tentar novamente
-            </Button>
-          )}
+          action={onRetry ? {
+            label: 'Tentar novamente',
+            onClick: onRetry,
+            icon: <RefreshCw className="w-4 h-4" />
+          } : undefined}
         />
       </AnimatedContainer>
     );
@@ -60,7 +59,7 @@ export const LoadingStates = ({
     return (
       <AnimatedContainer animation="fade-in">
         <EmptyState
-          icon={emptyIcon}
+          variant={emptyVariant}
           title={emptyTitle}
           description={emptyDescription}
         />
