@@ -1,15 +1,6 @@
-
 // Mapeamento de métodos para imagens específicas
 export const methodImages = {
-  "V60": "/lovable-uploads/V60 Clássico.png",
-  "Melita": "/lovable-uploads/Melita.png", 
-  "French Press": "/lovable-uploads/French Press.png",
-  "AeroPress": "/lovable-uploads/AeroPress.png",
-  "Clever": "/lovable-uploads/Clever Dripper.png",
-  "Chemex": "/lovable-uploads/Chemex.png",
-  "Kalita": "/lovable-uploads/Kalita Wave.png",
-  "UFO Dripper": "/lovable-uploads/UFO Dripper.png",
-  "Moka": "/lovable-uploads/Moka Pot.png"
+  // Imagens removidas - usando apenas fallback
 };
 
 // Função para obter a imagem do método
