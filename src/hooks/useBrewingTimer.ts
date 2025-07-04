@@ -132,24 +132,33 @@ export const useBrewingTimer = (recipe: Recipe) => {
     await releaseWakeLock();
     impactFeedback('success');
     
-    // Adicionar ao histórico quando finalizar
-    await addToBrewHistory({
-      recipe_id: recipe.id,
-      recipe_name: recipe.name,
-      coffee_ratio: recipe.coffeeRatio,
-      water_ratio: recipe.waterRatio,
-      water_temperature: recipe.waterTemperature,
-      grinder_brand: recipe.grinderBrand,
-      grinder_clicks: recipe.grinderClicks,
-      paper_brand: recipe.paperBrand,
-      coffee_bean_id: recipe.coffeeBeanId
-    });
-    
-    showEnhancedToast({
-      title: 'Preparo finalizado!',
-      description: 'Adicionado ao histórico com sucesso',
-      variant: 'success'
-    });
+    // Corrigir os dados sendo enviados para o histórico
+    try {
+      await addToBrewHistory({
+        id: recipe.id,
+        name: recipe.name,
+        coffeeRatio: recipe.coffeeRatio,
+        waterRatio: recipe.waterRatio,
+        waterTemperature: recipe.waterTemperature,
+        grinderBrand: recipe.grinderBrand,
+        grinderClicks: recipe.grinderClicks,
+        paperBrand: recipe.paperBrand,
+        coffeeBeanId: recipe.coffeeBeanId
+      });
+      
+      showEnhancedToast({
+        title: 'Preparo finalizado!',
+        description: 'Adicionado ao histórico com sucesso',
+        variant: 'success'
+      });
+    } catch (error) {
+      console.error('Erro ao salvar no histórico:', error);
+      showEnhancedToast({
+        title: 'Preparo finalizado!',
+        description: 'Erro ao salvar no histórico, mas o preparo foi concluído',
+        variant: 'default'
+      });
+    }
   };
 
   useEffect(() => {
