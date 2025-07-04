@@ -1,7 +1,8 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
-import { Recipe } from '@/pages/Index';
+import { Recipe } from '@/types/recipe';
 import { toast } from 'sonner';
 import { useCustomGrinders } from './useCustomGrinders';
 import { useBrewHistory } from './useBrewHistory';
@@ -49,7 +50,6 @@ export const useUserRecipes = () => {
           grinderClicks: item.grinder_clicks || undefined,
           paperBrand: item.paper_brand || undefined,
           coffeeBeanId: item.coffee_bean_id || undefined,
-          filterPaperId: item.filter_paper_id || undefined,
           method: item.method || 'V60',
           steps: item.steps
         }));
@@ -88,7 +88,6 @@ export const useUserRecipes = () => {
           grinder_clicks: recipe.grinderClicks,
           paper_brand: recipe.paperBrand,
           coffee_bean_id: recipe.coffeeBeanId,
-          filter_paper_id: recipe.filterPaperId,
           method: recipe.method || 'V60',
           steps: recipe.steps,
           user_id: user.id
@@ -133,7 +132,6 @@ export const useUserRecipes = () => {
           grinder_clicks: recipe.grinderClicks,
           paper_brand: recipe.paperBrand,
           coffee_bean_id: recipe.coffeeBeanId,
-          filter_paper_id: recipe.filterPaperId,
           method: recipe.method || 'V60',
           steps: recipe.steps,
           updated_at: new Date().toISOString()

@@ -51,7 +51,7 @@ export const LoginForm = () => {
         }
       } else {
         console.log('Iniciando processo de cadastro')
-        const { error } = await signUp(email, password, fullName)
+        const { error } = await signUp(email, password)
         if (error) {
           console.error('Erro no cadastro:', error)
           toast.error('Erro ao criar conta: ' + error.message)
