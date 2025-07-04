@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Recipe } from "@/pages/Index";
 import { toast } from "sonner";
@@ -128,7 +129,7 @@ export const useBrewingTimer = (recipe: Recipe) => {
   const handleFinish = async () => {
     setIsRunning(false);
     await releaseWakeLock();
-    impactFeedbeat('success');
+    impactFeedback('success');
     
     // Enhanced completion notification
     const { EnhancedToast } = await import('@/components/ui/enhanced-toast');
