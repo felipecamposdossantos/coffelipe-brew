@@ -7,6 +7,7 @@ import { RecipeRating } from "./RecipeRating";
 import { useUserFavorites } from "@/hooks/useUserFavorites";
 import { EnhancedCard } from "@/components/ui/enhanced-card";
 import { OptimizedImage } from "@/components/ui/optimized-image";
+import { getMethodImage, getMethodImageAlt } from "@/utils/methodImages";
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -32,6 +33,10 @@ export const RecipeCard = ({ recipe, onStartBrewing }: RecipeCardProps) => {
     return mins > 0 ? `${mins}min ${secs}s` : `${secs}s`;
   };
 
+  // Obter imagem específica do método
+  const methodImageSrc = getMethodImage(recipe.method || 'V60');
+  const methodImageAlt = getMethodImageAlt(recipe.method || 'V60');
+
   return (
     <EnhancedCard
       variant="coffee"
@@ -41,8 +46,8 @@ export const RecipeCard = ({ recipe, onStartBrewing }: RecipeCardProps) => {
     >
       {/* Recipe Image */}
       <OptimizedImage
-        src="/lovable-uploads/49af2e43-3983-4eab-85c9-d3cd8c4e7deb.png"
-        alt={recipe.name}
+        src={methodImageSrc}
+        alt={methodImageAlt}
         className="w-full h-32 rounded-t-lg mb-4"
         aspectRatio="video"
         placeholder="skeleton"
