@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Clock, CheckCircle } from "lucide-react";
-import { useBrewingTimer } from "@/hooks/useBrewingTimer";
 import { BrewingControls } from "@/components/BrewingControls";
 import { RecipeInfoDisplay } from "@/components/RecipeInfoDisplay";
 import { StepsOverview } from "@/components/StepsOverview";
@@ -16,51 +15,21 @@ import { toast } from "sonner";
 interface AutoBrewingProcessProps {
   recipe: Recipe;
   onComplete: () => void;
+  timerState: any; // Shared timer state from useBrewingTimer
 }
 
-export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessProps) => {
+export const AutoBrewingProcess = ({ recipe, onComplete, timerState }: AutoBrewingProcessProps) => {
   const { addToBrewHistory } = useUserRecipes();
   const [startTime, setStartTime] = useState<Date | null>(null);
 
-  const {
-    currentStep,
-    timeLeft,
-    isRunning,
-    isPaused,
-    completedSteps,
-    currentWaterAmount,
-    isOvertime,
-    overtimeSeconds,
-    hasStarted,
-    targetWaterAmount,
-    getCumulativeWaterAmount,
-    formatTime,
-    formatOvertimeDisplay,
-    handleStart,
-    handlePause,
-    handleNextStep,
-    handleFinish: timerFinish,
-    setCompletedSteps
-  } = useBrewingTimer(recipe);
-
-  // Derived values
-  const isStepCompleted = completedSteps.includes(currentStep);
-  const isLastStep = currentStep === recipe.steps.length - 1;
+  // Derived values from timer state
+  const isStepCompleted = timerState.completedSteps.includes(timerState.currentStep);
+  const isLastStep = timerState.currentStep === recipe.steps.length - 1;
 
   const handleStartBrewing = () => {
     console.log('Iniciando primeira etapa');
     setStartTime(new Date());
-    handleStart();
-  };
-
-  const handlePauseBrewing = () => {
-    console.log('Pausando/Retomando timer');
-    handlePause();
-  };
-
-  const handleNextStepBrewing = () => {
-    console.log('Pulando para próxima etapa');
-    handleNextStep();
+    timerState.handleStart();
   };
 
   const handleFinishBrewing = async () => {
@@ -71,7 +40,7 @@ export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessPro
     console.log('Finalizando preparo e salvando no histórico');
     
     try {
-      await timerFinish();
+      await timerState.handleFinish();
       await addToBrewHistory(recipe);
       
       const totalTime = totalTimeSeconds || recipe.steps.reduce((acc, step) => acc + step.duration, 0);
@@ -95,8 +64,8 @@ export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessPro
     }
   };
 
-  const currentStepData = recipe.steps[currentStep];
-  const progress = currentStepData ? ((currentStepData.duration - timeLeft) / currentStepData.duration) * 100 : 0;
+  const currentStepData = recipe.steps[timerState.currentStep];
+  const progress = currentStepData ? ((currentStepData.duration - timerState.timeLeft) / currentStepData.duration) * 100 : 0;
   const totalSteps = recipe.steps.length;
 
   return (
@@ -109,7 +78,7 @@ export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessPro
           <CardHeader className="pb-2 sm:pb-4">
             <CardTitle className="flex items-center justify-between text-coffee-800">
               <span className="text-base sm:text-lg">
-                Etapa {currentStep + 1} de {totalSteps}
+                Etapa {timerState.currentStep + 1} de {totalSteps}
               </span>
               {isStepCompleted && (
                 <Badge className="bg-green-500 text-white">
@@ -136,7 +105,7 @@ export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessPro
                         💧 Adicionar: <span className="font-bold">{currentStepData.waterAmount}ml</span> de água
                       </p>
                       <p className="text-blue-600 text-sm">
-                        Total acumulado: <span className="font-semibold">{getCumulativeWaterAmount(currentStep)}ml</span>
+                        Total acumulado: <span className="font-semibold">{timerState.getCumulativeWaterAmount(timerState.currentStep)}ml</span>
                       </p>
                     </div>
                   )}
@@ -144,17 +113,17 @@ export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessPro
 
                 <div className="text-center">
                   <div className="text-3xl sm:text-4xl font-mono font-bold text-coffee-800 mb-2">
-                    {formatOvertimeDisplay()}
+                    {timerState.formatOvertimeDisplay()}
                   </div>
                   <div className="flex items-center justify-center gap-2 text-coffee-600 text-sm">
                     <Clock className="w-4 h-4" />
-                    <span>de {formatTime(currentStepData.duration)}</span>
+                    <span>de {timerState.formatTime(currentStepData.duration)}</span>
                   </div>
                 </div>
 
-                <Progress value={isOvertime ? 100 : progress} className="h-2 sm:h-3" />
+                <Progress value={timerState.isOvertime ? 100 : progress} className="h-2 sm:h-3" />
 
-                {isOvertime && (
+                {timerState.isOvertime && (
                   <div className="text-center text-red-600 font-medium animate-pulse">
                     ⏰ Tempo extra! Você pode finalizar quando quiser.
                   </div>
@@ -168,9 +137,9 @@ export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessPro
         <Card className="order-2">
           <CardContent className="pt-4 sm:pt-6 flex items-center justify-center h-40 sm:h-48">
             <WaterPourAnimation 
-              isPouring={isRunning && !isPaused} 
-              currentAmount={Math.round(currentWaterAmount)}
-              targetAmount={targetWaterAmount}
+              isPouring={timerState.isRunning && !timerState.isPaused} 
+              currentAmount={Math.round(timerState.currentWaterAmount)}
+              targetAmount={timerState.targetWaterAmount}
             />
           </CardContent>
         </Card>
@@ -178,27 +147,27 @@ export const AutoBrewingProcess = ({ recipe, onComplete }: AutoBrewingProcessPro
 
       {/* Controls */}
       <BrewingControls
-        hasStarted={hasStarted}
-        currentStep={currentStep}
+        hasStarted={timerState.hasStarted}
+        currentStep={timerState.currentStep}
         totalSteps={totalSteps}
-        isRunning={isRunning}
-        isPaused={isPaused}
+        isRunning={timerState.isRunning}
+        isPaused={timerState.isPaused}
         isStepCompleted={isStepCompleted}
         isLastStep={isLastStep}
-        isOvertime={isOvertime}
+        isOvertime={timerState.isOvertime}
         onStart={handleStartBrewing}
-        onPause={handlePauseBrewing}
-        onNextStep={handleNextStepBrewing}
+        onPause={timerState.handlePause}
+        onNextStep={timerState.handleNextStep}
         onFinish={handleFinishBrewing}
       />
 
       {/* Steps Overview */}
       <StepsOverview
         recipe={recipe}
-        currentStep={currentStep}
-        completedSteps={completedSteps}
-        getCumulativeWaterAmount={getCumulativeWaterAmount}
-        formatTime={formatTime}
+        currentStep={timerState.currentStep}
+        completedSteps={timerState.completedSteps}
+        getCumulativeWaterAmount={timerState.getCumulativeWaterAmount}
+        formatTime={timerState.formatTime}
       />
     </div>
   );

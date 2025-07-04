@@ -1,5 +1,4 @@
 
-import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,50 +20,21 @@ import { useUserRecipes } from "@/hooks/useUserRecipes";
 interface ManualBrewingProcessProps {
   recipe: Recipe;
   onComplete: () => void;
+  timerState: any; // Shared timer state from useBrewingTimer
 }
 
-export const ManualBrewingProcess = ({ recipe, onComplete }: ManualBrewingProcessProps) => {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+export const ManualBrewingProcess = ({ recipe, onComplete, timerState }: ManualBrewingProcessProps) => {
   const { addToBrewHistory } = useUserRecipes();
 
-  // Calculate cumulative water amounts
-  const getCumulativeWaterAmount = (stepIndex: number) => {
-    return recipe.steps.slice(0, stepIndex + 1).reduce((total, step) => {
-      return total + (step.waterAmount || 0);
-    }, 0);
-  };
-
-  const formatTime = (time: number) => {
-    const mins = Math.floor(time / 60);
-    const secs = time % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const handlePreviousStep = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const handleNextStep = () => {
-    if (currentStep < recipe.steps.length - 1) {
-      if (!completedSteps.includes(currentStep)) {
-        setCompletedSteps(prev => [...prev, currentStep]);
-      }
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
   const handleCompleteStep = () => {
-    if (!completedSteps.includes(currentStep)) {
-      setCompletedSteps(prev => [...prev, currentStep]);
+    if (!timerState.completedSteps.includes(timerState.currentStep)) {
+      timerState.setCompletedSteps(prev => [...prev, timerState.currentStep]);
     }
   };
 
   const handleCompleteRecipe = () => {
-    if (!completedSteps.includes(currentStep)) {
-      setCompletedSteps(prev => [...prev, currentStep]);
+    if (!timerState.completedSteps.includes(timerState.currentStep)) {
+      timerState.setCompletedSteps(prev => [...prev, timerState.currentStep]);
     }
     // Add to brew history when completing the recipe
     addToBrewHistory(recipe);
@@ -75,9 +45,27 @@ export const ManualBrewingProcess = ({ recipe, onComplete }: ManualBrewingProces
     onComplete();
   };
 
-  const currentStepData = recipe.steps[currentStep];
-  const isStepCompleted = completedSteps.includes(currentStep);
-  const isLastStep = currentStep === recipe.steps.length - 1;
+  const handlePreviousStep = () => {
+    if (timerState.currentStep > 0) {
+      // For manual mode, we allow going back to previous steps
+      const newStep = timerState.currentStep - 1;
+      timerState.setCurrentStep(newStep);
+    }
+  };
+
+  const handleNextStep = () => {
+    if (timerState.currentStep < recipe.steps.length - 1) {
+      if (!timerState.completedSteps.includes(timerState.currentStep)) {
+        timerState.setCompletedSteps(prev => [...prev, timerState.currentStep]);
+      }
+      const newStep = timerState.currentStep + 1;
+      timerState.setCurrentStep(newStep);
+    }
+  };
+
+  const currentStepData = recipe.steps[timerState.currentStep];
+  const isStepCompleted = timerState.completedSteps.includes(timerState.currentStep);
+  const isLastStep = timerState.currentStep === recipe.steps.length - 1;
 
   return (
     <div className="max-w-2xl mx-auto space-y-4 sm:space-y-6 px-4 sm:px-0">
@@ -151,16 +139,16 @@ export const ManualBrewingProcess = ({ recipe, onComplete }: ManualBrewingProces
       <Card className="dark:bg-gray-800 dark:border-gray-700">
         <CardContent className="pt-4 sm:pt-6">
           <div className="text-center text-sm text-coffee-600 dark:text-coffee-300 mb-4">
-            Etapa {currentStep + 1} de {recipe.steps.length}
+            Etapa {timerState.currentStep + 1} de {recipe.steps.length}
           </div>
           <div className="flex justify-center gap-2">
             {recipe.steps.map((_, index) => (
               <div
                 key={index}
                 className={`w-3 h-3 rounded-full ${
-                  completedSteps.includes(index)
+                  timerState.completedSteps.includes(index)
                     ? 'bg-green-500'
-                    : index === currentStep
+                    : index === timerState.currentStep
                     ? 'bg-coffee-600 dark:bg-coffee-500'
                     : 'bg-gray-300 dark:bg-gray-600'
                 }`}
@@ -181,13 +169,13 @@ export const ManualBrewingProcess = ({ recipe, onComplete }: ManualBrewingProces
           <CardContent className="space-y-2">
             <WaterPourAnimation 
               isPouring={false}
-              currentAmount={getCumulativeWaterAmount(currentStep)}
-              targetAmount={getCumulativeWaterAmount(currentStep)}
+              currentAmount={timerState.getCumulativeWaterAmount(timerState.currentStep)}
+              targetAmount={timerState.getCumulativeWaterAmount(timerState.currentStep)}
             />
             <div className="text-xs sm:text-sm text-coffee-600 dark:text-coffee-400 text-center">
               <span>
                 Adicionar: {currentStepData.waterAmount}ml • 
-                Total acumulado: {getCumulativeWaterAmount(currentStep)}ml
+                Total acumulado: {timerState.getCumulativeWaterAmount(timerState.currentStep)}ml
               </span>
             </div>
           </CardContent>
@@ -208,7 +196,7 @@ export const ManualBrewingProcess = ({ recipe, onComplete }: ManualBrewingProces
           {/* Timer Display */}
           <div className="text-center">
             <div className="text-3xl sm:text-5xl font-mono font-bold text-coffee-700 dark:text-coffee-300 mb-4">
-              {formatTime(currentStepData?.duration || 0)}
+              {timerState.formatTime(currentStepData?.duration || 0)}
             </div>
             <p className="text-sm text-coffee-600 dark:text-coffee-400">Tempo recomendado para esta etapa</p>
           </div>
@@ -261,7 +249,7 @@ export const ManualBrewingProcess = ({ recipe, onComplete }: ManualBrewingProces
             <Button
               variant="outline"
               onClick={handlePreviousStep}
-              disabled={currentStep === 0}
+              disabled={timerState.currentStep === 0}
               size="sm"
               className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
             >
@@ -272,7 +260,7 @@ export const ManualBrewingProcess = ({ recipe, onComplete }: ManualBrewingProces
             <Button
               variant="outline"
               onClick={handleNextStep}
-              disabled={currentStep === recipe.steps.length - 1}
+              disabled={timerState.currentStep === recipe.steps.length - 1}
               size="sm"
               className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
             >
@@ -294,33 +282,36 @@ export const ManualBrewingProcess = ({ recipe, onComplete }: ManualBrewingProces
               <div 
                 key={index} 
                 className={`flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg border text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                  index === currentStep 
+                  index === timerState.currentStep 
                     ? 'bg-coffee-100 border-coffee-300 dark:bg-coffee-800 dark:border-coffee-600' 
-                    : completedSteps.includes(index)
+                    : timerState.completedSteps.includes(index)
                     ? 'bg-green-50 border-green-200 dark:bg-green-900 dark:border-green-700'
                     : 'bg-gray-50 border-gray-200 dark:bg-gray-700 dark:border-gray-600'
                 }`}
-                onClick={() => setCurrentStep(index)}
+                onClick={() => {
+                  // Allow jumping to any step in manual mode
+                  timerState.setCurrentStep(index);
+                }}
               >
                 <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold ${
-                  completedSteps.includes(index)
+                  timerState.completedSteps.includes(index)
                     ? 'bg-green-500 text-white'
-                    : index === currentStep
+                    : index === timerState.currentStep
                     ? 'bg-coffee-600 text-white dark:bg-coffee-700'
                     : 'bg-gray-300 text-gray-600 dark:bg-gray-600 dark:text-gray-300'
                 }`}>
-                  {completedSteps.includes(index) ? '✓' : index + 1}
+                  {timerState.completedSteps.includes(index) ? '✓' : index + 1}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="font-medium text-coffee-800 dark:text-coffee-200 truncate">{step.name}</div>
                   <div className="text-xs sm:text-sm text-coffee-600 dark:text-coffee-400 flex flex-wrap gap-2">
-                    <span>{formatTime(step.duration)}</span>
+                    <span>{timerState.formatTime(step.duration)}</span>
                     {step.waterAmount && (
-                      <span>• {step.waterAmount}ml (Total: {getCumulativeWaterAmount(index)}ml)</span>
+                      <span>• {step.waterAmount}ml (Total: {timerState.getCumulativeWaterAmount(index)}ml)</span>
                     )}
                   </div>
                 </div>
-                {index === currentStep && (
+                {index === timerState.currentStep && (
                   <Badge className="bg-coffee-600 text-white text-xs dark:bg-coffee-700">
                     Atual
                   </Badge>
