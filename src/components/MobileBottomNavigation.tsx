@@ -1,4 +1,5 @@
 
+
 import { useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
@@ -28,6 +29,7 @@ import {
   X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { AnimatedContainer } from '@/components/ui/animated-container';
 
 interface MobileBottomNavigationProps {
   activeTab: string;
@@ -96,33 +98,38 @@ export const MobileBottomNavigation = ({
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-4 py-2 z-50">
+      <AnimatedContainer animation="slide-up" className="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700 px-4 py-2 z-50">
         <div className="flex justify-around items-center max-w-md mx-auto">
-          {tabs.map((tab) => {
+          {tabs.map((tab, index) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             
             return (
-              <Button
+              <AnimatedContainer
                 key={tab.id}
-                variant="ghost"
-                size="sm"
-                onClick={() => handleTabClick(tab.id)}
-                className={cn(
-                  "flex flex-col items-center gap-1 px-3 py-2 h-auto",
-                  isActive && "text-coffee-600 dark:text-coffee-400"
-                )}
+                animation="fade-in"
+                delay={index * 100}
               >
-                <Icon className={cn(
-                  "w-5 h-5",
-                  isActive && "text-coffee-600 dark:text-coffee-400"
-                )} />
-                <span className="text-xs">{tab.label}</span>
-              </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleTabClick(tab.id)}
+                  className={cn(
+                    "flex flex-col items-center gap-1 px-3 py-2 h-auto transition-all duration-200",
+                    isActive && "text-coffee-600 dark:text-coffee-400 scale-105"
+                  )}
+                >
+                  <Icon className={cn(
+                    "w-5 h-5 transition-all duration-200",
+                    isActive && "text-coffee-600 dark:text-coffee-400"
+                  )} />
+                  <span className="text-xs">{tab.label}</span>
+                </Button>
+              </AnimatedContainer>
             );
           })}
         </div>
-      </div>
+      </AnimatedContainer>
 
       {/* More Menu Sheet */}
       <Sheet open={isMoreMenuOpen} onOpenChange={setIsMoreMenuOpen}>
@@ -136,27 +143,32 @@ export const MobileBottomNavigation = ({
           
           <div className="space-y-6 overflow-y-auto h-full pb-20">
             {Object.entries(groupedItems).map(([category, items]) => (
-              <div key={category}>
+              <AnimatedContainer key={category} animation="fade-in">
                 <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wide">
                   {category}
                 </h3>
                 <div className="space-y-1">
-                  {items.map((item) => {
+                  {items.map((item, index) => {
                     const Icon = item.icon;
                     return (
-                      <Button
+                      <AnimatedContainer
                         key={item.id}
-                        variant="ghost"
-                        onClick={() => handleMoreMenuItemClick(item.id)}
-                        className="w-full justify-start h-12 px-4 hover:bg-coffee-50 dark:hover:bg-coffee-900/20"
+                        animation="slide-up"
+                        delay={index * 50}
                       >
-                        <Icon className="mr-3 h-5 w-5 text-coffee-600 dark:text-coffee-400" />
-                        <span className="text-base">{item.label}</span>
-                      </Button>
+                        <Button
+                          variant="ghost"
+                          onClick={() => handleMoreMenuItemClick(item.id)}
+                          className="w-full justify-start h-12 px-4 hover:bg-coffee-50 dark:hover:bg-coffee-900/20 transition-all duration-200"
+                        >
+                          <Icon className="mr-3 h-5 w-5 text-coffee-600 dark:text-coffee-400" />
+                          <span className="text-base">{item.label}</span>
+                        </Button>
+                      </AnimatedContainer>
                     );
                   })}
                 </div>
-              </div>
+              </AnimatedContainer>
             ))}
           </div>
         </SheetContent>
@@ -164,3 +176,4 @@ export const MobileBottomNavigation = ({
     </>
   );
 };
+
