@@ -9,6 +9,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      activity_feed: {
+        Row: {
+          activity_data: Json | null
+          activity_description: string | null
+          activity_title: string
+          activity_type: string
+          created_at: string
+          id: string
+          is_public: boolean | null
+          user_id: string
+        }
+        Insert: {
+          activity_data?: Json | null
+          activity_description?: string | null
+          activity_title: string
+          activity_type: string
+          created_at?: string
+          id?: string
+          is_public?: boolean | null
+          user_id: string
+        }
+        Update: {
+          activity_data?: Json | null
+          activity_description?: string | null
+          activity_title?: string
+          activity_type?: string
+          created_at?: string
+          id?: string
+          is_public?: boolean | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       brew_history: {
         Row: {
           brewed_at: string
@@ -51,6 +84,78 @@ export type Database = {
           user_id?: string
           water_ratio?: number | null
           water_temperature?: number | null
+        }
+        Relationships: []
+      }
+      brewing_streaks: {
+        Row: {
+          created_at: string
+          current_streak: number | null
+          id: string
+          last_brew_date: string | null
+          longest_streak: number | null
+          streak_start_date: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_streak?: number | null
+          id?: string
+          last_brew_date?: string | null
+          longest_streak?: number | null
+          streak_start_date?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_streak?: number | null
+          id?: string
+          last_brew_date?: string | null
+          longest_streak?: number | null
+          streak_start_date?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      challenges: {
+        Row: {
+          challenge_type: string
+          created_at: string
+          description: string
+          end_date: string
+          id: string
+          is_active: boolean | null
+          requirements: Json
+          rewards: Json | null
+          start_date: string
+          title: string
+        }
+        Insert: {
+          challenge_type: string
+          created_at?: string
+          description: string
+          end_date: string
+          id?: string
+          is_active?: boolean | null
+          requirements: Json
+          rewards?: Json | null
+          start_date: string
+          title: string
+        }
+        Update: {
+          challenge_type?: string
+          created_at?: string
+          description?: string
+          end_date?: string
+          id?: string
+          is_active?: boolean | null
+          requirements?: Json
+          rewards?: Json | null
+          start_date?: string
+          title?: string
         }
         Relationships: []
       }
@@ -140,6 +245,113 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      recipe_ratings: {
+        Row: {
+          comment: string | null
+          created_at: string
+          helpful_votes: number | null
+          id: string
+          rating: number
+          recipe_id: string
+          recipe_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          helpful_votes?: number | null
+          id?: string
+          rating: number
+          recipe_id: string
+          recipe_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          helpful_votes?: number | null
+          id?: string
+          rating?: number
+          recipe_id?: string
+          recipe_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_achievements: {
+        Row: {
+          achievement_description: string | null
+          achievement_icon: string | null
+          achievement_name: string
+          achievement_type: string
+          id: string
+          points_earned: number | null
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          achievement_description?: string | null
+          achievement_icon?: string | null
+          achievement_name: string
+          achievement_type: string
+          id?: string
+          points_earned?: number | null
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          achievement_description?: string | null
+          achievement_icon?: string | null
+          achievement_name?: string
+          achievement_type?: string
+          id?: string
+          points_earned?: number | null
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_challenges: {
+        Row: {
+          challenge_id: string
+          completed: boolean | null
+          completed_at: string | null
+          id: string
+          joined_at: string
+          progress: Json | null
+          user_id: string
+        }
+        Insert: {
+          challenge_id: string
+          completed?: boolean | null
+          completed_at?: string | null
+          id?: string
+          joined_at?: string
+          progress?: Json | null
+          user_id: string
+        }
+        Update: {
+          challenge_id?: string
+          completed?: boolean | null
+          completed_at?: string | null
+          id?: string
+          joined_at?: string
+          progress?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_challenges_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_recipes: {
         Row: {

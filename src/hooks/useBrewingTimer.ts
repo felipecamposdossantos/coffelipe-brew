@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Recipe } from "@/pages/Index";
 import { toast } from "sonner";
@@ -6,6 +5,7 @@ import { useWakeLock } from "./useWakeLock";
 import { useTimerLogic } from "./useTimerLogic";
 import { usePWANotifications } from "./usePWANotifications";
 import { useUserRecipes } from "./useUserRecipes";
+import { useAchievements } from "./useAchievements";
 
 export const useBrewingTimer = (recipe: Recipe) => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -16,6 +16,7 @@ export const useBrewingTimer = (recipe: Recipe) => {
   const { requestWakeLock, releaseWakeLock } = useWakeLock();
   const { showTimerNotification } = usePWANotifications();
   const { addToBrewHistory } = useUserRecipes();
+  const { checkAndUnlockAchievements } = useAchievements();
   const {
     timeLeft,
     isRunning,
@@ -125,6 +126,11 @@ export const useBrewingTimer = (recipe: Recipe) => {
       paper_brand: recipe.paperBrand,
       coffee_bean_id: recipe.coffeeBeanId
     });
+    
+    // Verificar e desbloquear conquistas
+    setTimeout(() => {
+      checkAndUnlockAchievements();
+    }, 1000);
     
     toast.success('Preparo finalizado! Adicionado ao histórico.');
   };
