@@ -6,7 +6,6 @@ import { useWakeLock } from "./useWakeLock";
 import { useTimerLogic } from "./useTimerLogic";
 import { usePWANotifications } from "./usePWANotifications";
 import { useUserRecipes } from "./useUserRecipes";
-import { useAchievements } from "./useAchievements";
 import { useHapticFeedback } from "./useHapticFeedback";
 import { showEnhancedToast } from "@/components/ui/enhanced-toast";
 
@@ -19,7 +18,6 @@ export const useBrewingTimer = (recipe: Recipe) => {
   const { requestWakeLock, releaseWakeLock } = useWakeLock();
   const { showTimerNotification } = usePWANotifications();
   const { addToBrewHistory } = useUserRecipes();
-  const { checkAndUnlockAchievements } = useAchievements();
   const { impactFeedback } = useHapticFeedback();
   const {
     timeLeft,
@@ -147,11 +145,6 @@ export const useBrewingTimer = (recipe: Recipe) => {
       coffee_bean_id: recipe.coffeeBeanId
     });
     
-    // Verificar e desbloquear conquistas
-    setTimeout(() => {
-      checkAndUnlockAchievements();
-    }, 1000);
-    
     showEnhancedToast({
       title: 'Preparo finalizado!',
       description: 'Adicionado ao histórico com sucesso',
@@ -185,6 +178,7 @@ export const useBrewingTimer = (recipe: Recipe) => {
     handleFinish,
     setIsRunning,
     setIsOvertime,
-    setCompletedSteps
+    setCompletedSteps,
+    setCurrentStep
   };
 };
