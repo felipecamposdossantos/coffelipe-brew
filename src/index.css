@@ -1,3 +1,4 @@
+
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 @tailwind base;
 @tailwind components;
@@ -6,52 +7,64 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 20 14.3% 4.1%;
+    --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
-    --card-foreground: 20 14.3% 4.1%;
+    --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 20 14.3% 4.1%;
-    --primary: 24 9.8% 10%;
-    --primary-foreground: 60 9.1% 97.8%;
-    --secondary: 60 4.8% 95.9%;
-    --secondary-foreground: 24 9.8% 10%;
-    --muted: 60 4.8% 95.9%;
-    --muted-foreground: 25 5.3% 44.7%;
-    --accent: 60 4.8% 95.9%;
-    --accent-foreground: 24 9.8% 10%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 9% 17%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 60 9.1% 97.8%;
-    --border: 20 5.9% 90%;
-    --input: 20 5.9% 90%;
-    --ring: 20 14.3% 4.1%;
-    --radius: 0.5rem;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 10% 3.9%;
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+    
+    /* Coffee theme colors */
+    --coffee-50: 48 100% 96%;
+    --coffee-100: 48 96% 89%;
+    --coffee-200: 47 93% 78%;
+    --coffee-300: 46 87% 65%;
+    --coffee-400: 43 74% 49%;
+    --coffee-500: 37 69% 41%;
+    --coffee-600: 32 57% 50%;
+    --coffee-700: 26 64% 40%;
+    --coffee-800: 25 65% 32%;
+    --coffee-900: 24 56% 24%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 84% 4.9%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
@@ -70,515 +83,154 @@
   }
 }
 
-/* PWA Specific Styles */
-@media (display-mode: standalone) {
-  body {
-    -webkit-user-select: none;
-    -webkit-touch-callout: none;
-    -webkit-tap-highlight-color: transparent;
-    -webkit-tap-highlight-color: transparent;
+/* Custom animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-/* Enhanced Mobile Responsiveness */
-@media (max-width: 640px) {
-  .container {
-    @apply px-4;
+@keyframes slide-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
-  
-  h1 {
-    @apply text-xl;
-  }
-  
-  h2 {
-    @apply text-lg;
-  }
-  
-  .card {
-    @apply shadow-sm;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-/* Touch-friendly buttons for mobile */
+@keyframes slide-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Mobile optimizations */
 @media (max-width: 768px) {
-  button {
-    min-height: 44px;
-    min-width: 44px;
+  .animate-fade-in {
+    animation: fade-in 0.2s ease-out;
+  }
+  
+  .animate-slide-in-up {
+    animation: slide-in-up 0.25s ease-out;
+  }
+  
+  .animate-slide-in-down {
+    animation: slide-in-down 0.25s ease-out;
+  }
+  
+  .animate-scale-in {
+    animation: scale-in 0.2s ease-out;
+  }
+  
+  .animate-bounce-in {
+    animation: bounce-in 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
 }
 
-/* Safe area adjustments for mobile devices */
-@supports (padding: max(0px)) {
-  body {
-    padding-left: max(16px, env(safe-area-inset-left));
-    padding-right: max(16px, env(safe-area-inset-right));
-    padding-bottom: max(16px, env(safe-area-inset-bottom));
+/* Desktop animations */
+@media (min-width: 769px) {
+  .animate-fade-in {
+    animation: fade-in 0.3s ease-out;
+  }
+  
+  .animate-slide-in-up {
+    animation: slide-in-up 0.35s ease-out;
+  }
+  
+  .animate-slide-in-down {
+    animation: slide-in-down 0.35s ease-out;
+  }
+  
+  .animate-scale-in {
+    animation: scale-in 0.3s ease-out;
+  }
+  
+  .animate-bounce-in {
+    animation: bounce-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
 }
 
-/* Enhanced Coffee theme colors with better dark mode support */
-.coffee-50 { 
-  background-color: hsl(35, 44%, 96%); 
-}
-.coffee-100 { 
-  background-color: hsl(33, 41%, 91%); 
-}
-.coffee-200 { 
-  background-color: hsl(31, 32%, 79%); 
-}
-.coffee-300 { 
-  background-color: hsl(28, 25%, 66%); 
-}
-.coffee-400 { 
-  background-color: hsl(26, 33%, 58%); 
-}
-.coffee-500 { 
-  background-color: hsl(25, 31%, 53%); 
-}
-.coffee-600 { 
-  background-color: hsl(22, 39%, 45%); 
-}
-.coffee-700 { 
-  background-color: hsl(20, 37%, 37%); 
-}
-.coffee-800 { 
-  background-color: hsl(19, 43%, 30%); 
-}
-.coffee-900 { 
-  background-color: hsl(15, 25%, 23%); 
+/* Performance optimizations */
+.transform-gpu {
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-perspective: 1000;
+  perspective: 1000;
 }
 
-.cream-50 { 
-  background-color: hsl(44, 100%, 97%); 
-}
-.cream-100 { 
-  background-color: hsl(44, 75%, 91%); 
-}
-.cream-200 { 
-  background-color: hsl(43, 74%, 81%); 
-}
-.cream-300 { 
-  background-color: hsl(42, 67%, 69%); 
+/* Touch targets */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
 }
 
-/* Dark mode enhanced colors */
-.dark .coffee-50 { 
-  background-color: hsl(15, 25%, 8%); 
-}
-.dark .coffee-100 { 
-  background-color: hsl(15, 25%, 12%); 
-}
-.dark .coffee-200 { 
-  background-color: hsl(15, 25%, 16%); 
-}
-.dark .coffee-300 { 
-  background-color: hsl(20, 25%, 20%); 
-}
-.dark .coffee-400 { 
-  background-color: hsl(22, 30%, 35%); 
-}
-.dark .coffee-500 { 
-  background-color: hsl(25, 35%, 45%); 
-}
-.dark .coffee-600 { 
-  background-color: hsl(28, 40%, 55%); 
-}
-.dark .coffee-700 { 
-  background-color: hsl(30, 45%, 65%); 
-}
-.dark .coffee-800 { 
-  background-color: hsl(32, 50%, 75%); 
-}
-.dark .coffee-900 { 
-  background-color: hsl(35, 55%, 85%); 
-}
-
-/* Custom animations for water pour - enhanced for dark mode */
-@keyframes pour {
-  0% {
-    transform: translateY(-100%) scaleY(0);
-    opacity: 0;
+/* Smooth scrolling */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
   }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(0) scaleY(1);
-    opacity: 0.8;
-  }
-}
-
-@keyframes ripple {
-  0% {
-    transform: scale(0.8);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(2.4);
-    opacity: 0;
-  }
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-@keyframes water-shimmer {
-  0%, 100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-}
-
-.animate-pour {
-  animation: pour 1.5s ease-in-out infinite;
-}
-
-.animate-ripple {
-  animation: ripple 1s ease-out infinite;
-}
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-
-.animate-water-shimmer {
-  animation: water-shimmer 3s ease-in-out infinite;
-  background-size: 200% 200%;
-}
-
-/* Enhanced scrollbar for dark mode */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: hsl(var(--muted));
-}
-
-::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground));
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--accent-foreground));
-}
-
-/* Dark mode specific scrollbar */
-.dark ::-webkit-scrollbar-track {
-  background: hsl(217.2, 32.6%, 17.5%);
-}
-
-.dark ::-webkit-scrollbar-thumb {
-  background: hsl(215, 20.2%, 65.1%);
-}
-
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: hsl(210, 40%, 98%);
-}
-
-/* Focus styles for accessibility - improved for dark mode */
-.focus-visible {
-  @apply ring-2 ring-coffee-500 dark:ring-coffee-400 ring-offset-2 dark:ring-offset-gray-800;
 }
 
 /* High contrast mode support */
 @media (prefers-contrast: high) {
-  .coffee-600 {
-    background-color: hsl(15, 50%, 25%);
+  .bg-coffee-50 {
+    @apply bg-white;
   }
-  
-  .coffee-700 {
-    background-color: hsl(15, 50%, 20%);
-  }
-  
-  .dark .coffee-600 {
-    background-color: hsl(30, 60%, 70%);
-  }
-  
-  .dark .coffee-700 {
-    background-color: hsl(32, 65%, 80%);
+  .text-coffee-600 {
+    @apply text-black;
   }
 }
 
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
-  * {
+  *,
+  ::before,
+  ::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-}
-
-/* Enhanced gradient animations for water */
-.water-gradient {
-  background: linear-gradient(
-    45deg,
-    hsl(200, 100%, 60%),
-    hsl(210, 100%, 70%), 
-    hsl(220, 100%, 80%),
-    hsl(200, 100%, 60%)
-  );
-}
-
-.dark .water-gradient {
-  background: linear-gradient(
-    45deg,
-    hsl(200, 80%, 40%),
-    hsl(210, 80%, 50%), 
-    hsl(220, 80%, 60%),
-    hsl(200, 80%, 40%)
-  );
-}
-
-/* Seasonal theme animations */
-@keyframes seasonal-spring {
-  0%, 100% { 
-    filter: hue-rotate(0deg) brightness(1); 
-  }
-  50% { 
-    filter: hue-rotate(10deg) brightness(1.1); 
-  }
-}
-
-@keyframes seasonal-summer {
-  0%, 100% { 
-    filter: hue-rotate(30deg) brightness(1.1) saturate(1.2); 
-  }
-  50% { 
-    filter: hue-rotate(40deg) brightness(1.2) saturate(1.3); 
-  }
-}
-
-@keyframes seasonal-autumn {
-  0%, 100% { 
-    filter: hue-rotate(-20deg) brightness(0.9) sepia(0.3); 
-  }
-  50% { 
-    filter: hue-rotate(-10deg) brightness(1) sepia(0.4); 
-  }
-}
-
-@keyframes seasonal-winter {
-  0%, 100% { 
-    filter: hue-rotate(200deg) brightness(0.8) contrast(1.1); 
-  }
-  50% { 
-    filter: hue-rotate(210deg) brightness(0.9) contrast(1.2); 
-  }
-}
-
-/* Focus mode specific animations */
-@keyframes focus-breathe {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 0.8;
-  }
-  50% {
-    transform: scale(1.05);
-    opacity: 1;
-  }
-}
-
-@keyframes focus-glow {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(139, 69, 19, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 40px rgba(139, 69, 19, 0.6);
-  }
-}
-
-@keyframes coffee-steam {
-  0% {
-    transform: translateY(0) scale(1);
-    opacity: 0.8;
-  }
-  50% {
-    transform: translateY(-20px) scale(1.1);
-    opacity: 0.4;
-  }
-  100% {
-    transform: translateY(-40px) scale(1.2);
-    opacity: 0;
-  }
-}
-
-@keyframes progress-pulse {
-  0%, 100% {
-    transform: scaleX(1);
-  }
-  50% {
-    transform: scaleX(1.02);
-  }
-}
-
-@keyframes card-hover-glow {
-  0% {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  }
-  100% {
-    box-shadow: 0 20px 25px -5px rgba(139, 69, 19, 0.2), 0 10px 10px -5px rgba(139, 69, 19, 0.1);
-  }
-}
-
-.animate-seasonal-spring {
-  animation: seasonal-spring 4s ease-in-out infinite;
-}
-
-.animate-seasonal-summer {
-  animation: seasonal-summer 3s ease-in-out infinite;
-}
-
-.animate-seasonal-autumn {
-  animation: seasonal-autumn 5s ease-in-out infinite;
-}
-
-.animate-seasonal-winter {
-  animation: seasonal-winter 6s ease-in-out infinite;
-}
-
-.animate-focus-breathe {
-  animation: focus-breathe 4s ease-in-out infinite;
-}
-
-.animate-focus-glow {
-  animation: focus-glow 2s ease-in-out infinite;
-}
-
-.animate-coffee-steam {
-  animation: coffee-steam 3s ease-out infinite;
-}
-
-.animate-progress-pulse {
-  animation: progress-pulse 2s ease-in-out infinite;
-}
-
-/* Enhanced card interactions */
-.card-hover-enhanced {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.card-hover-enhanced:hover {
-  animation: card-hover-glow 0.3s ease-out forwards;
-  transform: translateY(-2px);
-}
-
-/* Coffee shop professional theme enhancements */
-.coffee-shop-card {
-  background: linear-gradient(135deg, 
-    rgba(250, 247, 240, 0.9) 0%, 
-    rgba(243, 237, 224, 0.95) 100%
-  );
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(139, 69, 19, 0.1);
-}
-
-.dark .coffee-shop-card {
-  background: linear-gradient(135deg, 
-    rgba(15, 25, 23, 0.9) 0%, 
-    rgba(21, 30, 28, 0.95) 100%
-  );
-  border: 1px solid rgba(139, 69, 19, 0.3);
-}
-
-/* Minimalist focus mode styles */
-.focus-mode-overlay {
-  background: radial-gradient(circle at center, 
-    rgba(139, 69, 19, 0.05) 0%, 
-    rgba(139, 69, 19, 0.15) 100%
-  );
-  backdrop-filter: blur(20px);
-}
-
-/* Advanced timer animations */
-.timer-progress {
-  background: linear-gradient(90deg, 
-    #8B4513 0%, 
-    #D2691E 50%, 
-    #CD853F 100%
-  );
-  background-size: 200% 100%;
-  animation: progress-flow 3s ease-in-out infinite;
-}
-
-@keyframes progress-flow {
-  0%, 100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-}
-
-/* Enhanced mobile responsiveness for new components */
-@media (max-width: 640px) {
-  .focus-mode-overlay {
-    padding: 1rem;
-  }
-  
-  .coffee-shop-card {
-    margin: 0.5rem;
-    padding: 1rem;
-  }
-  
-  .analytics-chart {
-    height: 200px !important;
-  }
-}
-
-/* Accessibility improvements */
-@media (prefers-reduced-motion: reduce) {
-  .animate-seasonal-spring,
-  .animate-seasonal-summer, 
-  .animate-seasonal-autumn,
-  .animate-seasonal-winter,
-  .animate-focus-breathe,
-  .animate-focus-glow,
-  .animate-coffee-steam,
-  .animate-progress-pulse {
-    animation: none;
-  }
-  
-  .timer-progress {
-    animation: none;
-  }
-}
-
-/* High contrast mode enhancements */
-@media (prefers-contrast: high) {
-  .coffee-shop-card {
-    border: 2px solid #8B4513;
-    background: #fff;
-  }
-  
-  .dark .coffee-shop-card {
-    border: 2px solid #D2691E;
-    background: #000;
-  }
-  
-  .focus-mode-overlay {
-    background: rgba(0, 0, 0, 0.9);
-  }
-}
-
-/* Remove Lovable branding */
-a[href*="lovable.dev"], 
-iframe[src*="lovable.dev"],
-div[style*="Edit with Lovable"],
-.lovable-badge {
-  display: none !important;
-  opacity: 0 !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
-  position: absolute !important;
-  z-index: -9999 !important;
 }
