@@ -1,5 +1,5 @@
 
-import { useRef, useCallback, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 
 interface TouchGestureOptions {
   onSwipeLeft?: () => void;
@@ -7,109 +7,105 @@ interface TouchGestureOptions {
   onSwipeUp?: () => void;
   onSwipeDown?: () => void;
   onPinch?: (scale: number) => void;
-  onDoubleTap?: () => void;
   threshold?: number;
 }
 
 export const useTouchGestures = (options: TouchGestureOptions) => {
-  const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
-  const lastTapRef = useRef<number>(0);
-  const initialDistanceRef = useRef<number>(0);
+  const elementRef = useRef<HTMLDivElement>(null);
+  const startTouch = useRef<{ x: number; y: number; time: number } | null>(null);
+  const initialDistance = useRef<number>(0);
+
   const {
     onSwipeLeft,
     onSwipeRight,
     onSwipeUp,
     onSwipeDown,
     onPinch,
-    onDoubleTap,
     threshold = 50
   } = options;
-
-  const handleTouchStart = useCallback((e: TouchEvent) => {
-    if (e.touches.length === 1) {
-      touchStartRef.current = {
-        x: e.touches[0].clientX,
-        y: e.touches[0].clientY,
-        time: Date.now()
-      };
-    } else if (e.touches.length === 2 && onPinch) {
-      const distance = Math.hypot(
-        e.touches[0].clientX - e.touches[1].clientX,
-        e.touches[0].clientY - e.touches[1].clientY
-      );
-      initialDistanceRef.current = distance;
-    }
-  }, [onPinch]);
-
-  const handleTouchMove = useCallback((e: TouchEvent) => {
-    if (e.touches.length === 2 && onPinch && initialDistanceRef.current > 0) {
-      const distance = Math.hypot(
-        e.touches[0].clientX - e.touches[1].clientX,
-        e.touches[0].clientY - e.touches[1].clientY
-      );
-      const scale = distance / initialDistanceRef.current;
-      onPinch(scale);
-    }
-  }, [onPinch]);
-
-  const handleTouchEnd = useCallback((e: TouchEvent) => {
-    if (!touchStartRef.current || e.touches.length > 0) return;
-
-    const touch = e.changedTouches[0];
-    const deltaX = touch.clientX - touchStartRef.current.x;
-    const deltaY = touch.clientY - touchStartRef.current.y;
-    const deltaTime = Date.now() - touchStartRef.current.time;
-
-    // Double tap detection
-    if (onDoubleTap && Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10 && deltaTime < 300) {
-      const now = Date.now();
-      if (now - lastTapRef.current < 300) {
-        onDoubleTap();
-      }
-      lastTapRef.current = now;
-      return;
-    }
-
-    // Swipe detection
-    if (Math.abs(deltaX) > Math.abs(deltaY)) {
-      // Horizontal swipe
-      if (Math.abs(deltaX) > threshold) {
-        if (deltaX > 0 && onSwipeRight) {
-          onSwipeRight();
-        } else if (deltaX < 0 && onSwipeLeft) {
-          onSwipeLeft();
-        }
-      }
-    } else {
-      // Vertical swipe
-      if (Math.abs(deltaY) > threshold) {
-        if (deltaY > 0 && onSwipeDown) {
-          onSwipeDown();
-        } else if (deltaY < 0 && onSwipeUp) {
-          onSwipeUp();
-        }
-      }
-    }
-
-    touchStartRef.current = null;
-  }, [onSwipeLeft, onSwipeRight, onSwipeUp, onSwipeDown, onDoubleTap, threshold]);
-
-  const elementRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const element = elementRef.current;
     if (!element) return;
 
-    element.addEventListener('touchstart', handleTouchStart, { passive: true });
-    element.addEventListener('touchmove', handleTouchMove, { passive: true });
-    element.addEventListener('touchend', handleTouchEnd, { passive: true });
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        startTouch.current = {
+          x: touch.clientX,
+          y: touch.clientY,
+          time: Date.now()
+        };
+      } else if (e.touches.length === 2 && onPinch) {
+        const touch1 = e.touches[0];
+        const touch2 = e.touches[1];
+        const distance = Math.sqrt(
+          Math.pow(touch2.clientX - touch1.clientX, 2) +
+          Math.pow(touch2.clientY - touch1.clientY, 2)
+        );
+        initialDistance.current = distance;
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2 && onPinch && initialDistance.current > 0) {
+        e.preventDefault();
+        const touch1 = e.touches[0];
+        const touch2 = e.touches[1];
+        const distance = Math.sqrt(
+          Math.pow(touch2.clientX - touch1.clientX, 2) +
+          Math.pow(touch2.clientY - touch1.clientY, 2)
+        );
+        const scale = distance / initialDistance.current;
+        onPinch(scale);
+      }
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (!startTouch.current || e.touches.length > 0) return;
+
+      const endTouch = e.changedTouches[0];
+      const deltaX = endTouch.clientX - startTouch.current.x;
+      const deltaY = endTouch.clientY - startTouch.current.y;
+      const deltaTime = Date.now() - startTouch.current.time;
+
+      // Ignore if gesture took too long or was too short
+      if (deltaTime > 500 || (Math.abs(deltaX) < threshold && Math.abs(deltaY) < threshold)) {
+        startTouch.current = null;
+        return;
+      }
+
+      // Determine swipe direction
+      if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        // Horizontal swipe
+        if (deltaX > threshold && onSwipeRight) {
+          onSwipeRight();
+        } else if (deltaX < -threshold && onSwipeLeft) {
+          onSwipeLeft();
+        }
+      } else {
+        // Vertical swipe
+        if (deltaY > threshold && onSwipeDown) {
+          onSwipeDown();
+        } else if (deltaY < -threshold && onSwipeUp) {
+          onSwipeUp();
+        }
+      }
+
+      startTouch.current = null;
+      initialDistance.current = 0;
+    };
+
+    element.addEventListener('touchstart', handleTouchStart, { passive: false });
+    element.addEventListener('touchmove', handleTouchMove, { passive: false });
+    element.addEventListener('touchend', handleTouchEnd, { passive: false });
 
     return () => {
       element.removeEventListener('touchstart', handleTouchStart);
       element.removeEventListener('touchmove', handleTouchMove);
       element.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [handleTouchStart, handleTouchMove, handleTouchEnd]);
+  }, [onSwipeLeft, onSwipeRight, onSwipeUp, onSwipeDown, onPinch, threshold]);
 
   return elementRef;
 };

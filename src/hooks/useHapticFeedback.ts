@@ -23,11 +23,11 @@ export const useHapticFeedback = () => {
     }
   }, []);
 
-  const impactFeedback = useCallback((style: 'light' | 'medium' | 'heavy' = 'medium') => {
+  const impactFeedback = useCallback((style: 'light' | 'medium' | 'heavy' | 'success' = 'medium') => {
     // iOS Haptic Feedback se disponível
     if ('hapticEngine' in navigator) {
       try {
-        (navigator as any).hapticEngine.impact(style);
+        (navigator as any).hapticEngine.impact(style === 'success' ? 'medium' : style);
       } catch (error) {
         vibrate(style);
       }
