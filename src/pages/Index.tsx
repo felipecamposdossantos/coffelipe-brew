@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RecipeList } from "@/components/RecipeList";
@@ -8,16 +9,15 @@ import { AutoBrewingProcess } from "@/components/AutoBrewingProcess";
 import { ManualBrewingProcess } from "@/components/ManualBrewingProcess";
 import { LoginForm } from "@/components/LoginForm";
 import { UserProfile } from "@/components/UserProfile";
-import { BrewHistory } from "@/components/BrewHistory";
-import { RecipeAnalytics } from "@/components/RecipeAnalytics";
-import { SmartSuggestions } from "@/components/SmartSuggestions";
-import { RecipeComparison } from "@/components/RecipeComparison";
+import { AdvancedSettings } from "@/components/AdvancedSettings";
+import { RecipeExportImport } from "@/components/RecipeExportImport";
 import { Footer } from "@/components/Footer";
 import { Timer } from "@/components/Timer";
 import { Button } from "@/components/ui/button";
+import { LazyWrapper, LazyRecipeAnalytics, LazySmartSuggestions, LazyRecipeComparison, LazyBrewHistory, LazyCoffeeBeansManager, LazyFilterPapersManager } from "@/components/LazyWrapper";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRecipes } from "@/hooks/useUserRecipes";
-import { Coffee, Settings, Timer as TimerIcon, Moon, Sun } from "lucide-react";
+import { Coffee, Settings, Timer as TimerIcon, Moon, Sun, Zap, Download } from "lucide-react";
 import { FilterPapersManager } from "@/components/FilterPapersManager";
 import { useTheme } from "@/hooks/useTheme";
 
@@ -149,10 +149,10 @@ const Index = () => {
             <h1 className="text-3xl sm:text-4xl font-bold text-coffee-800 dark:text-coffee-200">TimerCoffee Brew</h1>
           </div>
           <p className="text-coffee-600 dark:text-coffee-300 text-base sm:text-lg">
-            Seu site de gerenciamento de receitas
+            Seu aplicativo completo para preparo de café
           </p>
           
-          <div className="flex justify-center mt-4">
+          <div className="flex justify-center items-center gap-2 mt-4">
             <Button
               variant="outline"
               size="sm"
@@ -162,11 +162,15 @@ const Index = () => {
               {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               {theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}
             </Button>
+            
+            {user && (
+              <RecipeExportImport />
+            )}
           </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 sm:grid-cols-9 mb-8 h-auto">
+          <TabsList className="grid w-full grid-cols-4 sm:grid-cols-11 mb-8 h-auto">
             <TabsTrigger value="recipes" className="text-xs sm:text-sm p-2 sm:p-3">
               Receitas
             </TabsTrigger>
@@ -176,7 +180,7 @@ const Index = () => {
             </TabsTrigger>
             {user && (
               <TabsTrigger value="my-recipes" className="text-xs sm:text-sm p-2 sm:p-3">
-                Minhas Receitas
+                Minhas
               </TabsTrigger>
             )}
             {user && (
@@ -209,6 +213,11 @@ const Index = () => {
                 Histórico
               </TabsTrigger>
             )}
+            {user && (
+              <TabsTrigger value="advanced" className="text-xs sm:text-sm p-2 sm:p-3">
+                <Zap className="w-3 h-3 sm:w-4 sm:h-4" />
+              </TabsTrigger>
+            )}
             <TabsTrigger value="auth" className="text-xs sm:text-sm p-2 sm:p-3">
               {user ? <Settings className="w-4 h-4" /> : "Login"}
             </TabsTrigger>
@@ -232,41 +241,59 @@ const Index = () => {
 
           {user && (
             <TabsContent value="analytics">
-              <RecipeAnalytics recipes={userRecipes} brewHistory={brewHistory} />
+              <LazyWrapper>
+                <LazyRecipeAnalytics recipes={userRecipes} brewHistory={brewHistory} />
+              </LazyWrapper>
             </TabsContent>
           )}
 
           {user && (
             <TabsContent value="suggestions">
-              <SmartSuggestions 
-                recipes={userRecipes} 
-                brewHistory={brewHistory}
-                onStartBrewing={handleStartBrewing}
-              />
+              <LazyWrapper>
+                <LazySmartSuggestions 
+                  recipes={userRecipes} 
+                  brewHistory={brewHistory}
+                  onStartBrewing={handleStartBrewing}
+                />
+              </LazyWrapper>
             </TabsContent>
           )}
 
           {user && (
             <TabsContent value="comparison">
-              <RecipeComparison recipes={userRecipes} />
+              <LazyWrapper>
+                <LazyRecipeComparison recipes={userRecipes} />
+              </LazyWrapper>
             </TabsContent>
           )}
 
           {user && (
             <TabsContent value="coffee-beans">
-              <CoffeeBeansManager />
+              <LazyWrapper>
+                <LazyCoffeeBeansManager />
+              </LazyWrapper>
             </TabsContent>
           )}
 
           {user && (
             <TabsContent value="filter-papers">
-              <FilterPapersManager />
+              <LazyWrapper>
+                <LazyFilterPapersManager />
+              </LazyWrapper>
             </TabsContent>
           )}
 
           {user && (
             <TabsContent value="history">
-              <BrewHistory />
+              <LazyWrapper>
+                <LazyBrewHistory />
+              </LazyWrapper>
+            </TabsContent>
+          )}
+
+          {user && (
+            <TabsContent value="advanced">
+              <AdvancedSettings />
             </TabsContent>
           )}
 

@@ -1,14 +1,6 @@
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-
-interface NotificationOptions {
-  title: string;
-  body: string;
-  icon?: string;
-  tag?: string;
-  requireInteraction?: boolean;
-}
 
 export const usePWANotifications = () => {
   const [permission, setPermission] = useState<NotificationPermission>('default');
@@ -16,16 +8,15 @@ export const usePWANotifications = () => {
 
   useEffect(() => {
     setIsSupported('Notification' in window && 'serviceWorker' in navigator);
-    
-    if (isSupported) {
+    if ('Notification' in window) {
       setPermission(Notification.permission);
     }
-  }, [isSupported]);
+  }, []);
 
-  const requestPermission = async (): Promise<NotificationPermission> => {
+  const requestPermission = async () => {
     if (!isSupported) {
       toast.error('Notificações não são suportadas neste navegador');
-      return 'denied';
+      return false;
     }
 
     try {
@@ -33,62 +24,52 @@ export const usePWANotifications = () => {
       setPermission(result);
       
       if (result === 'granted') {
-        toast.success('Notificações ativadas com sucesso!');
-      } else if (result === 'denied') {
-        toast.error('Notificações foram negadas. Você pode ativar nas configurações do navegador.');
-      }
-      
-      return result;
-    } catch (error) {
-      console.error('Erro ao solicitar permissão para notificações:', error);
-      toast.error('Erro ao ativar notificações');
-      return 'denied';
-    }
-  };
-
-  const showNotification = async (options: NotificationOptions): Promise<boolean> => {
-    if (!isSupported) {
-      toast.info(options.body); // Fallback to toast
-      return false;
-    }
-
-    if (permission !== 'granted') {
-      const newPermission = await requestPermission();
-      if (newPermission !== 'granted') {
-        toast.info(options.body); // Fallback to toast
+        toast.success('Notificações ativadas!');
+        return true;
+      } else {
+        toast.error('Permissão para notificações negada');
         return false;
       }
-    }
-
-    try {
-      const registration = await navigator.serviceWorker.ready;
-      await registration.showNotification(options.title, {
-        body: options.body,
-        icon: options.icon || '/lovable-uploads/49af2e43-3983-4eab-85c9-d3cd8c4e7deb.png',
-        badge: '/lovable-uploads/49af2e43-3983-4eab-85c9-d3cd8c4e7deb.png',
-        tag: options.tag || 'coffee-timer',
-        requireInteraction: options.requireInteraction || false
-      });
-      return true;
     } catch (error) {
-      console.error('Erro ao mostrar notificação:', error);
-      toast.info(options.body); // Fallback to toast
+      console.error('Erro ao solicitar permissão:', error);
+      toast.error('Erro ao ativar notificações');
       return false;
     }
   };
 
-  const showTimerNotification = (stepName: string, isComplete: boolean = false) => {
-    const title = isComplete ? '☕ Etapa Concluída!' : '⏰ Timer do Café';
-    const body = isComplete 
-      ? `Etapa "${stepName}" finalizada!`
-      : `Timer para "${stepName}" em andamento`;
+  const showNotification = (title: string, options: NotificationOptions = {}) => {
+    if (permission !== 'granted') {
+      console.warn('Notificações não permitidas');
+      return;
+    }
 
-    return showNotification({
-      title,
-      body,
+    const defaultOptions: NotificationOptions = {
+      icon: '/lovable-uploads/49af2e43-3983-4eab-85c9-d3cd8c4e7deb.png',
+      badge: '/lovable-uploads/49af2e43-3983-4eab-85c9-d3cd8c4e7deb.png',
+      vibrate: [200, 100, 200],
       tag: 'coffee-timer',
-      requireInteraction: isComplete
-    });
+      ...options
+    };
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.ready.then((registration) => {
+        registration.showNotification(title, defaultOptions);
+      });
+    } else {
+      new Notification(title, defaultOptions);
+    }
+  };
+
+  const scheduleBrewingNotification = (recipeName: string, stepName: string, delay: number) => {
+    setTimeout(() => {
+      showNotification(`${recipeName} - ${stepName}`, {
+        body: 'Hora de continuar com o próximo passo!',
+        actions: [
+          { action: 'view', title: 'Ver Receita' },
+          { action: 'dismiss', title: 'Dispensar' }
+        ]
+      });
+    }, delay * 1000);
   };
 
   return {
@@ -96,6 +77,6 @@ export const usePWANotifications = () => {
     isSupported,
     requestPermission,
     showNotification,
-    showTimerNotification
+    scheduleBrewingNotification
   };
 };
