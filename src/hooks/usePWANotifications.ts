@@ -10,6 +10,8 @@ interface ExtendedNotificationOptions extends NotificationOptions {
     title: string;
     icon?: string;
   }>;
+  renotify?: boolean;
+  timestamp?: number;
 }
 
 export const usePWANotifications = () => {
@@ -75,10 +77,8 @@ export const usePWANotifications = () => {
         data: defaultOptions.data,
         dir: defaultOptions.dir,
         lang: defaultOptions.lang,
-        renotify: defaultOptions.renotify,
         requireInteraction: defaultOptions.requireInteraction,
-        silent: defaultOptions.silent,
-        timestamp: defaultOptions.timestamp
+        silent: defaultOptions.silent
       };
       new Notification(title, basicOptions);
     }
