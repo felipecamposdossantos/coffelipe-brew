@@ -1,4 +1,3 @@
-
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 @tailwind base;
 @tailwind components;
@@ -76,6 +75,7 @@
   body {
     -webkit-user-select: none;
     -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
     -webkit-tap-highlight-color: transparent;
   }
 }
@@ -337,6 +337,237 @@
     hsl(220, 80%, 60%),
     hsl(200, 80%, 40%)
   );
+}
+
+/* Seasonal theme animations */
+@keyframes seasonal-spring {
+  0%, 100% { 
+    filter: hue-rotate(0deg) brightness(1); 
+  }
+  50% { 
+    filter: hue-rotate(10deg) brightness(1.1); 
+  }
+}
+
+@keyframes seasonal-summer {
+  0%, 100% { 
+    filter: hue-rotate(30deg) brightness(1.1) saturate(1.2); 
+  }
+  50% { 
+    filter: hue-rotate(40deg) brightness(1.2) saturate(1.3); 
+  }
+}
+
+@keyframes seasonal-autumn {
+  0%, 100% { 
+    filter: hue-rotate(-20deg) brightness(0.9) sepia(0.3); 
+  }
+  50% { 
+    filter: hue-rotate(-10deg) brightness(1) sepia(0.4); 
+  }
+}
+
+@keyframes seasonal-winter {
+  0%, 100% { 
+    filter: hue-rotate(200deg) brightness(0.8) contrast(1.1); 
+  }
+  50% { 
+    filter: hue-rotate(210deg) brightness(0.9) contrast(1.2); 
+  }
+}
+
+/* Focus mode specific animations */
+@keyframes focus-breathe {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+}
+
+@keyframes focus-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(139, 69, 19, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(139, 69, 19, 0.6);
+  }
+}
+
+@keyframes coffee-steam {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateY(-20px) scale(1.1);
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateY(-40px) scale(1.2);
+    opacity: 0;
+  }
+}
+
+@keyframes progress-pulse {
+  0%, 100% {
+    transform: scaleX(1);
+  }
+  50% {
+    transform: scaleX(1.02);
+  }
+}
+
+@keyframes card-hover-glow {
+  0% {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+  100% {
+    box-shadow: 0 20px 25px -5px rgba(139, 69, 19, 0.2), 0 10px 10px -5px rgba(139, 69, 19, 0.1);
+  }
+}
+
+.animate-seasonal-spring {
+  animation: seasonal-spring 4s ease-in-out infinite;
+}
+
+.animate-seasonal-summer {
+  animation: seasonal-summer 3s ease-in-out infinite;
+}
+
+.animate-seasonal-autumn {
+  animation: seasonal-autumn 5s ease-in-out infinite;
+}
+
+.animate-seasonal-winter {
+  animation: seasonal-winter 6s ease-in-out infinite;
+}
+
+.animate-focus-breathe {
+  animation: focus-breathe 4s ease-in-out infinite;
+}
+
+.animate-focus-glow {
+  animation: focus-glow 2s ease-in-out infinite;
+}
+
+.animate-coffee-steam {
+  animation: coffee-steam 3s ease-out infinite;
+}
+
+.animate-progress-pulse {
+  animation: progress-pulse 2s ease-in-out infinite;
+}
+
+/* Enhanced card interactions */
+.card-hover-enhanced {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover-enhanced:hover {
+  animation: card-hover-glow 0.3s ease-out forwards;
+  transform: translateY(-2px);
+}
+
+/* Coffee shop professional theme enhancements */
+.coffee-shop-card {
+  background: linear-gradient(135deg, 
+    rgba(250, 247, 240, 0.9) 0%, 
+    rgba(243, 237, 224, 0.95) 100%
+  );
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(139, 69, 19, 0.1);
+}
+
+.dark .coffee-shop-card {
+  background: linear-gradient(135deg, 
+    rgba(15, 25, 23, 0.9) 0%, 
+    rgba(21, 30, 28, 0.95) 100%
+  );
+  border: 1px solid rgba(139, 69, 19, 0.3);
+}
+
+/* Minimalist focus mode styles */
+.focus-mode-overlay {
+  background: radial-gradient(circle at center, 
+    rgba(139, 69, 19, 0.05) 0%, 
+    rgba(139, 69, 19, 0.15) 100%
+  );
+  backdrop-filter: blur(20px);
+}
+
+/* Advanced timer animations */
+.timer-progress {
+  background: linear-gradient(90deg, 
+    #8B4513 0%, 
+    #D2691E 50%, 
+    #CD853F 100%
+  );
+  background-size: 200% 100%;
+  animation: progress-flow 3s ease-in-out infinite;
+}
+
+@keyframes progress-flow {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Enhanced mobile responsiveness for new components */
+@media (max-width: 640px) {
+  .focus-mode-overlay {
+    padding: 1rem;
+  }
+  
+  .coffee-shop-card {
+    margin: 0.5rem;
+    padding: 1rem;
+  }
+  
+  .analytics-chart {
+    height: 200px !important;
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  .animate-seasonal-spring,
+  .animate-seasonal-summer, 
+  .animate-seasonal-autumn,
+  .animate-seasonal-winter,
+  .animate-focus-breathe,
+  .animate-focus-glow,
+  .animate-coffee-steam,
+  .animate-progress-pulse {
+    animation: none;
+  }
+  
+  .timer-progress {
+    animation: none;
+  }
+}
+
+/* High contrast mode enhancements */
+@media (prefers-contrast: high) {
+  .coffee-shop-card {
+    border: 2px solid #8B4513;
+    background: #fff;
+  }
+  
+  .dark .coffee-shop-card {
+    border: 2px solid #D2691E;
+    background: #000;
+  }
+  
+  .focus-mode-overlay {
+    background: rgba(0, 0, 0, 0.9);
+  }
 }
 
 /* Remove Lovable branding */

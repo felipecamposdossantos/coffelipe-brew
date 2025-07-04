@@ -25,6 +25,10 @@ import { FilterPapersManager } from "@/components/FilterPapersManager";
 import { useTheme } from "@/hooks/useTheme";
 import { SmartRecommendations } from "@/components/SmartRecommendations";
 import { ExpertBrewingProcess } from "@/components/ExpertBrewingProcess";
+import { BrewingScheduler } from "@/components/BrewingScheduler";
+import { StockManager } from "@/components/StockManager";
+import { AdvancedAnalytics } from "@/components/AdvancedAnalytics";
+import { FocusMode } from "@/components/FocusMode";
 
 export interface Recipe {
   id: string;
@@ -56,6 +60,7 @@ const Index = () => {
   const [brewingMode, setBrewingMode] = useState<'auto' | 'manual' | 'expert'>('auto');
   const [activeTab, setActiveTab] = useState("recipes"); // Default to recipes for everyone
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [focusModeActive, setFocusModeActive] = useState(false);
 
   // Set default tab based on authentication status
   useEffect(() => {
@@ -180,6 +185,16 @@ const Index = () => {
               onComplete={handleCompleteBrewing} 
             />
           )}
+
+          {/* Modo Foco */}
+          <FocusMode
+            recipe={currentRecipe}
+            isActive={focusModeActive}
+            onToggle={() => setFocusModeActive(!focusModeActive)}
+            currentStep={0}
+            timeLeft={180}
+            isRunning={true}
+          />
         </div>
       </div>
     );
@@ -233,7 +248,7 @@ const Index = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 sm:grid-cols-11 mb-8 h-auto">
+          <TabsList className="grid w-full grid-cols-4 sm:grid-cols-14 mb-8 h-auto">
             {user && (
               <TabsTrigger value="dashboard" className="text-xs sm:text-sm p-2 sm:p-3 flex items-center gap-1">
                 <Home className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -297,9 +312,26 @@ const Index = () => {
                 <Zap className="w-3 h-3 sm:w-4 sm:h-4" />
               </TabsTrigger>
             )}
-            <TabsTrigger value="auth" className="text-xs sm:text-sm p-2 sm:p-3">
-              {user ? <Settings className="w-4 h-4" /> : "Login"}
-            </TabsTrigger>
+            {user && (
+              <TabsTrigger value="scheduler" className="text-xs sm:text-sm p-2 sm:p-3">
+                Agenda
+              </TabsTrigger>
+            )}
+            {user && (
+              <TabsTrigger value="stock" className="text-xs sm:text-sm p-2 sm:p-3">
+                Estoque
+              </TabsTrigger>
+            )}
+            {user && (
+              <TabsTrigger value="advanced-analytics" className="text-xs sm:text-sm p-2 sm:p-3">
+                Reports
+              </TabsTrigger>
+            )}
+            {user && (
+              <TabsTrigger value="auth" className="text-xs sm:text-sm p-2 sm:p-3">
+                {user ? <Settings className="w-4 h-4" /> : "Login"}
+              </TabsTrigger>
+            )}
           </TabsList>
 
           {user && (
@@ -391,6 +423,24 @@ const Index = () => {
           {user && (
             <TabsContent value="advanced">
               <AdvancedSettings />
+            </TabsContent>
+          )}
+
+          {user && (
+            <TabsContent value="scheduler">
+              <BrewingScheduler onStartBrewing={handleStartBrewing} />
+            </TabsContent>
+          )}
+
+          {user && (
+            <TabsContent value="stock">
+              <StockManager />
+            </TabsContent>
+          )}
+
+          {user && (
+            <TabsContent value="advanced-analytics">
+              <AdvancedAnalytics />
             </TabsContent>
           )}
 
