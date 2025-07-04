@@ -81,8 +81,10 @@ export const MobileBottomNavigation = ({
       { id: 'stock', icon: Package, label: 'Estoque', category: 'Gerenciamento' },
       { id: 'scheduler', icon: Calendar, label: 'Agenda', category: 'Outros' },
       { id: 'history', icon: History, label: 'Histórico', category: 'Outros' },
-      { id: 'advanced', icon: Settings, label: 'Configurações', category: 'Outros' }
+      { id: 'advanced', icon: Settings, label: 'Configurações', category: 'Outros' },
+      { id: 'support', icon: User, label: 'Apoie o Projeto', category: 'Apoio' }
     ] : [
+      { id: 'support', icon: User, label: 'Apoie o Projeto', category: 'Apoio' },
       { id: 'auth', icon: User, label: 'Login', category: 'Conta' }
     ])
   ];

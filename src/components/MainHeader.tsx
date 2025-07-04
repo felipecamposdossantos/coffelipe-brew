@@ -1,7 +1,6 @@
 
 import { Coffee, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { RecipeExportImport } from "@/components/RecipeExportImport";
 import { PerformanceMonitor } from "@/components/ui/performance-monitor";
 import { AnimatedContainer } from "@/components/ui/animated-container";
 
@@ -46,8 +45,6 @@ export const MainHeader = ({
             {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             {theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}
           </Button>
-          
-          {user && <RecipeExportImport />}
           
           {process.env.NODE_ENV === 'development' && (
             <Button

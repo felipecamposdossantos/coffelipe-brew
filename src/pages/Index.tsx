@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { Coffee } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,7 +17,6 @@ import { DesktopNavigation } from "@/components/DesktopNavigation";
 import { MobileContent } from "@/components/MobileContent";
 import { MobileBottomNavigation } from "@/components/MobileBottomNavigation";
 import { FloatingActionButton } from "@/components/FloatingActionButton";
-import { Footer } from "@/components/Footer";
 import { AnimatedContainer } from "@/components/ui/animated-container";
 import { PullToRefresh } from "@/components/ui/pull-to-refresh";
 
@@ -193,8 +193,6 @@ const Index = () => {
               )}
             </div>
             
-            <Footer />
-
             {/* Spacing for fixed bottom navigation */}
             {isMobile && <div className="h-32" />}
           </div>

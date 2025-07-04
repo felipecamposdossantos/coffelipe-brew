@@ -7,6 +7,7 @@ import { Timer } from "@/components/Timer";
 import { UserRecipes } from "@/components/UserRecipes";
 import { LoginForm } from "@/components/LoginForm";
 import { UserProfile } from "@/components/UserProfile";
+import { SupportProject } from "@/components/SupportProject";
 import { MoreMenuDropdown } from "@/components/MoreMenuDropdown";
 import { LazyWrapper, LazyRecipeAnalytics, LazySmartSuggestions, LazyRecipeComparison, LazyBrewHistory, LazyCoffeeBeansManager, LazyFilterPapersManager } from "@/components/LazyWrapper";
 import { SmartRecommendations } from "@/components/SmartRecommendations";
@@ -168,6 +169,10 @@ export const DesktopNavigation = ({
           <AdvancedAnalytics />
         </TabsContent>
       )}
+
+      <TabsContent value="support">
+        <SupportProject />
+      </TabsContent>
 
       <TabsContent value="auth">
         {user ? <UserProfile /> : <LoginForm />}
