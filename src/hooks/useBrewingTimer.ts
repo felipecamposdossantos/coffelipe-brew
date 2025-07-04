@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Recipe } from "@/pages/Index";
 import { toast } from "sonner";
@@ -6,6 +7,7 @@ import { useTimerLogic } from "./useTimerLogic";
 import { usePWANotifications } from "./usePWANotifications";
 import { useUserRecipes } from "./useUserRecipes";
 import { useAchievements } from "./useAchievements";
+import { useHapticFeedback } from "./useHapticFeedback";
 
 export const useBrewingTimer = (recipe: Recipe) => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -17,6 +19,7 @@ export const useBrewingTimer = (recipe: Recipe) => {
   const { showTimerNotification } = usePWANotifications();
   const { addToBrewHistory } = useUserRecipes();
   const { checkAndUnlockAchievements } = useAchievements();
+  const { impactFeedback } = useHapticFeedback();
   const {
     timeLeft,
     isRunning,
@@ -58,9 +61,10 @@ export const useBrewingTimer = (recipe: Recipe) => {
       const stepName = recipe.steps[lastCompletedStep]?.name;
       if (stepName) {
         showTimerNotification(stepName, true);
+        impactFeedback('success');
       }
     }
-  }, [completedSteps, recipe.steps, showTimerNotification]);
+  }, [completedSteps, recipe.steps, showTimerNotification, impactFeedback]);
 
   const formatTime = (time: number) => {
     const mins = Math.floor(time / 60);
@@ -80,6 +84,7 @@ export const useBrewingTimer = (recipe: Recipe) => {
     setHasStarted(true);
     await requestWakeLock();
     toast.success(`Receita Iniciada: ${recipe.steps[0]?.name}`);
+    impactFeedback('medium');
     
     // Show notification when starting
     showTimerNotification(recipe.steps[0]?.name, false);
@@ -88,6 +93,7 @@ export const useBrewingTimer = (recipe: Recipe) => {
   const handlePause = () => {
     setIsPaused(!isPaused);
     toast.info(isPaused ? "Cronômetro retomado" : "Cronômetro pausado");
+    impactFeedback('light');
   };
 
   const handleNextStep = () => {
@@ -101,6 +107,7 @@ export const useBrewingTimer = (recipe: Recipe) => {
       setIsOvertime(false);
       setOvertimeSeconds(0);
       setCurrentWaterAmount(getCumulativeWaterAmount(currentStep));
+      impactFeedback('medium');
       
       // Show notification for next step
       const nextStepName = recipe.steps[currentStep + 1]?.name;
@@ -113,6 +120,7 @@ export const useBrewingTimer = (recipe: Recipe) => {
   const handleFinish = async () => {
     setIsRunning(false);
     await releaseWakeLock();
+    impactFeedback('success');
     
     // Adicionar ao histórico quando finalizar
     await addToBrewHistory({

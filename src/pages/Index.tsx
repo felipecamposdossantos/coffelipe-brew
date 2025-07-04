@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RecipeList } from "@/components/RecipeList";
 import { UserRecipes } from "@/components/UserRecipes";
-import { CoffeeBeansManager } from "@/components/CoffeeBeansManager";
 import { BrewingProcess } from "@/components/BrewingProcess";
 import { AutoBrewingProcess } from "@/components/AutoBrewingProcess";
 import { ManualBrewingProcess } from "@/components/ManualBrewingProcess";
@@ -13,15 +12,18 @@ import { RecipeExportImport } from "@/components/RecipeExportImport";
 import { Footer } from "@/components/Footer";
 import { Timer } from "@/components/Timer";
 import { Dashboard } from "@/components/Dashboard";
-import { OnboardingFlow } from "@/components/OnboardingFlow";
 import { Button } from "@/components/ui/button";
 import { LazyWrapper, LazyRecipeAnalytics, LazySmartSuggestions, LazyRecipeComparison, LazyBrewHistory, LazyCoffeeBeansManager, LazyFilterPapersManager } from "@/components/LazyWrapper";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRecipes } from "@/hooks/useUserRecipes";
-import { useUserPreferences } from "@/hooks/useUserPreferences";
-import { Coffee, Settings, Timer as TimerIcon, Moon, Sun, Zap, Download, Home, Crown } from "lucide-react";
-import { FilterPapersManager } from "@/components/FilterPapersManager";
 import { useTheme } from "@/hooks/useTheme";
+import { useWakeLock } from "@/hooks/useWakeLock";
+import { useDeviceDetection } from "@/hooks/useDeviceDetection";
+import { usePerformanceOptimizer } from "@/hooks/usePerformanceOptimizer";
+import { useHapticFeedback } from "@/hooks/useHapticFeedback";
+import { useTouchGestures } from "@/hooks/useTouchGestures";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Coffee, Settings, Timer as TimerIcon, Moon, Sun, Download, Home } from "lucide-react";
 import { SmartRecommendations } from "@/components/SmartRecommendations";
 import { ExpertBrewingProcess } from "@/components/ExpertBrewingProcess";
 import { BrewingScheduler } from "@/components/BrewingScheduler";
@@ -29,7 +31,8 @@ import { StockManager } from "@/components/StockManager";
 import { AdvancedAnalytics } from "@/components/AdvancedAnalytics";
 import { FocusMode } from "@/components/FocusMode";
 import { MoreMenuDropdown } from "@/components/MoreMenuDropdown";
-import { PremiumFeatures } from "@/components/PremiumFeatures";
+import { MobileBottomNavigation } from "@/components/MobileBottomNavigation";
+import { FloatingActionButton } from "@/components/FloatingActionButton";
 
 export interface Recipe {
   id: string;
@@ -56,15 +59,44 @@ const Index = () => {
   const { user, loading } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { userRecipes, brewHistory } = useUserRecipes();
-  const { preferences } = useUserPreferences();
+  const { requestWakeLock, releaseWakeLock } = useWakeLock();
+  const deviceInfo = useDeviceDetection();
+  const { cleanupMemory } = usePerformanceOptimizer();
+  const { impactFeedback } = useHapticFeedback();
+  const isMobile = useIsMobile();
+
   const [currentRecipe, setCurrentRecipe] = useState<Recipe | null>(null);
   const [brewingMode, setBrewingMode] = useState<'auto' | 'manual' | 'expert'>('auto');
-  const [activeTab, setActiveTab] = useState("recipes"); // Default to recipes for everyone
-  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [activeTab, setActiveTab] = useState("recipes");
   const [focusModeActive, setFocusModeActive] = useState(false);
+
+  // Touch gestures para navegação
+  const gestureRef = useTouchGestures({
+    onSwipeLeft: () => {
+      if (isMobile && !currentRecipe) {
+        const tabs = user ? ['dashboard', 'recipes', 'timer', 'my-recipes'] : ['recipes', 'timer', 'auth'];
+        const currentIndex = tabs.indexOf(activeTab);
+        if (currentIndex < tabs.length - 1) {
+          setActiveTab(tabs[currentIndex + 1]);
+          impactFeedback('light');
+        }
+      }
+    },
+    onSwipeRight: () => {
+      if (isMobile && !currentRecipe) {
+        const tabs = user ? ['dashboard', 'recipes', 'timer', 'my-recipes'] : ['recipes', 'timer', 'auth'];
+        const currentIndex = tabs.indexOf(activeTab);
+        if (currentIndex > 0) {
+          setActiveTab(tabs[currentIndex - 1]);
+          impactFeedback('light');
+        }
+      }
+    }
+  });
 
   const handleMoreMenuSelect = (value: string) => {
     setActiveTab(value);
+    impactFeedback('light');
   };
 
   // Set default tab based on authentication status
@@ -78,24 +110,26 @@ const Index = () => {
     }
   }, [user, loading]);
 
-  // Verificar se deve mostrar onboarding
-  useEffect(() => {
-    if (user && preferences && !preferences.onboarding_completed) {
-      setShowOnboarding(true);
-    }
-  }, [user, preferences]);
-
   console.log('Index render - loading:', loading, 'user:', user?.email, 'activeTab:', activeTab);
 
-  const handleStartBrewing = (recipe: Recipe, mode: 'auto' | 'manual' | 'expert' = 'auto') => {
+  const handleStartBrewing = async (recipe: Recipe, mode: 'auto' | 'manual' | 'expert' = 'auto') => {
     console.log('Starting brewing with recipe:', recipe.name, 'mode:', mode);
     setCurrentRecipe(recipe);
     setBrewingMode(mode);
+    impactFeedback('medium');
+    
+    // Ativar wake lock durante o preparo
+    await requestWakeLock();
   };
 
-  const handleCompleteBrewing = () => {
+  const handleCompleteBrewing = async () => {
     console.log('Completing brewing');
     setCurrentRecipe(null);
+    impactFeedback('success');
+    
+    // Liberar wake lock
+    await releaseWakeLock();
+    
     if (user) {
       setActiveTab("dashboard");
     } else {
@@ -105,6 +139,7 @@ const Index = () => {
 
   const handleLogoClick = () => {
     setCurrentRecipe(null);
+    impactFeedback('light');
     if (user) {
       setActiveTab("dashboard");
     } else {
@@ -112,9 +147,29 @@ const Index = () => {
     }
   };
 
-  const handleOnboardingComplete = () => {
-    setShowOnboarding(false);
+  const handleQuickBrew = () => {
+    // Implementar preparo rápido com receita padrão
+    console.log('Quick brew initiated');
+    impactFeedback('medium');
   };
+
+  const handleCreateRecipe = () => {
+    setActiveTab('my-recipes');
+    impactFeedback('light');
+  };
+
+  const handleOpenRecipes = () => {
+    setActiveTab('recipes');
+    impactFeedback('light');
+  };
+
+  // Cleanup memory periodically on mobile
+  useEffect(() => {
+    if (isMobile) {
+      const interval = setInterval(cleanupMemory, 10 * 60 * 1000); // 10 minutos
+      return () => clearInterval(interval);
+    }
+  }, [isMobile, cleanupMemory]);
 
   if (loading) {
     console.log('Index: Showing loading screen');
@@ -208,7 +263,10 @@ const Index = () => {
   console.log('Index: Showing main tabs interface');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 dark:from-gray-900 dark:to-gray-800">
+    <div 
+      ref={gestureRef}
+      className={`min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 dark:from-gray-900 dark:to-gray-800 ${isMobile ? 'pb-20' : ''}`}
+    >
       <div className="container mx-auto px-4 py-8">
         <div className="text-center mb-8">
           <div 
@@ -237,79 +295,181 @@ const Index = () => {
           </div>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-6 mb-8 h-auto">
-            {user && (
-              <TabsTrigger value="dashboard" className="text-xs sm:text-sm p-2 sm:p-3 flex items-center gap-1">
-                <Home className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">Dashboard</span>
+        {/* Desktop Navigation */}
+        {!isMobile && (
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-5 mb-8 h-auto">
+              {user && (
+                <TabsTrigger value="dashboard" className="text-xs sm:text-sm p-2 sm:p-3 flex items-center gap-1">
+                  <Home className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Dashboard</span>
+                </TabsTrigger>
+              )}
+              <TabsTrigger value="recipes" className="text-xs sm:text-sm p-2 sm:p-3">
+                Receitas
               </TabsTrigger>
-            )}
-            <TabsTrigger value="recipes" className="text-xs sm:text-sm p-2 sm:p-3">
-              Receitas
-            </TabsTrigger>
-            <TabsTrigger value="timer" className="text-xs sm:text-sm p-2 sm:p-3 flex items-center gap-1">
-              <TimerIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">Timer</span>
-            </TabsTrigger>
-            {user && (
-              <TabsTrigger value="my-recipes" className="text-xs sm:text-sm p-2 sm:p-3">
-                Minhas
+              <TabsTrigger value="timer" className="text-xs sm:text-sm p-2 sm:p-3 flex items-center gap-1">
+                <TimerIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Timer</span>
               </TabsTrigger>
-            )}
-            {user && (
-              <TabsTrigger value="premium" className="text-xs sm:text-sm p-2 sm:p-3 flex items-center gap-1">
-                <Crown className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">Premium</span>
-              </TabsTrigger>
-            )}
-            {user ? (
-              <MoreMenuDropdown onMenuSelect={handleMoreMenuSelect} />
-            ) : (
-              <TabsTrigger value="auth" className="text-xs sm:text-sm p-2 sm:p-3">
-                Login
-              </TabsTrigger>
-            )}
-          </TabsList>
+              {user && (
+                <TabsTrigger value="my-recipes" className="text-xs sm:text-sm p-2 sm:p-3">
+                  Minhas
+                </TabsTrigger>
+              )}
+              {user ? (
+                <MoreMenuDropdown onMenuSelect={handleMoreMenuSelect} />
+              ) : (
+                <TabsTrigger value="auth" className="text-xs sm:text-sm p-2 sm:p-3">
+                  Login
+                </TabsTrigger>
+              )}
+            </TabsList>
 
-          {user && (
-            <TabsContent value="dashboard">
+            {user && (
+              <TabsContent value="dashboard">
+                <Dashboard onStartBrewing={handleStartBrewing} />
+              </TabsContent>
+            )}
+
+            <TabsContent value="recipes">
+              <RecipeList onStartBrewing={handleStartBrewing} />
+            </TabsContent>
+
+            <TabsContent value="timer">
+              <div className="flex justify-center">
+                <Timer />
+              </div>
+            </TabsContent>
+
+            {user && (
+              <TabsContent value="my-recipes">
+                <UserRecipes onStartBrewing={handleStartBrewing} />
+              </TabsContent>
+            )}
+
+            {user && (
+              <TabsContent value="analytics">
+                <LazyWrapper>
+                  <LazyRecipeAnalytics recipes={userRecipes} brewHistory={brewHistory} />
+                </LazyWrapper>
+              </TabsContent>
+            )}
+
+            {user && (
+              <TabsContent value="suggestions">
+                <LazyWrapper>
+                  <LazySmartSuggestions 
+                    recipes={userRecipes} 
+                    brewHistory={brewHistory}
+                    onStartBrewing={handleStartBrewing}
+                  />
+                </LazyWrapper>
+              </TabsContent>
+            )}
+
+            {user && (
+              <TabsContent value="smart-rec">
+                <SmartRecommendations onStartBrewing={handleStartBrewing} />
+              </TabsContent>
+            )}
+
+            {user && (
+              <TabsContent value="comparison">
+                <LazyWrapper>
+                  <LazyRecipeComparison recipes={userRecipes} />
+                </LazyWrapper>
+              </TabsContent>
+            )}
+
+            {user && (
+              <TabsContent value="coffee-beans">
+                <LazyWrapper>
+                  <LazyCoffeeBeansManager />
+                </LazyWrapper>
+              </TabsContent>
+            )}
+
+            {user && (
+              <TabsContent value="filter-papers">
+                <LazyWrapper>
+                  <LazyFilterPapersManager />
+                </LazyWrapper>
+              </TabsContent>
+            )}
+
+            {user && (
+              <TabsContent value="history">
+                <LazyWrapper>
+                  <LazyBrewHistory />
+                </LazyWrapper>
+              </TabsContent>
+            )}
+
+            {user && (
+              <TabsContent value="advanced">
+                <AdvancedSettings />
+              </TabsContent>
+            )}
+
+            {user && (
+              <TabsContent value="scheduler">
+                <BrewingScheduler onStartBrewing={handleStartBrewing} />
+              </TabsContent>
+            )}
+
+            {user && (
+              <TabsContent value="stock">
+                <StockManager />
+              </TabsContent>
+            )}
+
+            {user && (
+              <TabsContent value="advanced-analytics">
+                <AdvancedAnalytics />
+              </TabsContent>
+            )}
+
+            <TabsContent value="auth">
+              {user ? <UserProfile /> : <LoginForm />}
+            </TabsContent>
+          </Tabs>
+        )}
+
+        {/* Mobile Content */}
+        {isMobile && (
+          <div className="w-full">
+            {/* Render content based on active tab */}
+            {activeTab === 'dashboard' && user && (
               <Dashboard onStartBrewing={handleStartBrewing} />
-            </TabsContent>
-          )}
-
-          <TabsContent value="recipes">
-            <RecipeList onStartBrewing={handleStartBrewing} />
-          </TabsContent>
-
-          <TabsContent value="timer">
-            <div className="flex justify-center">
-              <Timer />
-            </div>
-          </TabsContent>
-
-          {user && (
-            <TabsContent value="my-recipes">
+            )}
+            
+            {activeTab === 'recipes' && (
+              <RecipeList onStartBrewing={handleStartBrewing} />
+            )}
+            
+            {activeTab === 'timer' && (
+              <div className="flex justify-center">
+                <Timer />
+              </div>
+            )}
+            
+            {activeTab === 'my-recipes' && user && (
               <UserRecipes onStartBrewing={handleStartBrewing} />
-            </TabsContent>
-          )}
+            )}
+            
+            {activeTab === 'auth' && (
+              user ? <UserProfile /> : <LoginForm />
+            )}
 
-          {user && (
-            <TabsContent value="premium">
-              <PremiumFeatures />
-            </TabsContent>
-          )}
-
-          {user && (
-            <TabsContent value="analytics">
+            {/* Other tab contents remain the same */}
+            {activeTab === 'analytics' && user && (
               <LazyWrapper>
                 <LazyRecipeAnalytics recipes={userRecipes} brewHistory={brewHistory} />
               </LazyWrapper>
-            </TabsContent>
-          )}
+            )}
 
-          {user && (
-            <TabsContent value="suggestions">
+            {activeTab === 'suggestions' && user && (
               <LazyWrapper>
                 <LazySmartSuggestions 
                   recipes={userRecipes} 
@@ -317,78 +477,69 @@ const Index = () => {
                   onStartBrewing={handleStartBrewing}
                 />
               </LazyWrapper>
-            </TabsContent>
-          )}
+            )}
 
-          {user && (
-            <TabsContent value="smart-rec">
+            {activeTab === 'smart-rec' && user && (
               <SmartRecommendations onStartBrewing={handleStartBrewing} />
-            </TabsContent>
-          )}
+            )}
 
-          {user && (
-            <TabsContent value="comparison">
+            {activeTab === 'comparison' && user && (
               <LazyWrapper>
                 <LazyRecipeComparison recipes={userRecipes} />
               </LazyWrapper>
-            </TabsContent>
-          )}
+            )}
 
-          {user && (
-            <TabsContent value="coffee-beans">
+            {activeTab === 'coffee-beans' && user && (
               <LazyWrapper>
                 <LazyCoffeeBeansManager />
               </LazyWrapper>
-            </TabsContent>
-          )}
+            )}
 
-          {user && (
-            <TabsContent value="filter-papers">
+            {activeTab === 'filter-papers' && user && (
               <LazyWrapper>
                 <LazyFilterPapersManager />
               </LazyWrapper>
-            </TabsContent>
-          )}
+            )}
 
-          {user && (
-            <TabsContent value="history">
+            {activeTab === 'history' && user && (
               <LazyWrapper>
                 <LazyBrewHistory />
               </LazyWrapper>
-            </TabsContent>
-          )}
+            )}
 
-          {user && (
-            <TabsContent value="advanced">
+            {activeTab === 'advanced' && user && (
               <AdvancedSettings />
-            </TabsContent>
-          )}
+            )}
 
-          {user && (
-            <TabsContent value="scheduler">
+            {activeTab === 'scheduler' && user && (
               <BrewingScheduler onStartBrewing={handleStartBrewing} />
-            </TabsContent>
-          )}
+            )}
 
-          {user && (
-            <TabsContent value="stock">
+            {activeTab === 'stock' && user && (
               <StockManager />
-            </TabsContent>
-          )}
+            )}
 
-          {user && (
-            <TabsContent value="advanced-analytics">
+            {activeTab === 'advanced-analytics' && user && (
               <AdvancedAnalytics />
-            </TabsContent>
-          )}
-
-          <TabsContent value="auth">
-            {user ? <UserProfile /> : <LoginForm />}
-          </TabsContent>
-        </Tabs>
+            )}
+          </div>
+        )}
       </div>
-      
-      {/* Onboarding Flow - Removido as preferências */}
+
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNavigation
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        onMoreMenuSelect={handleMoreMenuSelect}
+        isAuthenticated={!!user}
+      />
+
+      {/* Floating Action Button */}
+      <FloatingActionButton
+        onStartQuickBrew={handleQuickBrew}
+        onCreateRecipe={handleCreateRecipe}
+        onOpenRecipes={handleOpenRecipes}
+      />
       
       <Footer />
     </div>
