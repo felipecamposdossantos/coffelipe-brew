@@ -97,7 +97,7 @@ export const MobileBottomNavigation = ({
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-t border-gray-200 dark:border-gray-700 px-4 py-2 z-50 safe-area-inset-bottom">
+      <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border border-gray-200 dark:border-gray-700 rounded-xl mx-4 p-4 shadow-lg">
         <div className="flex justify-around items-center max-w-md mx-auto">
           {tabs.map((tab, index) => {
             const Icon = tab.icon;

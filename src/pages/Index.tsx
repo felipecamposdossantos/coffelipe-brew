@@ -145,72 +145,72 @@ const Index = () => {
   console.log('Index: Showing main tabs interface');
 
   return (
-    <div className="h-screen bg-gradient-to-br from-amber-50 to-orange-100 dark:from-gray-900 dark:to-gray-800 flex flex-col overflow-hidden">
-      {/* Header fixo */}
-      <div className="sticky top-0 z-50 bg-gradient-to-br from-amber-50/95 to-orange-100/95 dark:from-gray-900/95 dark:to-gray-800/95 backdrop-blur-md border-b border-white/10 flex-shrink-0">
-        <div className="container mx-auto px-4 py-4">
-          <MainHeader
-            theme={theme}
-            toggleTheme={toggleTheme}
-            onLogoClick={handleLogoClick}
-            user={user}
-            showPerformanceMonitor={showPerformanceMonitor}
-            onTogglePerformanceMonitor={() => setShowPerformanceMonitor(!showPerformanceMonitor)}
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 dark:from-gray-900 dark:to-gray-800">
+      <PullToRefresh onRefresh={handleRefresh}>
+        <div ref={gestureRef}>
+          {/* Header */}
+          <div className="bg-gradient-to-br from-amber-50/95 to-orange-100/95 dark:from-gray-900/95 dark:to-gray-800/95 backdrop-blur-md border-b border-white/10">
+            <div className="container mx-auto px-4 py-4">
+              <MainHeader
+                theme={theme}
+                toggleTheme={toggleTheme}
+                onLogoClick={handleLogoClick}
+                user={user}
+                showPerformanceMonitor={showPerformanceMonitor}
+                onTogglePerformanceMonitor={() => setShowPerformanceMonitor(!showPerformanceMonitor)}
+              />
+            </div>
+          </div>
+
+          {/* Conteúdo principal */}
+          <div className="container mx-auto px-4 py-4">
+            {/* Desktop Navigation */}
+            {!isMobile && (
+              <DesktopNavigation
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                onMoreMenuSelect={handleMoreMenuSelect}
+                onStartBrewing={handleStartBrewing}
+                user={user}
+                userRecipes={userRecipes}
+                brewHistory={brewHistory}
+              />
+            )}
+
+            {/* Mobile Content */}
+            {isMobile && (
+              <MobileContent
+                activeTab={activeTab}
+                onStartBrewing={handleStartBrewing}
+                user={user}
+                userRecipes={userRecipes}
+                brewHistory={brewHistory}
+              />
+            )}
+          </div>
+          
+          <Footer />
+
+          {/* Mobile Bottom Navigation - não fixo */}
+          {isMobile && (
+            <div className="mt-8 pb-4">
+              <MobileBottomNavigation
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                onMoreMenuSelect={handleMoreMenuSelect}
+                isAuthenticated={!!user}
+              />
+            </div>
+          )}
+
+          {/* Floating Action Button */}
+          <FloatingActionButton
+            onStartQuickBrew={handleQuickBrew}
+            onCreateRecipe={handleCreateRecipe}
+            onOpenRecipes={handleOpenRecipes}
           />
         </div>
-      </div>
-
-      {/* Conteúdo principal com rolagem */}
-      <div className="flex-1 overflow-hidden">
-        <div className="h-full overflow-y-auto overscroll-behavior-y-contain" style={{ paddingBottom: isMobile ? '80px' : '0' }}>
-          <PullToRefresh onRefresh={handleRefresh}>
-            <div ref={gestureRef} className="min-h-full">
-              <div className="container mx-auto px-4 py-4">
-                {/* Desktop Navigation */}
-                {!isMobile && (
-                  <DesktopNavigation
-                    activeTab={activeTab}
-                    onTabChange={setActiveTab}
-                    onMoreMenuSelect={handleMoreMenuSelect}
-                    onStartBrewing={handleStartBrewing}
-                    user={user}
-                    userRecipes={userRecipes}
-                    brewHistory={brewHistory}
-                  />
-                )}
-
-                {/* Mobile Content */}
-                {isMobile && (
-                  <MobileContent
-                    activeTab={activeTab}
-                    onStartBrewing={handleStartBrewing}
-                    user={user}
-                    userRecipes={userRecipes}
-                    brewHistory={brewHistory}
-                  />
-                )}
-              </div>
-              
-              <Footer />
-            </div>
-          </PullToRefresh>
-        </div>
-      </div>
-
-      {/* Mobile Bottom Navigation - fixo */}
-      <MobileBottomNavigation
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        onMoreMenuSelect={handleMoreMenuSelect}
-        isAuthenticated={!!user}
-      />
-
-      {/* Floating Action Button */}
-      <FloatingActionButton
-        onStartQuickBrew={handleQuickBrew}
-        onCreateRecipe={handleCreateRecipe}
-        onOpenRecipes={handleOpenRecipes}
-      />
+      </PullToRefresh>
     </div>
   );
 };
