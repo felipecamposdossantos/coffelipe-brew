@@ -1,5 +1,5 @@
 
-import { Coffee, Clock, Thermometer, Star, Heart } from "lucide-react";
+import { Coffee, Clock, Thermometer, Star, Heart, Edit, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Recipe } from "@/pages/Index";
@@ -10,12 +10,27 @@ import { EnhancedCard } from "@/components/ui/enhanced-card";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 import { getMethodImage, getMethodImageAlt } from "@/utils/methodImages";
 
-interface RecipeCardProps {
+interface UserRecipeCardProps {
   recipe: Recipe;
   onStartBrewing: (recipe: Recipe) => void;
+  onEdit: (recipe: Recipe) => void;
+  onDelete: (recipeId: string) => void;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
+  canMoveUp?: boolean;
+  canMoveDown?: boolean;
 }
 
-export const RecipeCard = ({ recipe, onStartBrewing }: RecipeCardProps) => {
+export const UserRecipeCard = ({ 
+  recipe, 
+  onStartBrewing, 
+  onEdit, 
+  onDelete,
+  onMoveUp,
+  onMoveDown,
+  canMoveUp,
+  canMoveDown
+}: UserRecipeCardProps) => {
   const { user } = useAuth();
   const { addToFavorites, removeFromFavorites, isFavorite } = useUserFavorites();
   const totalTime = recipe.steps.reduce((sum, step) => sum + step.duration, 0);
@@ -59,21 +74,66 @@ export const RecipeCard = ({ recipe, onStartBrewing }: RecipeCardProps) => {
         placeholder="skeleton"
       />
 
-      {/* Header */}
+      {/* Header with actions */}
       <div className="flex items-start justify-between mb-2">
         <h3 className="text-lg font-semibold text-coffee-800 dark:text-coffee-200 flex-1">
           {recipe.name}
         </h3>
-        {user && (
+        <div className="flex items-center gap-1 ml-2">
+          {/* Move buttons */}
+          {onMoveUp && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onMoveUp}
+              disabled={!canMoveUp}
+              className="p-1"
+            >
+              <ChevronUp className="w-4 h-4" />
+            </Button>
+          )}
+          {onMoveDown && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onMoveDown}
+              disabled={!canMoveDown}
+              className="p-1"
+            >
+              <ChevronDown className="w-4 h-4" />
+            </Button>
+          )}
+          
+          {/* Favorite button */}
           <Button
             variant="ghost"
             size="sm"
             onClick={handleFavoriteClick}
-            className={`p-1 ml-2 ${isRecipeFavorite ? 'text-red-500 hover:text-red-600' : 'text-gray-400 hover:text-red-500'}`}
+            className={`p-1 ${isRecipeFavorite ? 'text-red-500 hover:text-red-600' : 'text-gray-400 hover:text-red-500'}`}
           >
             <Heart className={`w-4 h-4 ${isRecipeFavorite ? 'fill-current' : ''}`} />
           </Button>
-        )}
+          
+          {/* Edit button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onEdit(recipe)}
+            className="p-1 text-blue-500 hover:text-blue-600"
+          >
+            <Edit className="w-4 h-4" />
+          </Button>
+          
+          {/* Delete button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onDelete(recipe.id)}
+            className="p-1 text-red-500 hover:text-red-600"
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
 
       <p className="text-sm text-coffee-600 dark:text-coffee-400 mb-4">
