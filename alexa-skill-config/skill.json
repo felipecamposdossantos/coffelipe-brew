@@ -1,0 +1,59 @@
+
+{
+  "manifest": {
+    "publishingInformation": {
+      "locales": {
+        "pt-BR": {
+          "summary": "Prepare café com receitas guiadas por voz",
+          "examplePhrases": [
+            "Alexa, abrir Timer Coffee",
+            "Alexa, peça ao Timer Coffee para preparar um V60",
+            "Alexa, peça ao Timer Coffee para listar métodos"
+          ],
+          "keywords": [
+            "café",
+            "coffee",
+            "timer",
+            "receitas",
+            "brewing",
+            "V60",
+            "prensa francesa",
+            "aeropress"
+          ],
+          "name": "Timer Coffee",
+          "smallIconUri": "https://via.placeholder.com/108x108",
+          "largeIconUri": "https://via.placeholder.com/512x512",
+          "description": "Timer Coffee é sua assistente pessoal para preparar café perfeito! Com receitas guiadas passo a passo, você pode preparar diferentes métodos como V60, Prensa Francesa e AeroPress. A skill te guia em cada etapa, controlando o tempo e dando instruções detalhadas.\n\nFuncionalidades:\n- Receitas guiadas por voz para diferentes métodos\n- Controle de cronômetro por comandos de voz\n- Instruções passo a passo detalhadas\n- Suporte para pausar e continuar o preparo\n- Lista de métodos disponíveis\n\nDiga 'Alexa, abrir Timer Coffee' para começar!"
+        }
+      },
+      "isAvailableWorldwide": false,
+      "testingInstructions": "Para testar a skill:\n1. Diga 'Alexa, abrir Timer Coffee'\n2. Experimente comandos como 'preparar um V60' ou 'listar métodos'\n3. Durante o preparo, use 'próxima etapa', 'pausar cronômetro', 'continuar cronômetro'\n4. Teste o comando 'repetir instrução' e 'quanto tempo falta'",
+      "category": "FOOD_AND_DRINK",
+      "distributionCountries": [
+        "BR"
+      ]
+    },
+    "apis": {
+      "custom": {
+        "endpoint": {
+          "uri": "https://lawdsesikzlttnvrhkqn.supabase.co/functions/v1/alexa-skill"
+        },
+        "interfaces": []
+      }
+    },
+    "manifestVersion": "1.0",
+    "privacyAndCompliance": {
+      "allowsPurchases": false,
+      "usesPersonalInfo": false,
+      "isChildDirected": false,
+      "isExportCompliant": true,
+      "containsAds": false,
+      "locales": {
+        "pt-BR": {
+          "privacyPolicyUrl": "https://example.com/privacy",
+          "termsOfUseUrl": "https://example.com/terms"
+        }
+      }
+    }
+  }
+}
