@@ -1,262 +1,182 @@
 
-const CACHE_NAME = 'coffelipe-brew-v2.0';
-const STATIC_CACHE = 'static-v2.0';
-const DYNAMIC_CACHE = 'dynamic-v2.0';
+const CACHE_NAME = 'timercoffee-v3.0';
+const STATIC_CACHE = 'static-v3.0';
+const DYNAMIC_CACHE = 'dynamic-v3.0';
 
+// Cache crítico - apenas o essencial
 const staticAssets = [
   '/',
   '/static/js/bundle.js',
   '/static/css/main.css',
   '/manifest.json',
-  '/lovable-uploads/49af2e43-3983-4eab-85c9-d3cd8c4e7deb.png',
-  '/lovable-uploads/dc58db2b-85bb-421b-bfd2-4c1634090f2b.png'
+  '/lovable-uploads/49af2e43-3983-4eab-85c9-d3cd8c4e7deb.png'
 ];
 
-const dynamicAssets = [
-  '/api/recipes',
-  '/api/user-recipes',
-  '/api/brew-history'
-];
+// Estratégia de cache inteligente
+const cacheStrategies = {
+  // Estratégia para assets estáticos
+  static: {
+    cacheName: STATIC_CACHE,
+    strategy: 'CacheFirst'
+  },
+  // Estratégia para dados dinâmicos
+  dynamic: {
+    cacheName: DYNAMIC_CACHE,
+    strategy: 'NetworkFirst',
+    networkTimeoutSeconds: 3
+  }
+};
 
-// Install event - cache static resources
+// Instalar service worker com cache otimizado
 self.addEventListener('install', (event) => {
-  console.log('Service Worker: Installing...');
+  console.log('SW: Installing optimized version...');
   event.waitUntil(
-    Promise.all([
-      caches.open(STATIC_CACHE).then((cache) => {
-        console.log('Service Worker: Caching static assets');
+    caches.open(STATIC_CACHE)
+      .then((cache) => {
+        console.log('SW: Caching essential assets only');
         return cache.addAll(staticAssets);
-      }),
-      caches.open(DYNAMIC_CACHE).then((cache) => {
-        console.log('Service Worker: Preparing dynamic cache');
-        return Promise.resolve();
       })
-    ])
+      .then(() => self.skipWaiting())
   );
-  self.skipWaiting();
 });
 
-// Activate event - clean up old caches
+// Ativar e limpar caches antigos
 self.addEventListener('activate', (event) => {
-  console.log('Service Worker: Activating...');
+  console.log('SW: Activating and cleaning old caches...');
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== STATIC_CACHE && cacheName !== DYNAMIC_CACHE) {
-            console.log('Service Worker: Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+    caches.keys()
+      .then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((cacheName) => {
+            if (cacheName !== STATIC_CACHE && cacheName !== DYNAMIC_CACHE) {
+              console.log('SW: Deleting old cache:', cacheName);
+              return caches.delete(cacheName);
+            }
+          })
+        );
+      })
+      .then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
-// Fetch event - implement cache strategies
+// Estratégia de fetch otimizada
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-GET requests
-  if (request.method !== 'GET') {
+  // Pular requisições não-GET
+  if (request.method !== 'GET') return;
+
+  // Cache-First para recursos estáticos
+  if (isStaticAsset(url)) {
+    event.respondWith(cacheFirst(request));
     return;
   }
 
-  // Handle static assets - Cache First strategy
-  if (staticAssets.some(asset => url.pathname.endsWith(asset))) {
-    event.respondWith(
-      caches.match(request).then((cachedResponse) => {
-        return cachedResponse || fetch(request);
-      })
-    );
+  // Network-First para APIs com timeout rápido
+  if (isApiRequest(url)) {
+    event.respondWith(networkFirstFast(request));
     return;
   }
 
-  // Handle API requests - Network First strategy
-  if (url.pathname.startsWith('/api/') || url.hostname !== location.hostname) {
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          // Cache successful responses
-          if (response.status === 200) {
-            const responseClone = response.clone();
-            caches.open(DYNAMIC_CACHE).then((cache) => {
-              cache.put(request, responseClone);
-            });
-          }
-          return response;
-        })
-        .catch(() => {
-          // Fallback to cache if network fails
-          return caches.match(request);
-        })
-    );
-    return;
-  }
-
-  // Handle navigation - Stale While Revalidate strategy
+  // Stale-While-Revalidate para navegação
   if (request.mode === 'navigate') {
-    event.respondWith(
-      caches.match(request).then((cachedResponse) => {
-        const fetchPromise = fetch(request).then((response) => {
-          const responseClone = response.clone();
-          caches.open(DYNAMIC_CACHE).then((cache) => {
-            cache.put(request, responseClone);
-          });
-          return response;
-        });
-
-        return cachedResponse || fetchPromise;
-      })
-    );
+    event.respondWith(staleWhileRevalidate(request));
     return;
   }
 
-  // Default strategy - Cache First with Network Fallback
-  event.respondWith(
-    caches.match(request).then((cachedResponse) => {
-      return cachedResponse || fetch(request).then((response) => {
-        const responseClone = response.clone();
-        caches.open(DYNAMIC_CACHE).then((cache) => {
-          cache.put(request, responseClone);
-        });
-        return response;
-      });
+  // Cache-First com fallback para outros recursos
+  event.respondWith(cacheFirst(request));
+});
+
+// Funções helper otimizadas
+function isStaticAsset(url) {
+  return staticAssets.some(asset => url.pathname.endsWith(asset.split('/').pop()));
+}
+
+function isApiRequest(url) {
+  return url.pathname.startsWith('/api/') || url.hostname !== location.hostname;
+}
+
+async function cacheFirst(request) {
+  const cachedResponse = await caches.match(request);
+  if (cachedResponse) {
+    return cachedResponse;
+  }
+
+  try {
+    const response = await fetch(request);
+    if (response.status === 200) {
+      const cache = await caches.open(STATIC_CACHE);
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch (error) {
+    console.warn('SW: Network failed for:', request.url);
+    return new Response('Offline', { status: 503 });
+  }
+}
+
+async function networkFirstFast(request) {
+  try {
+    const response = await Promise.race([
+      fetch(request),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
+    ]);
+
+    if (response.status === 200) {
+      const cache = await caches.open(DYNAMIC_CACHE);
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch (error) {
+    const cachedResponse = await caches.match(request);
+    return cachedResponse || new Response('Offline', { status: 503 });
+  }
+}
+
+async function staleWhileRevalidate(request) {
+  const cachedResponse = await caches.match(request);
+  
+  const fetchPromise = fetch(request).then((response) => {
+    if (response.status === 200) {
+      const cache = caches.open(DYNAMIC_CACHE);
+      cache.then(c => c.put(request, response.clone()));
+    }
+    return response;
+  });
+
+  return cachedResponse || fetchPromise;
+}
+
+// Otimização de notificações
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  
+  event.waitUntil(
+    clients.matchAll({ type: 'window' }).then((clientList) => {
+      if (clientList.length > 0) {
+        return clientList[0].focus();
+      }
+      return clients.openWindow('/');
     })
   );
 });
 
-// Background sync for offline actions
+// Background sync otimizado
 self.addEventListener('sync', (event) => {
-  console.log('Service Worker: Background sync triggered');
-  
-  if (event.tag === 'brew-sync') {
-    event.waitUntil(syncBrewData());
-  }
-  
-  if (event.tag === 'recipe-sync') {
-    event.waitUntil(syncRecipeData());
+  if (event.tag === 'coffee-sync') {
+    event.waitUntil(syncCriticalData());
   }
 });
 
-// Enhanced notification handling
-self.addEventListener('notificationclick', (event) => {
-  console.log('Service Worker: Notification clicked');
-  event.notification.close();
-  
-  const action = event.action;
-  const notification = event.notification;
-  
-  if (action === 'view') {
-    event.waitUntil(
-      clients.matchAll({ type: 'window' }).then((clientList) => {
-        for (let i = 0; i < clientList.length; i++) {
-          const client = clientList[i];
-          if (client.url.includes('/') && 'focus' in client) {
-            return client.focus();
-          }
-        }
-        if (clients.openWindow) {
-          return clients.openWindow('/');
-        }
-      })
-    );
-  } else if (action === 'dismiss') {
-    // Just close the notification
-    return;
-  } else {
-    // Default action - open app
-    event.waitUntil(
-      clients.matchAll({ type: 'window' }).then((clientList) => {
-        if (clientList.length > 0) {
-          return clientList[0].focus();
-        }
-        if (clients.openWindow) {
-          return clients.openWindow('/');
-        }
-      })
-    );
-  }
-});
-
-// Push notification handling
-self.addEventListener('push', (event) => {
-  console.log('Service Worker: Push received');
-  
-  let data = {};
-  if (event.data) {
-    data = event.data.json();
-  }
-
-  const options = {
-    body: data.body || 'Hora de preparar seu café!',
-    icon: '/lovable-uploads/49af2e43-3983-4eab-85c9-d3cd8c4e7deb.png',
-    badge: '/lovable-uploads/49af2e43-3983-4eab-85c9-d3cd8c4e7deb.png',
-    vibrate: [200, 100, 200],
-    data: data,
-    actions: [
-      {
-        action: 'view',
-        title: 'Ver Receita',
-        icon: '/lovable-uploads/49af2e43-3983-4eab-85c9-d3cd8c4e7deb.png'
-      },
-      {
-        action: 'dismiss',
-        title: 'Dispensar'
-      }
-    ],
-    tag: 'coffee-timer',
-    renotify: true,
-    requireInteraction: true
-  };
-
-  event.waitUntil(
-    self.registration.showNotification(data.title || 'TimerCoffee', options)
-  );
-});
-
-// Helper functions for background sync
-async function syncBrewData() {
+async function syncCriticalData() {
   try {
-    console.log('Service Worker: Syncing brew data...');
-    // Implementar sincronização de dados de preparo
+    // Sincronizar apenas dados críticos
+    console.log('SW: Syncing critical data only...');
     return Promise.resolve();
   } catch (error) {
-    console.error('Service Worker: Error syncing brew data:', error);
+    console.error('SW: Sync failed:', error);
     throw error;
   }
 }
-
-async function syncRecipeData() {
-  try {
-    console.log('Service Worker: Syncing recipe data...');
-    // Implementar sincronização de dados de receitas
-    return Promise.resolve();
-  } catch (error) {
-    console.error('Service Worker: Error syncing recipe data:', error);
-    throw error;
-  }
-}
-
-// Periodic background sync
-self.addEventListener('periodicsync', (event) => {
-  if (event.tag === 'coffee-data-sync') {
-    event.waitUntil(
-      Promise.all([
-        syncBrewData(),
-        syncRecipeData()
-      ])
-    );
-  }
-});
-
-// Error handling
-self.addEventListener('error', (event) => {
-  console.error('Service Worker: Error occurred:', event.error);
-});
-
-self.addEventListener('unhandledrejection', (event) => {
-  console.error('Service Worker: Unhandled promise rejection:', event.reason);
-});

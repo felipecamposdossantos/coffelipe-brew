@@ -14,13 +14,12 @@ import { Footer } from "@/components/Footer";
 import { Timer } from "@/components/Timer";
 import { Dashboard } from "@/components/Dashboard";
 import { OnboardingFlow } from "@/components/OnboardingFlow";
-import { UserPreferencesPanel } from "@/components/UserPreferencesPanel";
 import { Button } from "@/components/ui/button";
 import { LazyWrapper, LazyRecipeAnalytics, LazySmartSuggestions, LazyRecipeComparison, LazyBrewHistory, LazyCoffeeBeansManager, LazyFilterPapersManager } from "@/components/LazyWrapper";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRecipes } from "@/hooks/useUserRecipes";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
-import { Coffee, Settings, Timer as TimerIcon, Moon, Sun, Zap, Download, Home } from "lucide-react";
+import { Coffee, Settings, Timer as TimerIcon, Moon, Sun, Zap, Download, Home, Crown } from "lucide-react";
 import { FilterPapersManager } from "@/components/FilterPapersManager";
 import { useTheme } from "@/hooks/useTheme";
 import { SmartRecommendations } from "@/components/SmartRecommendations";
@@ -29,6 +28,8 @@ import { BrewingScheduler } from "@/components/BrewingScheduler";
 import { StockManager } from "@/components/StockManager";
 import { AdvancedAnalytics } from "@/components/AdvancedAnalytics";
 import { FocusMode } from "@/components/FocusMode";
+import { MoreMenuDropdown } from "@/components/MoreMenuDropdown";
+import { PremiumFeatures } from "@/components/PremiumFeatures";
 
 export interface Recipe {
   id: string;
@@ -61,6 +62,10 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState("recipes"); // Default to recipes for everyone
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [focusModeActive, setFocusModeActive] = useState(false);
+
+  const handleMoreMenuSelect = (value: string) => {
+    setActiveTab(value);
+  };
 
   // Set default tab based on authentication status
   useEffect(() => {
@@ -228,27 +233,12 @@ const Index = () => {
               {theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}
             </Button>
             
-            {user && (
-              <>
-                <RecipeExportImport />
-                {preferences && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowOnboarding(true)}
-                    className="gap-2"
-                  >
-                    <Settings className="w-4 h-4" />
-                    Refazer Tour
-                  </Button>
-                )}
-              </>
-            )}
+            {user && <RecipeExportImport />}
           </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 sm:grid-cols-14 mb-8 h-auto">
+          <TabsList className="grid w-full grid-cols-6 mb-8 h-auto">
             {user && (
               <TabsTrigger value="dashboard" className="text-xs sm:text-sm p-2 sm:p-3 flex items-center gap-1">
                 <Home className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -268,68 +258,16 @@ const Index = () => {
               </TabsTrigger>
             )}
             {user && (
-              <TabsTrigger value="analytics" className="text-xs sm:text-sm p-2 sm:p-3">
-                Analytics
+              <TabsTrigger value="premium" className="text-xs sm:text-sm p-2 sm:p-3 flex items-center gap-1">
+                <Crown className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Premium</span>
               </TabsTrigger>
             )}
-            {user && (
-              <TabsTrigger value="suggestions" className="text-xs sm:text-sm p-2 sm:p-3">
-                Sugestões
-              </TabsTrigger>
-            )}
-            {user && (
-              <TabsTrigger value="smart-rec" className="text-xs sm:text-sm p-2 sm:p-3">
-                IA
-              </TabsTrigger>
-            )}
-            {user && (
-              <TabsTrigger value="comparison" className="text-xs sm:text-sm p-2 sm:p-3">
-                Comparar
-              </TabsTrigger>
-            )}
-            {user && (
-              <TabsTrigger value="coffee-beans" className="text-xs sm:text-sm p-2 sm:p-3">
-                Grãos
-              </TabsTrigger>
-            )}
-            {user && (
-              <TabsTrigger value="filter-papers" className="text-xs sm:text-sm p-2 sm:p-3">
-                Filtros
-              </TabsTrigger>
-            )}
-            {user && (
-              <TabsTrigger value="history" className="text-xs sm:text-sm p-2 sm:p-3">
-                Histórico
-              </TabsTrigger>
-            )}
-            {user && (
-              <TabsTrigger value="preferences" className="text-xs sm:text-sm p-2 sm:p-3">
-                Preferências
-              </TabsTrigger>
-            )}
-            {user && (
-              <TabsTrigger value="advanced" className="text-xs sm:text-sm p-2 sm:p-3">
-                <Zap className="w-3 h-3 sm:w-4 sm:h-4" />
-              </TabsTrigger>
-            )}
-            {user && (
-              <TabsTrigger value="scheduler" className="text-xs sm:text-sm p-2 sm:p-3">
-                Agenda
-              </TabsTrigger>
-            )}
-            {user && (
-              <TabsTrigger value="stock" className="text-xs sm:text-sm p-2 sm:p-3">
-                Estoque
-              </TabsTrigger>
-            )}
-            {user && (
-              <TabsTrigger value="advanced-analytics" className="text-xs sm:text-sm p-2 sm:p-3">
-                Reports
-              </TabsTrigger>
-            )}
-            {user && (
+            {user ? (
+              <MoreMenuDropdown onMenuSelect={handleMoreMenuSelect} />
+            ) : (
               <TabsTrigger value="auth" className="text-xs sm:text-sm p-2 sm:p-3">
-                {user ? <Settings className="w-4 h-4" /> : "Login"}
+                Login
               </TabsTrigger>
             )}
           </TabsList>
@@ -353,6 +291,12 @@ const Index = () => {
           {user && (
             <TabsContent value="my-recipes">
               <UserRecipes onStartBrewing={handleStartBrewing} />
+            </TabsContent>
+          )}
+
+          {user && (
+            <TabsContent value="premium">
+              <PremiumFeatures />
             </TabsContent>
           )}
 
@@ -415,12 +359,6 @@ const Index = () => {
           )}
 
           {user && (
-            <TabsContent value="preferences">
-              <UserPreferencesPanel />
-            </TabsContent>
-          )}
-
-          {user && (
             <TabsContent value="advanced">
               <AdvancedSettings />
             </TabsContent>
@@ -450,13 +388,7 @@ const Index = () => {
         </Tabs>
       </div>
       
-      {/* Onboarding Flow */}
-      {user && (
-        <OnboardingFlow 
-          open={showOnboarding}
-          onComplete={handleOnboardingComplete}
-        />
-      )}
+      {/* Onboarding Flow - Removido as preferências */}
       
       <Footer />
     </div>
