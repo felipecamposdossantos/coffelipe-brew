@@ -13,11 +13,15 @@ import { AdvancedSettings } from "@/components/AdvancedSettings";
 import { RecipeExportImport } from "@/components/RecipeExportImport";
 import { Footer } from "@/components/Footer";
 import { Timer } from "@/components/Timer";
+import { Dashboard } from "@/components/Dashboard";
+import { OnboardingFlow } from "@/components/OnboardingFlow";
+import { UserPreferencesPanel } from "@/components/UserPreferencesPanel";
 import { Button } from "@/components/ui/button";
 import { LazyWrapper, LazyRecipeAnalytics, LazySmartSuggestions, LazyRecipeComparison, LazyBrewHistory, LazyCoffeeBeansManager, LazyFilterPapersManager } from "@/components/LazyWrapper";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRecipes } from "@/hooks/useUserRecipes";
-import { Coffee, Settings, Timer as TimerIcon, Moon, Sun, Zap, Download } from "lucide-react";
+import { useUserPreferences } from "@/hooks/useUserPreferences";
+import { Coffee, Settings, Timer as TimerIcon, Moon, Sun, Zap, Download, Home } from "lucide-react";
 import { FilterPapersManager } from "@/components/FilterPapersManager";
 import { useTheme } from "@/hooks/useTheme";
 
@@ -46,9 +50,18 @@ const Index = () => {
   const { user, loading } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { userRecipes, brewHistory } = useUserRecipes();
+  const { preferences } = useUserPreferences();
   const [currentRecipe, setCurrentRecipe] = useState<Recipe | null>(null);
   const [brewingMode, setBrewingMode] = useState<'auto' | 'manual'>('auto');
-  const [activeTab, setActiveTab] = useState("recipes");
+  const [activeTab, setActiveTab] = useState("dashboard");
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Verificar se deve mostrar onboarding
+  useState(() => {
+    if (user && preferences && !preferences.onboarding_completed) {
+      setShowOnboarding(true);
+    }
+  });
 
   console.log('Index render - loading:', loading, 'user:', user?.email, 'activeTab:', activeTab);
 
@@ -61,12 +74,16 @@ const Index = () => {
   const handleCompleteBrewing = () => {
     console.log('Completing brewing');
     setCurrentRecipe(null);
-    setActiveTab("recipes");
+    setActiveTab("dashboard");
   };
 
   const handleLogoClick = () => {
     setCurrentRecipe(null);
-    setActiveTab("recipes");
+    setActiveTab("dashboard");
+  };
+
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
   };
 
   if (loading) {
@@ -164,13 +181,32 @@ const Index = () => {
             </Button>
             
             {user && (
-              <RecipeExportImport />
+              <>
+                <RecipeExportImport />
+                {preferences && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowOnboarding(true)}
+                    className="gap-2"
+                  >
+                    <Settings className="w-4 h-4" />
+                    Refazer Tour
+                  </Button>
+                )}
+              </>
             )}
           </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 sm:grid-cols-11 mb-8 h-auto">
+          <TabsList className="grid w-full grid-cols-4 sm:grid-cols-12 mb-8 h-auto">
+            {user && (
+              <TabsTrigger value="dashboard" className="text-xs sm:text-sm p-2 sm:p-3 flex items-center gap-1">
+                <Home className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Dashboard</span>
+              </TabsTrigger>
+            )}
             <TabsTrigger value="recipes" className="text-xs sm:text-sm p-2 sm:p-3">
               Receitas
             </TabsTrigger>
@@ -214,6 +250,11 @@ const Index = () => {
               </TabsTrigger>
             )}
             {user && (
+              <TabsTrigger value="preferences" className="text-xs sm:text-sm p-2 sm:p-3">
+                Preferências
+              </TabsTrigger>
+            )}
+            {user && (
               <TabsTrigger value="advanced" className="text-xs sm:text-sm p-2 sm:p-3">
                 <Zap className="w-3 h-3 sm:w-4 sm:h-4" />
               </TabsTrigger>
@@ -222,6 +263,12 @@ const Index = () => {
               {user ? <Settings className="w-4 h-4" /> : "Login"}
             </TabsTrigger>
           </TabsList>
+
+          {user && (
+            <TabsContent value="dashboard">
+              <Dashboard onStartBrewing={handleStartBrewing} />
+            </TabsContent>
+          )}
 
           <TabsContent value="recipes">
             <RecipeList onStartBrewing={handleStartBrewing} />
@@ -292,6 +339,12 @@ const Index = () => {
           )}
 
           {user && (
+            <TabsContent value="preferences">
+              <UserPreferencesPanel />
+            </TabsContent>
+          )}
+
+          {user && (
             <TabsContent value="advanced">
               <AdvancedSettings />
             </TabsContent>
@@ -302,6 +355,15 @@ const Index = () => {
           </TabsContent>
         </Tabs>
       </div>
+      
+      {/* Onboarding Flow */}
+      {user && (
+        <OnboardingFlow 
+          open={showOnboarding}
+          onComplete={handleOnboardingComplete}
+        />
+      )}
+      
       <Footer />
     </div>
   );

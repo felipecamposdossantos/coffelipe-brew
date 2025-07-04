@@ -1,9 +1,11 @@
+
 import { useState, useEffect } from "react";
 import { Recipe } from "@/pages/Index";
 import { toast } from "sonner";
 import { useWakeLock } from "./useWakeLock";
 import { useTimerLogic } from "./useTimerLogic";
 import { usePWANotifications } from "./usePWANotifications";
+import { useUserRecipes } from "./useUserRecipes";
 
 export const useBrewingTimer = (recipe: Recipe) => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -13,6 +15,7 @@ export const useBrewingTimer = (recipe: Recipe) => {
   
   const { requestWakeLock, releaseWakeLock } = useWakeLock();
   const { showTimerNotification } = usePWANotifications();
+  const { addToBrewHistory } = useUserRecipes();
   const {
     timeLeft,
     isRunning,
@@ -109,6 +112,21 @@ export const useBrewingTimer = (recipe: Recipe) => {
   const handleFinish = async () => {
     setIsRunning(false);
     await releaseWakeLock();
+    
+    // Adicionar ao histórico quando finalizar
+    await addToBrewHistory({
+      recipe_id: recipe.id,
+      recipe_name: recipe.name,
+      coffee_ratio: recipe.coffeeRatio,
+      water_ratio: recipe.waterRatio,
+      water_temperature: recipe.waterTemperature,
+      grinder_brand: recipe.grinderBrand,
+      grinder_clicks: recipe.grinderClicks,
+      paper_brand: recipe.paperBrand,
+      coffee_bean_id: recipe.coffeeBeanId
+    });
+    
+    toast.success('Preparo finalizado! Adicionado ao histórico.');
   };
 
   useEffect(() => {

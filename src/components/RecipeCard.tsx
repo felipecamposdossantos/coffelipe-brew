@@ -2,9 +2,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Play, Coffee, Droplets, Clock, Thermometer } from "lucide-react";
+import { Play, Coffee, Droplets, Clock, Thermometer, Heart } from "lucide-react";
 import { Recipe } from "@/pages/Index";
 import { RecipeRating } from "@/components/RecipeRating";
+import { useUserFavorites } from "@/hooks/useUserFavorites";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -12,6 +14,8 @@ interface RecipeCardProps {
 }
 
 export const RecipeCard = ({ recipe, onStartBrewing }: RecipeCardProps) => {
+  const { user } = useAuth();
+  const { addToFavorites, removeFromFavorites, isFavorite } = useUserFavorites();
   const totalTime = recipe.steps.reduce((total, step) => total + step.duration, 0);
   
   const formatTime = (seconds: number) => {
@@ -35,6 +39,16 @@ export const RecipeCard = ({ recipe, onStartBrewing }: RecipeCardProps) => {
     return colorMap[method || ''] || 'bg-coffee-100 text-coffee-800 dark:bg-coffee-800 dark:text-coffee-200';
   };
 
+  const handleToggleFavorite = async () => {
+    if (!user) return;
+    
+    if (isFavorite(recipe.id)) {
+      await removeFromFavorites(recipe.id);
+    } else {
+      await addToFavorites(recipe);
+    }
+  };
+
   return (
     <Card className="h-full hover:shadow-lg transition-shadow duration-200 dark:bg-gray-800 dark:border-gray-700">
       <CardHeader className="pb-2">
@@ -42,11 +56,29 @@ export const RecipeCard = ({ recipe, onStartBrewing }: RecipeCardProps) => {
           <CardTitle className="text-lg font-bold text-coffee-800 dark:text-coffee-200 leading-tight">
             {recipe.name}
           </CardTitle>
-          {recipe.method && (
-            <Badge className={`text-xs ${getMethodColor(recipe.method)}`}>
-              {recipe.method}
-            </Badge>
-          )}
+          <div className="flex items-center gap-2">
+            {user && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleToggleFavorite}
+                className="p-1 h-8 w-8"
+              >
+                <Heart 
+                  className={`h-4 w-4 ${
+                    isFavorite(recipe.id) 
+                      ? 'fill-red-500 text-red-500' 
+                      : 'text-gray-400 hover:text-red-500'
+                  }`} 
+                />
+              </Button>
+            )}
+            {recipe.method && (
+              <Badge className={`text-xs ${getMethodColor(recipe.method)}`}>
+                {recipe.method}
+              </Badge>
+            )}
+          </div>
         </div>
       </CardHeader>
       
