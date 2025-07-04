@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Recipe } from "@/pages/Index";
 import { toast } from "sonner";
@@ -54,7 +53,7 @@ export const useBrewingTimer = (recipe: Recipe) => {
     }
   }, [timeLeft, isRunning, isPaused, currentStep, recipe.steps, isOvertime]);
 
-  // Show notification when step completes
+  // Enhanced notifications with better UX
   useEffect(() => {
     if (completedSteps.length > 0) {
       const lastCompletedStep = Math.max(...completedSteps);
@@ -83,16 +82,25 @@ export const useBrewingTimer = (recipe: Recipe) => {
     setIsRunning(true);
     setHasStarted(true);
     await requestWakeLock();
-    toast.success(`Receita Iniciada: ${recipe.steps[0]?.name}`);
-    impactFeedback('medium');
     
-    // Show notification when starting
+    // Enhanced toast notification
+    const { EnhancedToast } = await import('@/components/ui/enhanced-toast');
+    EnhancedToast.coffee(`Receita Iniciada: ${recipe.steps[0]?.name}`, {
+      description: 'Cronômetro iniciado com sucesso'
+    });
+    
+    impactFeedback('medium');
     showTimerNotification(recipe.steps[0]?.name, false);
   };
 
   const handlePause = () => {
     setIsPaused(!isPaused);
-    toast.info(isPaused ? "Cronômetro retomado" : "Cronômetro pausado");
+    
+    // Enhanced toast notification
+    import('@/components/ui/enhanced-toast').then(({ EnhancedToast }) => {
+      EnhancedToast.info(isPaused ? "Cronômetro retomado" : "Cronômetro pausado");
+    });
+    
     impactFeedback('light');
   };
 
@@ -120,7 +128,10 @@ export const useBrewingTimer = (recipe: Recipe) => {
   const handleFinish = async () => {
     setIsRunning(false);
     await releaseWakeLock();
-    impactFeedback('success');
+    impactFeedbeat('success');
+    
+    // Enhanced completion notification
+    const { EnhancedToast } = await import('@/components/ui/enhanced-toast');
     
     // Adicionar ao histórico quando finalizar
     await addToBrewHistory({
@@ -140,7 +151,13 @@ export const useBrewingTimer = (recipe: Recipe) => {
       checkAndUnlockAchievements();
     }, 1000);
     
-    toast.success('Preparo finalizado! Adicionado ao histórico.');
+    EnhancedToast.success('Preparo finalizado!', {
+      description: 'Adicionado ao histórico com sucesso',
+      action: {
+        label: 'Ver Histórico',
+        onClick: () => console.log('Navigate to history')
+      }
+    });
   };
 
   useEffect(() => {
