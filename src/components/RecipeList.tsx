@@ -19,7 +19,7 @@ export const RecipeList = ({ onStartBrewing }: RecipeListProps) => {
   const [filteredByAdvanced, setFilteredByAdvanced] = useState<Recipe[]>([]);
   const [isUsingAdvancedFilters, setIsUsingAdvancedFilters] = useState(false);
 
-  const { data: recipes = [], isLoading } = useQuery({
+  const { data: recipes = [], isLoading, refetch } = useQuery({
     queryKey: ['defaultRecipes'],
     queryFn: () => Promise.resolve(defaultRecipes),
     staleTime: Infinity,
@@ -54,6 +54,11 @@ export const RecipeList = ({ onStartBrewing }: RecipeListProps) => {
   const resetAdvancedFilters = () => {
     setIsUsingAdvancedFilters(false);
     setFilteredByAdvanced([]);
+  };
+
+  const handleRecipeAdded = () => {
+    // Refetch the recipes query to update the list
+    refetch();
   };
 
   if (isLoading) {
@@ -126,6 +131,7 @@ export const RecipeList = ({ onStartBrewing }: RecipeListProps) => {
       <AddRecipeForm 
         open={showAddForm}
         onOpenChange={setShowAddForm}
+        onRecipeAdded={handleRecipeAdded}
       />
     </div>
   );
