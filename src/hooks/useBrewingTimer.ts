@@ -132,19 +132,9 @@ export const useBrewingTimer = (recipe: Recipe) => {
     await releaseWakeLock();
     impactFeedback('success');
     
-    // Corrigir os dados sendo enviados para o histórico
+    // Passar a receita completa para o histórico
     try {
-      await addToBrewHistory({
-        id: recipe.id,
-        name: recipe.name,
-        coffeeRatio: recipe.coffeeRatio,
-        waterRatio: recipe.waterRatio,
-        waterTemperature: recipe.waterTemperature,
-        grinderBrand: recipe.grinderBrand,
-        grinderClicks: recipe.grinderClicks,
-        paperBrand: recipe.paperBrand,
-        coffeeBeanId: recipe.coffeeBeanId
-      });
+      await addToBrewHistory(recipe);
       
       showEnhancedToast({
         title: 'Preparo finalizado!',
