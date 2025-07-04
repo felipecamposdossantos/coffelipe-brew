@@ -79,21 +79,27 @@
   }
   
   html {
-    /* Scroll suave e otimizado */
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
     overflow-x: hidden;
+    height: 100%;
   }
   
   body {
     @apply bg-background text-foreground;
     font-family: "Inter", sans-serif;
-    /* Otimizações para PWA móvel */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-tap-highlight-color: transparent;
-    overscroll-behavior: none;
     overflow-x: hidden;
+    height: 100%;
+    position: fixed;
+    width: 100%;
+  }
+  
+  #root {
+    height: 100%;
+    overflow: hidden;
   }
 }
 
@@ -104,12 +110,32 @@
   }
 }
 
-/* Melhorias de rolagem */
+/* Melhorias de rolagem - Otimizado para evitar travamento */
 .overflow-y-auto {
-  /* Rolagem nativa suave no iOS */
   -webkit-overflow-scrolling: touch;
-  /* Previne bounce no topo/fundo */
   overscroll-behavior-y: contain;
+  scroll-behavior: smooth;
+}
+
+/* Classe específica para prevenir overscroll */
+.overscroll-behavior-y-contain {
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Previne bounce scrolling em iOS */
+@supports (-webkit-touch-callout: none) {
+  .overflow-y-auto {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: none;
+  }
+  
+  body {
+    position: fixed;
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
+  }
 }
 
 /* Custom animations */

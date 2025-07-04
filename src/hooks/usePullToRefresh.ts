@@ -26,8 +26,6 @@ export const usePullToRefresh = ({
     const element = elementRef.current;
     if (!element || !enabled) return;
 
-    let rafId: number;
-
     const handleTouchStart = (e: TouchEvent) => {
       if (element.scrollTop <= 0) {
         startY.current = e.touches[0].clientY;
@@ -43,6 +41,7 @@ export const usePullToRefresh = ({
 
       if (deltaY > 0 && element.scrollTop <= 0) {
         e.preventDefault();
+        e.stopPropagation();
         const distance = deltaY / resistance;
         setPullDistance(distance);
 
@@ -56,8 +55,12 @@ export const usePullToRefresh = ({
       if (!isPulling) return;
 
       setIsPulling(false);
-      element.style.transition = 'transform 0.3s ease-out';
-      element.style.transform = 'translateY(0)';
+      
+      // Reset transform with smooth transition
+      if (element) {
+        element.style.transition = 'transform 0.3s cubic-bezier(0.2, 0, 0.38, 0.9)';
+        element.style.transform = 'translateY(0)';
+      }
 
       if (pullDistance >= threshold) {
         setIsRefreshing(true);
@@ -71,15 +74,26 @@ export const usePullToRefresh = ({
       setPullDistance(0);
     };
 
+    // Previne scroll bounce no iOS
+    const handleTouchCancel = () => {
+      setIsPulling(false);
+      if (element) {
+        element.style.transition = 'transform 0.3s cubic-bezier(0.2, 0, 0.38, 0.9)';
+        element.style.transform = 'translateY(0)';
+      }
+      setPullDistance(0);
+    };
+
     element.addEventListener('touchstart', handleTouchStart, { passive: false });
     element.addEventListener('touchmove', handleTouchMove, { passive: false });
-    element.addEventListener('touchend', handleTouchEnd);
+    element.addEventListener('touchend', handleTouchEnd, { passive: false });
+    element.addEventListener('touchcancel', handleTouchCancel, { passive: false });
 
     return () => {
       element.removeEventListener('touchstart', handleTouchStart);
       element.removeEventListener('touchmove', handleTouchMove);
       element.removeEventListener('touchend', handleTouchEnd);
-      if (rafId) cancelAnimationFrame(rafId);
+      element.removeEventListener('touchcancel', handleTouchCancel);
     };
   }, [enabled, threshold, resistance, isPulling, isRefreshing, pullDistance, onRefresh]);
 
