@@ -5,6 +5,7 @@ import { Timer } from "@/components/Timer";
 import { UserRecipes } from "@/components/UserRecipes";
 import { LoginForm } from "@/components/LoginForm";
 import { UserProfile } from "@/components/UserProfile";
+import { SupportProject } from "@/components/SupportProject";
 import { LazyWrapper, LazyRecipeAnalytics, LazySmartSuggestions, LazyRecipeComparison, LazyBrewHistory, LazyCoffeeBeansManager, LazyFilterPapersManager } from "@/components/LazyWrapper";
 import { SmartRecommendations } from "@/components/SmartRecommendations";
 import { AdvancedSettings } from "@/components/AdvancedSettings";
@@ -50,6 +51,10 @@ export const MobileContent = ({
       
       {activeTab === 'auth' && (
         user ? <UserProfile /> : <LoginForm />
+      )}
+
+      {activeTab === 'support' && (
+        <SupportProject />
       )}
 
       {activeTab === 'analytics' && user && (
