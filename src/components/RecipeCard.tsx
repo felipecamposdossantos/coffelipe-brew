@@ -1,8 +1,8 @@
 
-import { Coffee, Clock, Thermometer, Star, Heart, ChevronRight } from "lucide-react";
+import { Coffee, Clock, Thermometer, Heart, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Recipe } from "@/pages/Index";
+import { Recipe } from "@/types/recipe";
 import { RecipeRating } from "./RecipeRating";
 import { useUserFavorites } from "@/hooks/useUserFavorites";
 import { useAuth } from "@/contexts/AuthContext";

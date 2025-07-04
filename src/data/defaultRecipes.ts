@@ -1,42 +1,38 @@
-
-import { Recipe } from "@/pages/Index";
+import { Recipe } from "@/types/recipe";
 
 export const defaultRecipes: Recipe[] = [
   {
-    id: "v60-classic",
+    id: "v60-classico",
     name: "V60 Clássico",
-    description: "Método tradicional para um café limpo e aromático",
+    description: "Método clássico de extração com V60, destacando a acidez e notas florais do café.",
     method: "V60",
-    coffeeRatio: 20,
-    waterRatio: 300,
-    waterTemperature: 94,
-    grinderBrand: "Comandante",
-    grinderClicks: 18,
-    paperBrand: "Hario V60",
+    coffeeRatio: 22,
+    waterRatio: 350,
+    waterTemperature: 93,
     steps: [
       {
         name: "Pré-infusão",
+        instruction: "Despeje 60ml de água em movimentos circulares, começando do centro. Aguarde a florada do café.",
         duration: 30,
-        instruction: "Molhe o café com 40ml de água e aguarde a florada",
-        waterAmount: 40
+        waterAmount: 60
       },
       {
         name: "Primeira despejo",
+        instruction: "Despeje água até atingir 150ml total, mantendo movimentos circulares lentos.",
         duration: 30,
-        instruction: "Despeje 100ml de água em movimentos circulares",
-        waterAmount: 100
+        waterAmount: 90
       },
       {
         name: "Segunda despejo",
-        duration: 45,
-        instruction: "Adicione mais 80ml de água mantendo o fluxo constante",
-        waterAmount: 80
+        instruction: "Continue despejando até 250ml, mantendo o nível da água constante.",
+        duration: 30,
+        waterAmount: 100
       },
       {
         name: "Despejo final",
-        duration: 45,
-        instruction: "Complete com os 80ml restantes e aguarde drenar",
-        waterAmount: 80
+        instruction: "Complete com água até 350ml. Aguarde a drenagem completa.",
+        duration: 60,
+        waterAmount: 100
       }
     ]
   },

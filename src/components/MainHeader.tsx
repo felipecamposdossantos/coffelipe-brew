@@ -80,10 +80,9 @@ export const MainHeader = ({ onMenuClick, showMenuButton = false }: MainHeaderPr
       </div>
 
       {/* Login Modal */}
-      <LoginForm 
-        open={showLogin} 
-        onOpenChange={setShowLogin} 
-      />
+      {showLogin && (
+        <LoginForm />
+      )}
     </header>
   );
 };

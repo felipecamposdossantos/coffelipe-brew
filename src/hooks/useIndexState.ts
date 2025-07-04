@@ -1,35 +1,39 @@
 
-import { useState, useEffect } from "react";
-import { Recipe } from "@/pages/Index";
+import { useState } from "react";
+import { Recipe } from "@/types/recipe";
 
-export const useIndexState = (user: any, loading: boolean) => {
-  const [currentRecipe, setCurrentRecipe] = useState<Recipe | null>(null);
+export const useIndexState = () => {
+  const [currentTab, setCurrentTab] = useState("recipes");
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+  const [isBrewingActive, setIsBrewingActive] = useState(false);
   const [brewingMode, setBrewingMode] = useState<'auto' | 'manual' | 'expert'>('auto');
-  const [activeTab, setActiveTab] = useState("recipes");
   const [focusModeActive, setFocusModeActive] = useState(false);
-  const [showPerformanceMonitor, setShowPerformanceMonitor] = useState(false);
-
-  // Set default tab based on authentication status
-  useEffect(() => {
-    if (!loading) {
-      if (user) {
-        setActiveTab("dashboard");
-      } else {
-        setActiveTab("recipes");
-      }
-    }
-  }, [user, loading]);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showBrewingScheduler, setShowBrewingScheduler] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedMethods, setSelectedMethods] = useState<string[]>([]);
+  const [selectedBeans, setSelectedBeans] = useState<string[]>([]);
 
   return {
-    currentRecipe,
-    setCurrentRecipe,
+    currentTab,
+    selectedRecipe,
+    isBrewingActive,
     brewingMode,
-    setBrewingMode,
-    activeTab,
-    setActiveTab,
     focusModeActive,
+    showMobileMenu,
+    showBrewingScheduler,
+    searchQuery,
+    selectedMethods,
+    selectedBeans,
+    setCurrentTab,
+    setSelectedRecipe,
+    setIsBrewingActive,
+    setBrewingMode,
     setFocusModeActive,
-    showPerformanceMonitor,
-    setShowPerformanceMonitor
+    setShowMobileMenu,
+    setShowBrewingScheduler,
+    setSearchQuery,
+    setSelectedMethods,
+    setSelectedBeans,
   };
 };

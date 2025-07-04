@@ -9,19 +9,18 @@ import { FocusMode } from "@/components/FocusMode";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { useMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Recipe } from "@/types/recipe";
 
 const Index = () => {
   const { user, loading } = useAuth();
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   
   const {
     currentTab,
     selectedRecipe,
     isBrewingActive,
-    currentStep,
-    timeLeft,
-    isRunning,
+    brewingMode,
     focusModeActive,
     showMobileMenu,
     showBrewingScheduler,
@@ -34,9 +33,7 @@ const Index = () => {
     setCurrentTab,
     setSelectedRecipe,
     setIsBrewingActive,
-    setCurrentStep,
-    setTimeLeft,
-    setIsRunning,
+    setBrowingMode,
     setFocusModeActive,
     setShowMobileMenu,
     setShowBrewingScheduler,
@@ -75,9 +72,7 @@ const Index = () => {
           recipe={selectedRecipe}
           isActive={focusModeActive}
           onToggle={handleToggleFocusMode}
-          currentStep={currentStep}
-          timeLeft={timeLeft}
-          isRunning={isRunning}
+          timerState={null}
         />
       )}
 
@@ -85,7 +80,9 @@ const Index = () => {
       {isBrewingActive && selectedRecipe && !focusModeActive && (
         <BrewingInterface
           recipe={selectedRecipe}
-          onClose={() => {
+          brewingMode={brewingMode}
+          onBrewingModeChange={setBrowingMode}
+          onComplete={() => {
             setIsBrewingActive(false);
             setSelectedRecipe(null);
           }}
@@ -99,31 +96,21 @@ const Index = () => {
         <>
           {isMobile ? (
             <MobileContent
-              currentTab={currentTab}
-              setCurrentTab={setCurrentTab}
+              activeTab={currentTab}
               onStartBrewing={handleStartBrewing}
-              showMobileMenu={showMobileMenu}
-              setShowMobileMenu={setShowMobileMenu}
-              showBrewingScheduler={showBrewingScheduler}
-              setShowBrewingScheduler={setShowBrewingScheduler}
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              selectedMethods={selectedMethods}
-              setSelectedMethods={setSelectedMethods}
-              selectedBeans={selectedBeans}
-              setSelectedBeans={setSelectedBeans}
+              user={user}
+              userRecipes={[]}
+              brewHistory={[]}
             />
           ) : (
             <DesktopNavigation
-              currentTab={currentTab}
-              setCurrentTab={setCurrentTab}
+              activeTab={currentTab}
+              onTabChange={setCurrentTab}
+              onMoreMenuSelect={setCurrentTab}
               onStartBrewing={handleStartBrewing}
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              selectedMethods={selectedMethods}
-              setSelectedMethods={setSelectedMethods}
-              selectedBeans={selectedBeans}
-              setSelectedBeans={setSelectedBeans}
+              user={user}
+              userRecipes={[]}
+              brewHistory={[]}
             />
           )}
         </>
@@ -133,3 +120,4 @@ const Index = () => {
 };
 
 export default Index;
+export type { Recipe };

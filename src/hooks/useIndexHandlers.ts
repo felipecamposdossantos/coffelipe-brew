@@ -1,94 +1,41 @@
 
-import { useWakeLock } from "./useWakeLock";
-import { useUserRecipes } from "./useUserRecipes";
-import { useHapticFeedback } from "./useHapticFeedback";
-import { Recipe } from "@/pages/Index";
+import { useState } from "react";
+import { Recipe } from "@/types/recipe";
 
-interface UseIndexHandlersProps {
-  setCurrentRecipe: (recipe: Recipe | null) => void;
-  setBrewingMode: (mode: 'auto' | 'manual' | 'expert') => void;
-  setActiveTab: (tab: string) => void;
-  user: any;
-}
+export const useIndexHandlers = () => {
+  const [currentTab, setCurrentTab] = useState("recipes");
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+  const [isBrewingActive, setIsBrewingActive] = useState(false);
+  const [brewingMode, setBrowingMode] = useState<'auto' | 'manual' | 'expert'>('auto');
+  const [focusModeActive, setFocusModeActive] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showBrewingScheduler, setShowBrewingScheduler] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedMethods, setSelectedMethods] = useState<string[]>([]);
+  const [selectedBeans, setSelectedBeans] = useState<string[]>([]);
 
-export const useIndexHandlers = ({
-  setCurrentRecipe,
-  setBrewingMode,
-  setActiveTab,
-  user
-}: UseIndexHandlersProps) => {
-  const { requestWakeLock, releaseWakeLock } = useWakeLock();
-  const { loadUserRecipes } = useUserRecipes();
-  const { impactFeedback } = useHapticFeedback();
-
-  const handleStartBrewing = async (recipe: Recipe, mode: 'auto' | 'manual' | 'expert' = 'auto') => {
-    console.log('Starting brewing with recipe:', recipe.name, 'mode:', mode);
-    setCurrentRecipe(recipe);
-    setBrewingMode(mode);
-    impactFeedback('medium');
-    
-    // Ativar wake lock durante o preparo
-    await requestWakeLock();
+  const handleStartBrewing = (recipe: Recipe, mode: 'auto' | 'manual' | 'expert' = 'auto') => {
+    setSelectedRecipe(recipe);
+    setBrowingMode(mode);
+    setIsBrewingActive(true);
   };
 
-  const handleCompleteBrewing = async () => {
-    console.log('Completing brewing');
-    setCurrentRecipe(null);
-    impactFeedback('success');
-    
-    // Liberar wake lock
-    await releaseWakeLock();
-    
-    if (user) {
-      setActiveTab("dashboard");
-    } else {
-      setActiveTab("recipes");
-    }
-  };
-
-  const handleLogoClick = () => {
-    setCurrentRecipe(null);
-    impactFeedback('light');
-    if (user) {
-      setActiveTab("dashboard");
-    } else {
-      setActiveTab("recipes");
-    }
-  };
-
-  const handleMoreMenuSelect = (value: string) => {
-    setActiveTab(value);
-    impactFeedback('light');
-  };
-
-  const handleRefresh = async () => {
-    await loadUserRecipes();
-    impactFeedback('success');
-  };
-
-  const handleQuickBrew = () => {
-    console.log('Quick brew initiated');
-    impactFeedback('medium');
-  };
-
-  const handleCreateRecipe = () => {
-    setActiveTab('my-recipes');
-    impactFeedback('light');
-  };
-
-  const handleOpenRecipes = () => {
-    setActiveTab('recipes');
-    impactFeedback('light');
+  const handleToggleFocusMode = () => {
+    setFocusModeActive(!focusModeActive);
   };
 
   return {
+    setCurrentTab,
+    setSelectedRecipe,
+    setIsBrewingActive,
+    setBrowingMode,
+    setFocusModeActive,
+    setShowMobileMenu,
+    setShowBrewingScheduler,
+    setSearchQuery,
+    setSelectedMethods,
+    setSelectedBeans,
     handleStartBrewing,
-    handleCompleteBrewing,
-    handleLogoClick,
-    handleMoreMenuSelect,
-    handleRefresh,
-    handleQuickBrew,
-    handleCreateRecipe,
-    handleOpenRecipes
+    handleToggleFocusMode,
   };
 };

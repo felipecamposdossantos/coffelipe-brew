@@ -7,7 +7,7 @@ import { RecipeListHeader } from "./RecipeListHeader";
 import { MethodSelector } from "./MethodSelector";
 import { AdvancedFilters } from "./AdvancedFilters";
 import { defaultRecipes } from "@/data/defaultRecipes";
-import { Recipe } from "@/pages/Index";
+import { Recipe } from "@/types/recipe";
 
 interface RecipeListProps {
   onStartBrewing: (recipe: Recipe, mode?: 'auto' | 'manual') => void;
